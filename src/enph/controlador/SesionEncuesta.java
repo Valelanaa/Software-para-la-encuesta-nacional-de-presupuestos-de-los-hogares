@@ -101,11 +101,20 @@ public static SesionEncuesta editar(int idHogar) {
         return nombres;
     }
 
-    public boolean hayAnterior() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+ 
+/**
+ * Comprueba si existe un grupo de alimentos anterior.
+ */
+public boolean hayAnterior() {
+    return grupoActual > 0;
+}
 
-    public void retroceder() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+/**
+ * Regresa al grupo de alimentos anterior.
+ */
+public void retroceder() {
+    if (hayAnterior()) {
+        grupoActual--;
     }
+}
 }
