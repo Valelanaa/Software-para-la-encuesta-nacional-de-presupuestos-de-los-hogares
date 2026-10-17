@@ -80,7 +80,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         return f.equalsIgnoreCase("Mensual")
             || f.equalsIgnoreCase("Bimestral")
             || f.equalsIgnoreCase("Trimestral")
-            || f.equalsIgnoreCase("Esporádico");
+            || f.equalsIgnoreCase("Esporadico");
     }
 
 
