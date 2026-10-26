@@ -14,9 +14,9 @@ import java.sql.SQLException;
 public class Conexion {
     
     //Conexion con el servidor de la universidad 
-    private static final String URL = "jdbc:oracle:thin:@192.168.254.215:1521:orcl"; 
+    //private static final String URL = "jdbc:oracle:thin:@192.168.254.215:1521:orcl"; 
     //Conexion de manera local 
-    //private static final String URL = "jdbc:oracle:thin:@//localhost:1522/XE";
+    private static final String URL = "jdbc:oracle:thin:@//localhost:1522/XE";
     // Usuario (esquema) de Oracle y su contraseña
     private static final String USER = "bd1095801365";
     private static final String PASSWORD = "bd1095801365";

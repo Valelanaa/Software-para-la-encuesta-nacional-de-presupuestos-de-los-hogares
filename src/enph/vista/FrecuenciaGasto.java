@@ -24,6 +24,9 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
     public FrecuenciaGasto(SesionEncuesta sesion) {
         initComponents();
         this.sesion = sesion;
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl_Usuario.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol.setText(enph.modelo.SesionUsuario.rolParaMostrar());
          // Muestra el nombre del grupo actual (el html permite que el texto largo baje de línea)
         Lbl_GrupoAlimento.setText("<html><center>" + sesion.getGrupo().getNombre() + "</center></html>");
         Lbl_Contador.setText((sesion.getGrupoActual() + 1) + "/" + sesion.getTotalGrupos()); // // Contador de progreso, por ejemplo "3/25"
@@ -220,7 +223,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Lbl_Frecuencia)
                     .addComponent(Cmb_Frecuencia, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 244, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btt_Continuar)
                     .addComponent(Btt_Cancelar))

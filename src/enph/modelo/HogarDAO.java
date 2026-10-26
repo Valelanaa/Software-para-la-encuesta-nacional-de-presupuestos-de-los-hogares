@@ -22,10 +22,10 @@ public class HogarDAO {
         List<Hogar> hogares = new ArrayList<>();
          // Los nombres de columna deben coincidir con los de la tabla HOGAR;
         // si no, Oracle responde con ORA-00904 (identificador no válido)
-        String sql = "SELECT ID_HOGAR, NOMBRE_FAMILIA, "
+        String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
                    + "DIR_DIRECCION, DIR_BARRIO "
                    + "FROM HOGAR "
-                   + "ORDER BY NOMBRE_FAMILIA";
+                   + "ORDER BY NOMBRE_HOGAR";
           // try-with-resources: la conexión se cierra sola al terminar el bloque
         try (Connection con = Conexion.init()) {
             // Conexion.init() devuelve null si no pudo conectar
@@ -42,7 +42,7 @@ public class HogarDAO {
 
                     Hogar hogar = new Hogar(
                         rs.getInt("ID_HOGAR"),
-                        rs.getString("NOMBRE_FAMILIA"),
+                        rs.getString("NOMBRE_HOGAR"),
                         rs.getString("DIR_DIRECCION"),
                         rs.getString("DIR_BARRIO")
                     );

@@ -62,7 +62,7 @@ public class EncuestaDAO {
      * Si hubiera varias, devuelve la más reciente (la de id mayor).
      */
 public int obtenerIdEncuesta(int idHogar) {
-    String sql = "SELECT MAX(ID_ENCUESTA) FROM ENCUESTA WHERE ID_HOGAR = ?";
+    String sql = "SELECT MAX(TO_NUMBER(ID_ENCUESTA)) FROM ENCUESTA WHERE ID_HOGAR = ?";
 
     Connection con = Conexion.init();
     if (con == null) return -1;
@@ -201,7 +201,7 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
      * por ejemplo CaracterizacionDAO.
      */
     static int siguienteId(Connection con, String tabla, String columna) throws SQLException {
-        String sql = "SELECT NVL(MAX(" + columna + "), 0) + 1 FROM " + tabla;
+        String sql = "SELECT NVL(MAX(TO_NUMBER(" + columna + ")), 0) + 1 FROM " + tabla;
         try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             return rs.next() ? rs.getInt(1) : 1;

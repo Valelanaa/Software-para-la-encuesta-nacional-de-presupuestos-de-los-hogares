@@ -23,6 +23,9 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         initComponents();
         this.sesion = sesion;
         this.frecuencia = frecuencia;
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
         // El grupo viene de la tabla GRUPO_DE_ALIMENTOS
         Lbl_GrupoAlimento.setText(sesion.getGrupo().getNombre());

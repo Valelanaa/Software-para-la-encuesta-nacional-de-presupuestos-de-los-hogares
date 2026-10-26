@@ -25,7 +25,10 @@ private List<Hogar> hogaresMostrados = new ArrayList<>();
     public FamiliasRegistradas() {
 
         initComponents();
-
+         // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        Lbl_Ubicacion.setText(enph.modelo.SesionUsuario.ubicacionParaMostrar());  
         setLocationRelativeTo(null);// centra la ventana en la pantalla
 
         // La tabla se crea sin datos de ejemplo: se llena desde la base de datos
@@ -246,7 +249,7 @@ public void mostrarHogares(List<Hogar> hogares) {
         Lbl_TituloPantalla.setText("Familias Registradas");
 
         Lbl_Ubicacion.setFont(new java.awt.Font("Bahnschrift", 1, 24)); // NOI18N
-        Lbl_Ubicacion.setText("Bucaramanga- Santander");
+        Lbl_Ubicacion.setText("Bucaramanga - Santander");
 
         Pnl_Centrado.setLayout(new java.awt.GridBagLayout());
 

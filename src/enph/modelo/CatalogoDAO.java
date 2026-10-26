@@ -23,7 +23,7 @@ public class CatalogoDAO {
     //Cada ItemCatalogo trae el id y el nombre del grupo.
     public List<ItemCatalogo> listarGrupos() {
         return listar("SELECT ID_GRUPO_ALIMENTO, NOMBRE_GRUPO_ALIMENTO "
-                + "FROM GRUPO_DE_ALIMENTOS ORDER BY ID_GRUPO_ALIMENTO");
+        + "FROM GRUPO_ALIMENTO ORDER BY ID_GRUPO_ALIMENTO");
     }
 
     /**
@@ -32,8 +32,8 @@ public class CatalogoDAO {
      */
     
     public List<ItemCatalogo> listarFrecuencias() {
-        return listar("SELECT ID_FRECUENCIA_COMPRA, NOMBRE_FRECUENCIA "
-                + "FROM FRECUENCIA_COMPRA ORDER BY ID_FRECUENCIA_COMPRA");
+        return listar("SELECT ID_FRECUENCIA_COMPRA, NOMBRE_FRECUENCIA_COMPRA "
+        + "FROM FRECUENCIA_COMPRA ORDER BY ID_FRECUENCIA_COMPRA");
     }
 
     //Ejecuta una consulta de catálogo y convierte cada fila en un ItemCatalogo.
