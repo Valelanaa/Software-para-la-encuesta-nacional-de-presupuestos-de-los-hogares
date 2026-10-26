@@ -1,6 +1,6 @@
 package enph.controlador;
 
-import enph.conexion.UsuarioDAO; 
+import enph.modelo.UsuarioDAO; 
 import enph.vista.FamiliasRegistradas;
 import enph.vista.InicioSesion;
 import javax.swing.JOptionPane;

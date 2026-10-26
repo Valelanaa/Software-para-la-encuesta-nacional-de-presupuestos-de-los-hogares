@@ -1,4 +1,4 @@
-package enph.conexion;
+package enph.modelo;
 /**
  * Modelo de un hogar (familia) de la encuesta. Es una clase sencilla que solo
  * guarda los datos que HogarDAO lee de la tabla HOGAR y que

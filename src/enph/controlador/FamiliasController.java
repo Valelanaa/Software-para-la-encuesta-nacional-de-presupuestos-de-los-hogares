@@ -5,8 +5,8 @@
 
 package enph.controlador;
 
-import enph.conexion.HogarDAO;
-import enph.conexion.Hogar;
+import enph.modelo.HogarDAO;
+import enph.modelo.Hogar;
 import enph.vista.FamiliasRegistradas;
 
 import java.sql.SQLException;

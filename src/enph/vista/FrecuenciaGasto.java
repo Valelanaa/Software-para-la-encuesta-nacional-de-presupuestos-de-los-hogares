@@ -3,9 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.conexion.CaracterizacionDAO;
-import enph.conexion.EncuestaDAO;
-import enph.conexion.ItemCatalogo;
+import enph.modelo.CaracterizacionDAO;
+import enph.modelo.EncuestaDAO;
+import enph.modelo.ItemCatalogo;
 import enph.controlador.SesionEncuesta;
 
 /**
@@ -32,7 +32,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                 new javax.swing.DefaultComboBoxModel<>(sesion.getNombresFrecuencias()));
         // Modo edición: selecciona en el combo la frecuencia que ya estaba guardada
             if (sesion.isEdicion()) {
-        enph.conexion.RespuestaGrupo previa = new CaracterizacionDAO()
+            enph.modelo.RespuestaGrupo previa = new CaracterizacionDAO()
                 .obtener(sesion.getIdEncuesta(), sesion.getGrupo().getId());
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {

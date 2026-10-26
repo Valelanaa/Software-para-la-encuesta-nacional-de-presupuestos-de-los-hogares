@@ -1,7 +1,7 @@
 package enph.vista;
 
-import enph.conexion.CaracterizacionDAO;
-import enph.conexion.ItemCatalogo;
+import enph.modelo.CaracterizacionDAO;
+import enph.modelo.ItemCatalogo;
 import enph.controlador.SesionEncuesta;
 import java.math.BigDecimal;
 
@@ -32,7 +32,7 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         Lbl_Contador.setText((sesion.getGrupoActual() + 1) + "/" + sesion.getTotalGrupos());
         // Modo edición: rellena los campos con lo que ya estaba guardado
     if (sesion.isEdicion()) {
-        enph.conexion.RespuestaGrupo previa = new CaracterizacionDAO()
+            enph.modelo.RespuestaGrupo previa = new CaracterizacionDAO()
                 .obtener(sesion.getIdEncuesta(), sesion.getGrupo().getId());
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {

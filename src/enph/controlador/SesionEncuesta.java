@@ -4,9 +4,9 @@
  */
 package enph.controlador;
 
-import enph.conexion.CatalogoDAO;
-import enph.conexion.EncuestaDAO;
-import enph.conexion.ItemCatalogo;
+import enph.modelo.CatalogoDAO;
+import enph.modelo.EncuestaDAO;
+import enph.modelo.ItemCatalogo;
 import java.util.List;
 
 /**

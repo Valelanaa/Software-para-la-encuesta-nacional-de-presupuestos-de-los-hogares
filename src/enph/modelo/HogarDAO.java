@@ -1,4 +1,4 @@
-package enph.conexion;
+package enph.modelo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

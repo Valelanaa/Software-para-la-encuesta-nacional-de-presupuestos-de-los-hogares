@@ -6,7 +6,7 @@ package enph.vista;
 
 import javax.swing.table.DefaultTableModel;
 import enph.controlador.FamiliasController;
-import enph.conexion.Hogar;
+import enph.modelo.Hogar;
 import java.util.List;
 import java.util.ArrayList;
 /**
@@ -346,7 +346,7 @@ public void mostrarHogares(List<Hogar> hogares) {
     }
     // El hogar de esa fila (la lista y la tabla tienen el mismo orden)
     Hogar hogar = hogaresMostrados.get(fila);
-    enph.conexion.EncuestaDAO encuestaDAO = new enph.conexion.EncuestaDAO();
+        enph.modelo.EncuestaDAO encuestaDAO = new enph.modelo.EncuestaDAO();
 
     if (encuestaDAO.hogarTieneEncuesta(hogar.getIdHogar())) {
         // Familia con encuesta: se le pregunta al encuestador qué hacer

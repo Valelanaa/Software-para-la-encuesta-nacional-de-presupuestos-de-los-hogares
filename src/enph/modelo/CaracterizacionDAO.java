@@ -1,5 +1,5 @@
 
-package enph.conexion;
+package enph.modelo;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
