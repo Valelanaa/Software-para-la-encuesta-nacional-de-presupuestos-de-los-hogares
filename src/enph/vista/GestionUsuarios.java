@@ -15,14 +15,46 @@ public class GestionUsuarios extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionUsuarios.class.getName());
 
-// Hogares que se ven ahora en la tabla, en el mismo orden que las filas.
-// Permite saber qué hogar corresponde a la fila donde se hizo clic.
-    public GestionUsuarios() {
 
-        initComponents();
+private List<enph.modelo.Usuario> usuariosEnTabla = new ArrayList<>();
 
-        setLocationRelativeTo(null);// centra la ventana en la pantalla
+public GestionUsuarios() {
+
+    initComponents();
+
+    // Datos de quien inició sesión (banner de la ventana)
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+
+    cargarUsuarios();
+
+    setLocationRelativeTo(null);// centra la ventana en la pantalla
+}
+
+// Lee los usuarios de la base de datos y los muestra en la tabla
+private void cargarUsuarios() {
+    usuariosEnTabla = new enph.modelo.UsuarioDAO().listarUsuarios();
+
+    // Modelo con las mismas columnas del diseño; las celdas no se pueden editar a mano
+    javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
+            new Object[]{"Nombre", "Identificación", "Rol"}, 0) {
+        @Override
+        public boolean isCellEditable(int fila, int columna) {
+            return false;
+        }
+    };
+
+    for (enph.modelo.Usuario u : usuariosEnTabla) {
+        modelo.addRow(new Object[]{
+            u.getNombreCompleto(),
+            u.getDocumentoIdentidad(),
+            u.getRol()
+        });
     }
+
+    Tbl_Usuarios.setModel(modelo);
+    ajustarColumnas(Tbl_Usuarios);
+}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {
@@ -69,6 +101,10 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Lbl_TituloPantalla = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tbl_Usuarios = new javax.swing.JTable();
+        Btn_Editar = new javax.swing.JButton();
+        Btn_Crear = new javax.swing.JButton();
+        Btn_Eliminar = new javax.swing.JButton();
+        Btn_Volver = new javax.swing.JButton();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -156,7 +192,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Lbl_Titulo, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Lbl_TituloPantalla))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
                 .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Lbl__Usuario1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(Lbl_Rol1, javax.swing.GroupLayout.Alignment.TRAILING))
@@ -192,23 +228,59 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         ));
         jScrollPane1.setViewportView(Tbl_Usuarios);
 
+        Btn_Editar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Editar.setText("Editar ");
+        Btn_Editar.addActionListener(this::Btn_EditarActionPerformed);
+
+        Btn_Crear.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Crear.setText("Crear");
+        Btn_Crear.addActionListener(this::Btn_CrearActionPerformed);
+
+        Btn_Eliminar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Eliminar.setText("Eliminar");
+        Btn_Eliminar.addActionListener(this::Btn_EliminarActionPerformed);
+
+        Btn_Volver.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver.setText("Volver al menú");
+        Btn_Volver.addActionListener(this::Btn_VolverActionPerformed);
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Pnl_Banner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                        .addGap(59, 59, 59)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 847, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                        .addGap(296, 296, 296)
+                        .addComponent(Btn_Crear)
+                        .addGap(38, 38, 38)
+                        .addComponent(Btn_Editar)
+                        .addGap(40, 40, 40)
+                        .addComponent(Btn_Eliminar)))
+                .addContainerGap(76, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                .addContainerGap(95, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 795, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(92, 92, 92))
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(Btn_Volver)
+                .addGap(17, 17, 17))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Pnl_CentralLayout.createSequentialGroup()
                 .addComponent(Pnl_Banner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(48, 48, 48)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addGap(40, 40, 40)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(47, 47, 47)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Crear)
+                    .addComponent(Btn_Editar)
+                    .addComponent(Btn_Eliminar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addComponent(Btn_Volver)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -219,7 +291,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(Pnl_Central, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -232,6 +304,37 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
+        // TODO add your handling code here:
+        new MenuAdmin().setVisible(true); // vuelve al menú del administrador
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_VolverActionPerformed
+
+    private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Btn_EliminarActionPerformed
+
+    private void Btn_CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CrearActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Btn_CrearActionPerformed
+
+    private void Btn_EditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EditarActionPerformed
+        // TODO add your handling code here:
+         int fila = Tbl_Usuarios.getSelectedRow();
+    if (fila < 0) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Seleccione un usuario de la tabla para editarlo.",
+                "Sin selección", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    // Fila de la tabla -> posición en la lista (por si la tabla se ordena)
+    int indice = Tbl_Usuarios.convertRowIndexToModel(fila);
+    enph.modelo.Usuario seleccionado = usuariosEnTabla.get(indice);
+
+    new EditarUsuario(seleccionado.getIdUsuario()).setVisible(true);
+    dispose();
+    }//GEN-LAST:event_Btn_EditarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -259,6 +362,10 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Crear;
+    private javax.swing.JButton Btn_Editar;
+    private javax.swing.JButton Btn_Eliminar;
+    private javax.swing.JButton Btn_Volver;
     private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
     private javax.swing.JLabel Lbl_Titulo;

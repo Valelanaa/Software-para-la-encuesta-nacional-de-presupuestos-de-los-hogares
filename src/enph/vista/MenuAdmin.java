@@ -73,6 +73,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Btn_asignar = new javax.swing.JButton();
         Btn_encuestas = new javax.swing.JButton();
         Lbl_TituloPantalla = new javax.swing.JLabel();
+        Btn_CerrarSesion = new javax.swing.JButton();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -201,12 +202,16 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 36)); // NOI18N
         Lbl_TituloPantalla.setText("Menú");
 
+        Btn_CerrarSesion.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_CerrarSesion.setText("Cerrar sesion");
+        Btn_CerrarSesion.addActionListener(this::Btn_CerrarSesionActionPerformed);
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(Pnl_Banner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                 .addGap(154, 154, 154)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
@@ -223,13 +228,18 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                             .addComponent(Btn_frecuencias)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                                 .addComponent(Btn_encuestas)
-                                .addGap(11, 11, 11))))
+                                .addGap(10, 10, 10))))
                     .addComponent(Btn_alimentos))
                 .addGap(56, 56, 56))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(Lbl_TituloPantalla)
-                .addGap(441, 441, 441))
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                        .addComponent(Lbl_TituloPantalla)
+                        .addGap(441, 441, 441))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                        .addComponent(Btn_CerrarSesion)
+                        .addGap(29, 29, 29))))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -237,21 +247,23 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 .addComponent(Pnl_Banner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(28, 28, 28)
                 .addComponent(Lbl_TituloPantalla)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addComponent(Btn_Usuarios)
                         .addGap(37, 37, 37)
                         .addComponent(Btn_Hogar)
                         .addGap(49, 49, 49)
-                        .addComponent(Btn_asignar))
+                        .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(Btn_asignar)
+                            .addComponent(Btn_encuestas)))
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addComponent(Btn_alimentos)
                         .addGap(37, 37, 37)
-                        .addComponent(Btn_frecuencias)
-                        .addGap(49, 49, 49)
-                        .addComponent(Btn_encuestas)))
-                .addGap(119, 119, 119))
+                        .addComponent(Btn_frecuencias)))
+                .addGap(87, 87, 87)
+                .addComponent(Btn_CerrarSesion)
+                .addGap(81, 81, 81))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -262,7 +274,9 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(Pnl_Central, javax.swing.GroupLayout.PREFERRED_SIZE, 526, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -282,6 +296,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_UsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_UsuariosActionPerformed
         // TODO add your handling code here:
+        new GestionUsuarios().setVisible(true); // Muestra la pantalla de gestion de usuarios
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_UsuariosActionPerformed
 
     private void Btn_alimentosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_alimentosActionPerformed
@@ -299,6 +315,12 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     private void Btn_encuestasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_encuestasActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_Btn_encuestasActionPerformed
+
+    private void Btn_CerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CerrarSesionActionPerformed
+        // TODO add your handling code here:
+        new InicioSesion().setVisible(true); // vuelve a la pantalla de inicio de sesion
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_CerrarSesionActionPerformed
 
     /**
      * @param args the command line arguments
@@ -326,6 +348,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_CerrarSesion;
     private javax.swing.JButton Btn_Hogar;
     private javax.swing.JButton Btn_Usuarios;
     private javax.swing.JButton Btn_alimentos;

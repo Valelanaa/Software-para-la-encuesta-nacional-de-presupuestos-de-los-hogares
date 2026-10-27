@@ -20,7 +20,7 @@ public class InicioSesion extends javax.swing.JFrame {
      * Creates new form NewJFrame
      */
     public InicioSesion() {
-        initComponents(); //setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); Para que la ventana se abra en pantalla completa automaticamente
+        initComponents(); 
         //setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); Para que la ventana se abra en pantalla completa automaticamente
         // Centrar la ventana
     setLocationRelativeTo(null);
@@ -97,6 +97,7 @@ public class InicioSesion extends javax.swing.JFrame {
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         jButton1.setForeground(new java.awt.Color(0, 158, 15));
         jButton1.setText("Ingresar");
+        jButton1.addActionListener(this::jButton1ActionPerformed);
 
         jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
 
@@ -190,6 +191,10 @@ public class InicioSesion extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
