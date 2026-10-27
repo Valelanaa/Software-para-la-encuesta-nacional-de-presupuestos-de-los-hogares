@@ -20,6 +20,8 @@ private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.Ar
 private enph.modelo.Usuario usuarioEditado;
 // true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
 private boolean esAdministrador;
+// true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
+private boolean editaSusDatos;
 
 public EditarUsuario() {
     this(null);   // para poder abrir la ventana sola desde el diseñador
@@ -27,7 +29,7 @@ public EditarUsuario() {
 
 public EditarUsuario(String idUsuario) {
     initComponents();
-    
+
     // Datos de quien inició sesión (banner de la ventana)
     Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
     Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
@@ -40,6 +42,10 @@ public EditarUsuario(String idUsuario) {
         idUsuario = sesion.getIdUsuario();
     }
 
+    // Edita sus propios datos si el id es el de la sesión (encuestador o administrador)
+    editaSusDatos = sesion != null && idUsuario != null
+            && idUsuario.equals(sesion.getIdUsuario());
+
     aplicarModoSegunRol();
     cargarCiudades();
     if (idUsuario != null) {
@@ -49,19 +55,20 @@ public EditarUsuario(String idUsuario) {
     setLocationRelativeTo(null);// centra la ventana en la pantalla
 }
 
-// Oculta los campos que el rol de la sesión no puede ver
+
+// Oculta los campos que no corresponden según de quién son los datos
 private void aplicarModoSegunRol() {
-    if (esAdministrador) {
-        // El administrador no ve ni cambia la contraseña
-        Lbl_Contrasenna.setVisible(false);
-        Txt_Contrasenna.setVisible(false);
-    } else {
-        // El encuestador solo ve nombre, cédula, teléfono y contraseña
+    if (editaSusDatos) {
+        // Sus propios datos: nombre, cédula, teléfono y contraseña
         Lbl_RolUsuario.setVisible(false);
         Cmb_Rol.setVisible(false);
         Lbl_Ciudad.setVisible(false);
         Cmb_Ciudad.setVisible(false);
         Lbl_TituloPantalla.setText("Mis datos");
+    } else {
+        // Un administrador editando a otro usuario: ve rol y ciudad, pero no la contraseña
+        Lbl_Contrasenna.setVisible(false);
+        Txt_Contrasenna.setVisible(false);
     }
 }
 
@@ -402,6 +409,7 @@ private void cargarUsuario(String idUsuario) {
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
+        
          if (usuarioEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(this, "No hay un usuario cargado para guardar.");
         return;
@@ -412,14 +420,15 @@ private void cargarUsuario(String idUsuario) {
     String telefono = Txt_Telefono.getText().trim();
 
     // Lo que el rol no puede ver conserva el valor que ya tiene en la base de datos
-    String contrasenna = esAdministrador ? usuarioEditado.getContrasenna()
-                                         : Txt_Contrasenna.getText().trim();
-    String rol = esAdministrador ? (String) Cmb_Rol.getSelectedItem()
-                                 : usuarioEditado.getRol();
+    // Lo que no se muestra conserva el valor que ya tiene en la base de datos
+    String contrasenna = editaSusDatos ? Txt_Contrasenna.getText().trim()
+                                       : usuarioEditado.getContrasenna();
+    String rol = editaSusDatos ? usuarioEditado.getRol()
+                               : (String) Cmb_Rol.getSelectedItem();
     int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    String idCiudad = esAdministrador
-            ? (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "")
-            : usuarioEditado.getIdCiudad();
+    String idCiudad = editaSusDatos
+            ? usuarioEditado.getIdCiudad()
+            : (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "");
 
     // Validaciones antes de tocar la base de datos
     if (nombre.isEmpty() || cedula.isEmpty() || telefono.isEmpty()
