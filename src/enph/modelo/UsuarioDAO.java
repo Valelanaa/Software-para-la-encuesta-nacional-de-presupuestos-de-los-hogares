@@ -305,4 +305,56 @@ public class UsuarioDAO {
             Conexion.close(con);
         }
     }
+        /**
+     * Elimina un usuario junto con los hogares que tiene asignados y todo lo que
+     * depende de ellos (cabeza de hogar, encuestas y respuestas). Se hace en una
+     * sola transacción: si algo falla, se deshace y no se borra nada.
+     */
+    public boolean eliminarUsuario(String idUsuario) {
+        // Primero las tablas hijas y al final el usuario (por las llaves foráneas)
+        String[] consultas = {
+            "DELETE FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
+                + "(SELECT E.ID_ENCUESTA FROM ENCUESTA E JOIN HOGAR H ON H.ID_HOGAR = E.ID_HOGAR "
+                + "WHERE H.ID_USUARIO = ?)",
+            "DELETE FROM ENCUESTA WHERE ID_HOGAR IN "
+                + "(SELECT ID_HOGAR FROM HOGAR WHERE ID_USUARIO = ?)",
+            "DELETE FROM CABEZA_DE_HOGAR WHERE ID_HOGAR IN "
+                + "(SELECT ID_HOGAR FROM HOGAR WHERE ID_USUARIO = ?)",
+            "DELETE FROM HOGAR WHERE ID_USUARIO = ?",
+            "DELETE FROM USUARIO WHERE ID_USUARIO = ?"
+        };
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+            con.setAutoCommit(false); // agrupa todos los DELETE en una sola transacción
+            int filasUsuario = 0;
+            for (int i = 0; i < consultas.length; i++) {
+                try (PreparedStatement ps = con.prepareStatement(consultas[i])) {
+                    ps.setString(1, idUsuario);
+                    int filas = ps.executeUpdate();
+                    if (i == consultas.length - 1) {
+                        filasUsuario = filas; // filas borradas de USUARIO
+                    }
+                }
+            }
+            if (filasUsuario != 1) {
+                con.rollback(); // el usuario no existía: no se confirma nada
+                return false;
+            }
+            con.commit(); // confirma todos los borrados a la vez
+            return true;
+        } catch (SQLException e) {
+            try { con.rollback(); } catch (SQLException ignorada) { }
+            System.err.println("Error al eliminar el usuario: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
 }

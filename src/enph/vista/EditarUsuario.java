@@ -4,12 +4,6 @@
  */
 package enph.vista;
 
-/**
- * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
- * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
- * o, si ya tiene una, pregunta si se edita o se elimina.
- * @author Valeria
- */
 public class EditarUsuario extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
@@ -227,7 +221,7 @@ private void cargarUsuario(String idUsuario) {
         Lbl__Usuario1.setText("Nombre del usuario");
 
         Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
-        Lbl_TituloPantalla.setText("Gestion de Usuarios");
+        Lbl_TituloPantalla.setText("Editar Usuario");
 
         javax.swing.GroupLayout Pnl_BannerLayout = new javax.swing.GroupLayout(Pnl_Banner);
         Pnl_Banner.setLayout(Pnl_BannerLayout);

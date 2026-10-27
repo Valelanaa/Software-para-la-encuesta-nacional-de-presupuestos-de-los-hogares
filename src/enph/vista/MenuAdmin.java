@@ -5,12 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
-/**
- * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
- * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
- * o, si ya tiene una, pregunta si se edita o se elimina.
- * @author Valeria
- */
+
 public class MenuAdmin extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MenuAdmin.class.getName());
@@ -292,6 +287,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_HogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_HogarActionPerformed
         // TODO add your handling code here:
+        new GestionHogar().setVisible(true); // Muestra la pantalla de gestion de hogares
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_HogarActionPerformed
 
     private void Btn_UsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_UsuariosActionPerformed

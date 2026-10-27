@@ -5,12 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
-/**
- * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
- * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
- * o, si ya tiene una, pregunta si se edita o se elimina.
- * @author Valeria
- */
+
 public class GestionUsuarios extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionUsuarios.class.getName());
@@ -323,6 +318,44 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
         // TODO add your handling code here:
+         int fila = Tbl_Usuarios.getSelectedRow();
+        if (fila < 0) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Seleccione un usuario de la tabla para eliminarlo.",
+                    "Sin selección", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int indice = Tbl_Usuarios.convertRowIndexToModel(fila);
+        enph.modelo.Usuario seleccionado = usuariosEnTabla.get(indice);
+
+        // No se permite que el usuario que tiene la sesión se elimine a sí mismo
+        enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
+        if (sesion != null && seleccionado.getIdUsuario().equals(sesion.getIdUsuario())) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No puede eliminar el usuario con el que inició sesión.",
+                    "Acción no permitida", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Confirmación antes de borrar: la acción no se puede deshacer
+        int opcion = javax.swing.JOptionPane.showConfirmDialog(this,
+                "¿Seguro que desea eliminar al usuario \"" + seleccionado.getNombreCompleto() + "\"?\n"
+                + "También se eliminarán los hogares que tiene asignados, con sus cabezas de hogar,\n"
+                + "encuestas y respuestas. Esta acción no se puede deshacer.",
+                "Eliminar usuario", javax.swing.JOptionPane.YES_NO_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+        if (opcion != javax.swing.JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        if (new enph.modelo.UsuarioDAO().eliminarUsuario(seleccionado.getIdUsuario())) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
+            cargarUsuarios(); // actualiza la tabla sin el usuario borrado
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No se pudo eliminar el usuario. Revise la consola para ver el detalle.",
+                    "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_Btn_EliminarActionPerformed
 
     private void Btn_CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CrearActionPerformed

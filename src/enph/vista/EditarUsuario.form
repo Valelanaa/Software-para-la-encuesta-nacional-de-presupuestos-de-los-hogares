@@ -337,7 +337,7 @@
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="20" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Gestion de Usuarios"/>
+                <Property name="text" type="java.lang.String" value="Editar Usuario"/>
               </Properties>
             </Component>
           </SubComponents>

@@ -5,12 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
-/**
- * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
- * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
- * o, si ya tiene una, pregunta si se edita o se elimina.
- * @author Valeria
- */
+
 public class MenuEncuestador extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MenuEncuestador.class.getName());
