@@ -13,7 +13,18 @@ public class Usuario {
     private String rol;                // ADMINISTRADOR o ENCUESTADOR (se llena al autenticar)
     private String ciudad;
     private String departamento;
+    private String idUsuario;
+    private String idCiudad;
+    private String telefono;
 
+    public String getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
+
+    public String getIdCiudad() { return idCiudad; }
+    public void setIdCiudad(String idCiudad) { this.idCiudad = idCiudad; }
+
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
     public String getCiudad() { return ciudad; }
     public void setCiudad(String ciudad) { this.ciudad = ciudad; }
 

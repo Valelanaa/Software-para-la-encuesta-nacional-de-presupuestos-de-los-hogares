@@ -1,16 +1,27 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package enph.modelo;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Acceso a datos de la tabla USUARIO: comprueba si el documento y la
- * contraseña escritos en InicioSesion corresponden a un usuario registrado
- * y, si es así, devuelve su nombre y su rol.
+ * Acceso a datos de la tabla USUARIO: comprueba las credenciales escritas en
+ * InicioSesion, lista los usuarios registrados y permite consultar y actualizar
+ * los datos de uno de ellos (pantallas GestionUsuarios y EditarUsuario).
  */
 public class UsuarioDAO {
+
+    // Quita espacios sobrantes y evita null (las columnas CHAR rellenan con espacios)
+    private static String limpiar(String s) {
+        return s == null ? "" : s.trim();
+    }
 
     /**
      * Valida el acceso recibiendo un objeto Usuario.
@@ -25,16 +36,10 @@ public class UsuarioDAO {
     // Cuenta cuántos usuarios coinciden con esas dos credenciales;
     // si hay al menos uno, el acceso es válido.
     public boolean validarUsuario(String documento, String contrasenna) {
-        // TRIM quita espacios sobrantes en ambos lados (la base y lo digitado),
-        // porque las columnas CHAR rellenan con espacios y comparar fallaría.
+        // TRIM quita espacios sobrantes en ambos lados (la base y lo digitado).
         // Los "?" son parámetros: el texto del usuario nunca se pega a la consulta,
         // lo que evita la inyección SQL.
-        String sql = "SELECT U.DOCUMENTO_IDENTIDAD, U.NOMBRE_COMPLETO, U.ROL, "
-           + "C.NOMBRE_CIUDAD, D.NOMBRE_DEPARTAMENTO "
-           + "FROM USUARIO U "
-           + "JOIN CIUDAD C ON C.ID_CIUDAD = U.ID_CIUDAD "
-           + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
-           + "WHERE TRIM(U.DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(U.CONTRASENNA) = TRIM(?)";
+        String sql = "SELECT COUNT(*) FROM USUARIO WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(CONTRASENNA) = TRIM(?)";
 
         Connection con = Conexion.init();
         PreparedStatement ps = null;
@@ -77,60 +82,227 @@ public class UsuarioDAO {
     }
 
     /**
-     * Autentica y devuelve el usuario completo (con nombre y rol).
+     * Autentica y devuelve el usuario completo (id, nombre, rol, ciudad y departamento).
      * Si las credenciales no coinciden o hay un error, devuelve null.
-     * Este es el método que debe usar InicioSesion para llenar la sesión.
+     * Este es el método que usa InicioSesionController para llenar la sesión.
      */
     public Usuario autenticar(String documento, String contrasenna) {
-    // 1) La consulta ahora une USUARIO con CIUDAD y DEPARTAMENTO
-    String sql = "SELECT U.DOCUMENTO_IDENTIDAD, U.NOMBRE_COMPLETO, U.ROL, "
-               + "C.NOMBRE_CIUDAD, D.NOMBRE_DEPARTAMENTO "
-               + "FROM USUARIO U "
-               + "JOIN CIUDAD C ON C.ID_CIUDAD = U.ID_CIUDAD "
-               + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
-               + "WHERE TRIM(U.DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(U.CONTRASENNA) = TRIM(?)";
+        // Se une USUARIO con CIUDAD y DEPARTAMENTO para obtener la ubicación
+        String sql = "SELECT U.ID_USUARIO, U.DOCUMENTO_IDENTIDAD, U.NOMBRE_COMPLETO, U.ROL, "
+                   + "C.NOMBRE_CIUDAD, D.NOMBRE_DEPARTAMENTO "
+                   + "FROM USUARIO U "
+                   + "JOIN CIUDAD C ON C.ID_CIUDAD = U.ID_CIUDAD "
+                   + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
+                   + "WHERE TRIM(U.DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(U.CONTRASENNA) = TRIM(?)";
 
-    Connection con = Conexion.init();
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    Usuario usuario = null; // por defecto no hay usuario (acceso negado)
+        Connection con = Conexion.init();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Usuario usuario = null; // por defecto no hay usuario (acceso negado)
 
-    if (con == null) {
-        System.err.println("No se pudo conectar a la base de datos.");
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return null;
+        }
+
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setString(1, documento);
+            ps.setString(2, contrasenna);
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                usuario = new Usuario();
+                usuario.setIdUsuario(limpiar(rs.getString("ID_USUARIO")));
+                usuario.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
+                usuario.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
+                usuario.setRol(limpiar(rs.getString("ROL")));
+                usuario.setCiudad(limpiar(rs.getString("NOMBRE_CIUDAD")));
+                usuario.setDepartamento(limpiar(rs.getString("NOMBRE_DEPARTAMENTO")));
+                // la contraseña no se guarda en el objeto: ya no hace falta
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al autenticar usuario: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+            } catch (SQLException e) {
+                System.err.println("Error al cerrar recursos: " + e.getMessage());
+            }
+            Conexion.close(con);
+        }
+
+        return usuario;
+    }
+
+    /**
+     * Devuelve todos los usuarios registrados (id, nombre, documento y rol),
+     * ordenados por nombre. Si falla la conexión o la consulta, devuelve una lista vacía.
+     * La usa la tabla de GestionUsuarios.
+     */
+    public List<Usuario> listarUsuarios() {
+        String sql = "SELECT ID_USUARIO, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, ROL FROM USUARIO ORDER BY NOMBRE_COMPLETO";
+
+        List<Usuario> usuarios = new ArrayList<>();
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return usuarios;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario u = new Usuario();
+                u.setIdUsuario(limpiar(rs.getString("ID_USUARIO")));
+                u.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
+                u.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
+                u.setRol(limpiar(rs.getString("ROL")));
+                usuarios.add(u);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al listar usuarios: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            Conexion.close(con);
+        }
+        return usuarios;
+    }
+
+    /**
+     * Trae todos los datos de un usuario (incluida ciudad, teléfono y contraseña)
+     * para mostrarlos en EditarUsuario. Devuelve null si no existe o hay un error.
+     */
+    public Usuario buscarPorId(String idUsuario) {
+        String sql = "SELECT ID_USUARIO, ID_CIUDAD, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, "
+                   + "CONTRASENNA, ROL, TELEFONO FROM USUARIO WHERE ID_USUARIO = ?";
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return null;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Usuario u = new Usuario();
+                    u.setIdUsuario(limpiar(rs.getString("ID_USUARIO")));
+                    u.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
+                    u.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
+                    u.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
+                    u.setContrasenna(limpiar(rs.getString("CONTRASENNA")));
+                    u.setRol(limpiar(rs.getString("ROL")));
+                    u.setTelefono(limpiar(rs.getString("TELEFONO")));
+                    return u;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al buscar usuario: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            Conexion.close(con);
+        }
         return null;
     }
 
-    try {
-        ps = con.prepareStatement(sql);
-        ps.setString(1, documento);
-        ps.setString(2, contrasenna);
+    /**
+     * Ciudades para el combo de EditarUsuario, con el formato "Ciudad - Departamento".
+     * Cada ItemCiudad guarda el ID_CIUDAD (lo que va a la base) y el texto que se ve.
+     */
+    public List<ItemCiudad> listarCiudades() {
+        String sql = "SELECT C.ID_CIUDAD, C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO "
+                   + "FROM CIUDAD C JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
+                   + "ORDER BY C.NOMBRE_CIUDAD";
 
-        rs = ps.executeQuery();
-
-        // 2) Aquí va el bloque: se llena el usuario con lo que devolvió la consulta
-        if (rs.next()) {
-            usuario = new Usuario();
-            usuario.setDocumentoIdentidad(rs.getString("DOCUMENTO_IDENTIDAD").trim());
-            usuario.setNombreCompleto(rs.getString("NOMBRE_COMPLETO").trim());
-            usuario.setRol(rs.getString("ROL").trim());
-            usuario.setCiudad(rs.getString("NOMBRE_CIUDAD").trim());              // nuevo
-            usuario.setDepartamento(rs.getString("NOMBRE_DEPARTAMENTO").trim());  // nuevo
+        List<ItemCiudad> lista = new ArrayList<>();
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return lista;
         }
 
-    } catch (SQLException e) {
-        System.err.println("Error al autenticar usuario: " + e.getMessage());
-        e.printStackTrace();
-    } finally {
-        try {
-            if (rs != null) rs.close();
-            if (ps != null) ps.close();
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                lista.add(new ItemCiudad(limpiar(rs.getString(1)), limpiar(rs.getString(2))));
+            }
+
         } catch (SQLException e) {
-            System.err.println("Error al cerrar recursos: " + e.getMessage());
+            System.err.println("Error al listar ciudades: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            Conexion.close(con);
         }
-        Conexion.close(con);
+        return lista;
     }
 
-    return usuario;
-}
-    
+    /**
+     * true si otro usuario (distinto de idExcluido) ya tiene ese documento.
+     * Se usa antes de guardar para no repetir cédulas.
+     */
+    public boolean existeDocumento(String documento, String idExcluido) {
+        String sql = "SELECT COUNT(*) FROM USUARIO "
+                   + "WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?) AND ID_USUARIO <> ?";
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, documento);
+            ps.setString(2, idExcluido);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar documento: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Actualiza en la base los datos del usuario (ciudad, nombre, documento,
+     * contraseña, rol y teléfono). Devuelve true si se modificó exactamente una fila.
+     */
+    public boolean actualizarUsuario(Usuario u) {
+        String sql = "UPDATE USUARIO SET ID_CIUDAD = ?, NOMBRE_COMPLETO = ?, DOCUMENTO_IDENTIDAD = ?, "
+                   + "CONTRASENNA = ?, ROL = ?, TELEFONO = ? WHERE ID_USUARIO = ?";
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, u.getIdCiudad());
+            ps.setString(2, u.getNombreCompleto());
+            ps.setString(3, u.getDocumentoIdentidad());
+            ps.setString(4, u.getContrasenna());
+            ps.setString(5, u.getRol());
+            ps.setString(6, u.getTelefono());
+            ps.setString(7, u.getIdUsuario());
+            return ps.executeUpdate() == 1; // la conexión confirma sola (autocommit)
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar usuario: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
 }
