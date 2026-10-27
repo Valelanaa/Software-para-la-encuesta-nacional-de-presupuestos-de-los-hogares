@@ -3,9 +3,9 @@ package enph.controlador;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
 import enph.modelo.UsuarioDAO;
-import enph.vista.FamiliasRegistradas;
 import enph.vista.InicioSesion;
 import enph.vista.MenuAdmin;
+import enph.vista.MenuEncuestador;
 import javax.swing.JOptionPane;
 
 /**
@@ -53,28 +53,36 @@ public class InicioSesionController {
         Usuario usuario = usuarioDAO.autenticar(documento, password);
 
         if (usuario != null) {
-            // Se guarda la sesión para que cualquier ventana pueda leer el nombre y el rol
             SesionUsuario.iniciar(usuario);
 
+            String rol = usuario.getRol() == null ? "" : usuario.getRol().trim();
+            System.out.println("Rol leído de la base: [" + rol + "]"); // para depurar; bórrar después
+
             try {
-                if ("ADMINISTRADOR".equalsIgnoreCase(usuario.getRol())) {
-                    // Administrador: abre su menú, centrado
+                if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {
                     MenuAdmin menu = new MenuAdmin();
                     menu.setLocationRelativeTo(null);
                     menu.setVisible(true);
-                } else {
-                    // Encuestador: abre la pantalla de familias, centrada
-                    FamiliasRegistradas familias = new FamiliasRegistradas();
-                    familias.setLocationRelativeTo(null);
-                    familias.setVisible(true);
-                }
-                // Cierra la ventana de inicio de sesión
-                vista.dispose();
+                    vista.dispose();
 
+                } else if ("ENCUESTADOR".equalsIgnoreCase(rol)) {
+                    MenuEncuestador menu2 = new MenuEncuestador();
+                    menu2.setLocationRelativeTo(null);
+                    menu2.setVisible(true);
+                    vista.dispose();
+
+                } else {
+                    // Rol desconocido: no se abre ninguna pantalla
+                    SesionUsuario.cerrar();
+                    JOptionPane.showMessageDialog(
+                            vista,
+                            "El rol del usuario (" + rol + ") no tiene una pantalla asignada.",
+                            "Rol no reconocido",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                }
             } catch (Exception e) {
-                // Si la pantalla no se pudo abrir, se avisa
-                // y el detalle queda en la consola para depurar
-                SesionUsuario.cerrar(); // no dejar una sesión abierta sin ventana
+                SesionUsuario.cerrar();
                 JOptionPane.showMessageDialog(
                         vista,
                         "No se pudo abrir la pantalla: " + e.getMessage(),
@@ -83,15 +91,6 @@ public class InicioSesionController {
                 );
                 e.printStackTrace();
             }
-        } else {
-            // autenticar devuelve null tanto si las credenciales no
-            // coinciden como si falló la conexión; por eso el mensaje cubre ambos casos
-            JOptionPane.showMessageDialog(
-                    vista,
-                    "Usuario o contraseña incorrectos, o no fue posible validar el acceso.",
-                    "Error de autenticación",
-                    JOptionPane.ERROR_MESSAGE
-            );
         }
     }
 }
