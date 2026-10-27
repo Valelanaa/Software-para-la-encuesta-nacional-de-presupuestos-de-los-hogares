@@ -19,10 +19,14 @@ public class MenuEncuestador extends javax.swing.JFrame {
 // Permite saber qué hogar corresponde a la fila donde se hizo clic.
     public MenuEncuestador() {
 
-        initComponents();
+    initComponents();
 
-        setLocationRelativeTo(null);// centra la ventana en la pantalla
-    }
+    // Datos de quien inició sesión (banner de la ventana)
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+
+    setLocationRelativeTo(null);// centra la ventana en la pantalla
+}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {
@@ -140,7 +144,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Lbl_Titulo.setText("Encuesta Nacional de Presupuestos de los Hogares (ENPH)");
 
         Lbl_Rol1.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl_Rol1.setText("Admin (Rol)");
+        Lbl_Rol1.setText("Encuestador (Rol)");
 
         Lbl__Usuario1.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         Lbl__Usuario1.setText("Nombre del usuario");
@@ -248,6 +252,14 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_UsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_UsuarioActionPerformed
         // TODO add your handling code here:
+    enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
+    if (sesion == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "No hay una sesión activa.");
+        return;
+    }
+    // Abre la pantalla con los datos del propio encuestador
+    new EditarUsuario(sesion.getIdUsuario()).setVisible(true);
+    dispose();
     }//GEN-LAST:event_Btn_UsuarioActionPerformed
 
     private void Btn_FamiliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_FamiliasActionPerformed
@@ -258,8 +270,9 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_CerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CerrarSesionActionPerformed
         // TODO add your handling code here:
-        new InicioSesion().setVisible(true); // vuelve a la pantalla de inicio de sesion
-        dispose(); // cierra esta ventana
+        enph.modelo.SesionUsuario.cerrar();   // nadie queda guardado en la sesión
+        new InicioSesion().setVisible(true);  // vuelve a la pantalla de inicio de sesión
+        dispose();                            // cierra esta ventana
     }//GEN-LAST:event_Btn_CerrarSesionActionPerformed
 
     /**

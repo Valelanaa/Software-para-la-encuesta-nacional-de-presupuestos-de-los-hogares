@@ -25,8 +25,18 @@ public GestionUsuarios() {
     // Datos de quien inició sesión (banner de la ventana)
     Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
     Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+    // Ajustes de apariencia
+    Tbl_Usuarios.setRowHeight(32);
+    Tbl_Usuarios.getTableHeader().setFont(
+        new java.awt.Font("Bahnschrift", 1, 18)
+    );
+
+    Tbl_Usuarios.setAutoResizeMode(
+         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+    );
 
     cargarUsuarios();
+    
 
     setLocationRelativeTo(null);// centra la ventana en la pantalla
 }

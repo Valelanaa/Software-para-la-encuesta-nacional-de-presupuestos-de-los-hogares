@@ -318,6 +318,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_CerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CerrarSesionActionPerformed
         // TODO add your handling code here:
+        enph.modelo.SesionUsuario.cerrar();   // nadie queda guardado en la sesión
         new InicioSesion().setVisible(true); // vuelve a la pantalla de inicio de sesion
         dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_CerrarSesionActionPerformed

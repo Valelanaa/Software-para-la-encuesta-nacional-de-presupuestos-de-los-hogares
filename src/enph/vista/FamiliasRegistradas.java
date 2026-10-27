@@ -125,6 +125,8 @@ public void mostrarHogares(List<Hogar> hogares) {
         jLabel5 = new javax.swing.JLabel();
         Lbl_Rol = new javax.swing.JLabel();
         Lbl__Usuario = new javax.swing.JLabel();
+        Btn_Volver = new javax.swing.JButton();
+        Btn_Volver2 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -136,6 +138,7 @@ public void mostrarHogares(List<Hogar> hogares) {
         Pnl_Centrado = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tbl_Familias = new javax.swing.JTable();
+        Btn_Volver1 = new javax.swing.JButton();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -196,6 +199,13 @@ public void mostrarHogares(List<Hogar> hogares) {
 
         Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
         Lbl__Usuario.setText("Carlos Pérez Bayona");
+
+        Btn_Volver.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver.setText("Volver al menú");
+        Btn_Volver.addActionListener(this::Btn_VolverActionPerformed);
+
+        Btn_Volver2.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver2.setText("Volver al menú");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -284,6 +294,10 @@ public void mostrarHogares(List<Hogar> hogares) {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         Pnl_Centrado.add(jScrollPane1, gridBagConstraints);
 
+        Btn_Volver1.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver1.setText("Volver al menú");
+        Btn_Volver1.addActionListener(this::Btn_Volver1ActionPerformed);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -299,6 +313,10 @@ public void mostrarHogares(List<Hogar> hogares) {
                 .addContainerGap()
                 .addComponent(Pnl_Centrado, javax.swing.GroupLayout.DEFAULT_SIZE, 961, Short.MAX_VALUE)
                 .addGap(15, 15, 15))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Btn_Volver1)
+                .addGap(25, 25, 25))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -309,8 +327,10 @@ public void mostrarHogares(List<Hogar> hogares) {
                 .addGap(18, 18, 18)
                 .addComponent(Lbl_Ubicacion)
                 .addGap(18, 18, 18)
-                .addComponent(Pnl_Centrado, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
-                .addGap(19, 19, 19))
+                .addComponent(Pnl_Centrado, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(Btn_Volver1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -321,7 +341,9 @@ public void mostrarHogares(List<Hogar> hogares) {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 12, Short.MAX_VALUE))
         );
 
         pack();
@@ -430,6 +452,16 @@ public void mostrarHogares(List<Hogar> hogares) {
     }
     }//GEN-LAST:event_Tbl_FamiliasMouseClicked
 
+    private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Btn_VolverActionPerformed
+
+    private void Btn_Volver1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_Volver1ActionPerformed
+        // TODO add your handling code here:
+        new MenuEncuestador().setVisible(true); // vuelve al menú del encuestador
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_Volver1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -456,6 +488,9 @@ public void mostrarHogares(List<Hogar> hogares) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Volver;
+    private javax.swing.JButton Btn_Volver1;
+    private javax.swing.JButton Btn_Volver2;
     private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
     private javax.swing.JLabel Lbl_TituloPantalla;

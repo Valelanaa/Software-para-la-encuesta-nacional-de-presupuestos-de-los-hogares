@@ -14,10 +14,12 @@ public class EditarUsuario extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
 
-// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
+/// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
 private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
-// Usuario que se está editando (con los datos que había antes de guardar)
+// Usuario que se está editando (con los datos que tiene en la base)
 private enph.modelo.Usuario usuarioEditado;
+// true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
+private boolean esAdministrador;
 
 public EditarUsuario() {
     this(null);   // para poder abrir la ventana sola desde el diseñador
@@ -25,17 +27,52 @@ public EditarUsuario() {
 
 public EditarUsuario(String idUsuario) {
     initComponents();
-
+    
     // Datos de quien inició sesión (banner de la ventana)
     Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
     Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
+    enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
+    esAdministrador = sesion != null && "ADMINISTRADOR".equalsIgnoreCase(sesion.getRol());
+
+    // Un encuestador solo puede editar sus propios datos, sin importar qué id se le pase
+    if (!esAdministrador && sesion != null) {
+        idUsuario = sesion.getIdUsuario();
+    }
+
+    aplicarModoSegunRol();
     cargarCiudades();
     if (idUsuario != null) {
         cargarUsuario(idUsuario);
     }
 
     setLocationRelativeTo(null);// centra la ventana en la pantalla
+}
+
+// Oculta los campos que el rol de la sesión no puede ver
+private void aplicarModoSegunRol() {
+    if (esAdministrador) {
+        // El administrador no ve ni cambia la contraseña
+        Lbl_Contrasenna.setVisible(false);
+        Txt_Contrasenna.setVisible(false);
+    } else {
+        // El encuestador solo ve nombre, cédula, teléfono y contraseña
+        Lbl_RolUsuario.setVisible(false);
+        Cmb_Rol.setVisible(false);
+        Lbl_Ciudad.setVisible(false);
+        Cmb_Ciudad.setVisible(false);
+        Lbl_TituloPantalla.setText("Mis datos");
+    }
+}
+
+// Vuelve a la pantalla que corresponde al rol
+private void volver() {
+    if (esAdministrador) {
+        new GestionUsuarios().setVisible(true);
+    } else {
+        new MenuEncuestador().setVisible(true);
+    }
+    dispose();
 }
 
 // Llena el combo de ciudades desde la base de datos
@@ -194,7 +231,7 @@ private void cargarUsuario(String idUsuario) {
                 .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Lbl_Titulo, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Lbl_TituloPantalla))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 117, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Lbl__Usuario1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(Lbl_Rol1, javax.swing.GroupLayout.Alignment.TRAILING))
@@ -259,46 +296,49 @@ private void cargarUsuario(String idUsuario) {
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Pnl_Banner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(Lbl_Contrasenna)
+                .addGap(18, 18, 18)
+                .addComponent(Txt_Contrasenna, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addGap(48, 48, 48)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(Btn_Guardar)
-                        .addGap(28, 28, 28)
-                        .addComponent(Btn_Volver))
+                        .addComponent(Lbl_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(Txt_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                            .addComponent(Lbl_Telefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(Txt_Telefono, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                            .addComponent(Lbl_Cedula, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(Txt_Cedula, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 99, Short.MAX_VALUE)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addGap(48, 48, 48)
+                        .addGap(97, 97, 97)
+                        .addComponent(Cmb_Rol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                .addComponent(Lbl_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Txt_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Lbl_RolUsuario)
-                                .addGap(249, 249, 249))
-                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                        .addComponent(Lbl_Telefono, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Txt_Telefono, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                        .addComponent(Lbl_Cedula, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(Txt_Cedula, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(Lbl_Ciudad)
-                                .addGap(18, 18, 18)
-                                .addComponent(Cmb_Ciudad, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(Lbl_Contrasenna)
+                                .addGap(37, 37, 37)
+                                .addComponent(Lbl_RolUsuario))
+                            .addComponent(Lbl_Ciudad))
                         .addGap(18, 18, 18)
-                        .addComponent(Txt_Contrasenna, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Cmb_Rol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(32, 32, 32))
+                        .addComponent(Cmb_Ciudad, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(53, 53, 53))
+            .addComponent(Pnl_Banner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Btn_Guardar)
+                .addGap(26, 26, 26)
+                .addComponent(Btn_Volver)
+                .addGap(38, 38, 38))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -335,11 +375,13 @@ private void cargarUsuario(String idUsuario) {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Pnl_Central, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Pnl_Central, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -355,12 +397,80 @@ private void cargarUsuario(String idUsuario) {
 
     private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
         // TODO add your handling code here:
-        new MenuAdmin().setVisible(true); // vuelve al menú del administrador
-        dispose(); // cierra esta ventana
+        volver();
     }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
+         if (usuarioEditado == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "No hay un usuario cargado para guardar.");
+        return;
+    }
+
+    String nombre = Txt_Nombre.getText().trim();
+    String cedula = Txt_Cedula.getText().trim();
+    String telefono = Txt_Telefono.getText().trim();
+
+    // Lo que el rol no puede ver conserva el valor que ya tiene en la base de datos
+    String contrasenna = esAdministrador ? usuarioEditado.getContrasenna()
+                                         : Txt_Contrasenna.getText().trim();
+    String rol = esAdministrador ? (String) Cmb_Rol.getSelectedItem()
+                                 : usuarioEditado.getRol();
+    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+    String idCiudad = esAdministrador
+            ? (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "")
+            : usuarioEditado.getIdCiudad();
+
+    // Validaciones antes de tocar la base de datos
+    if (nombre.isEmpty() || cedula.isEmpty() || telefono.isEmpty()
+            || contrasenna.isEmpty() || idCiudad.isEmpty()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.",
+                "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    if (!cedula.matches("\\d+")) {
+        javax.swing.JOptionPane.showMessageDialog(this, "La cédula solo debe tener números.",
+                "Cédula no válida", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    // Largos máximos de las columnas de la tabla USUARIO
+    if (nombre.length() > 150 || cedula.length() > 20 || telefono.length() > 20 || contrasenna.length() > 50) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Algún campo es demasiado largo (nombre máx. 150, cédula y teléfono 20, contraseña 50).",
+                "Dato demasiado largo", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    enph.modelo.UsuarioDAO dao = new enph.modelo.UsuarioDAO();
+    if (dao.existeDocumento(cedula, usuarioEditado.getIdUsuario())) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Ya existe otro usuario con esa cédula.",
+                "Cédula repetida", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    // Se pasan los datos nuevos al usuario y se guardan en la base
+    usuarioEditado.setNombreCompleto(nombre);
+    usuarioEditado.setDocumentoIdentidad(cedula);
+    usuarioEditado.setTelefono(telefono);
+    usuarioEditado.setContrasenna(contrasenna);
+    usuarioEditado.setRol(rol);
+    usuarioEditado.setIdCiudad(idCiudad);
+
+    if (dao.actualizarUsuario(usuarioEditado)) {
+        // Si se editó el usuario de la sesión, se refresca su sesión (banner)
+        enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
+        if (sesion != null && usuarioEditado.getIdUsuario().equals(sesion.getIdUsuario())) {
+            sesion.setNombreCompleto(nombre);
+            sesion.setDocumentoIdentidad(cedula);
+            sesion.setRol(rol);
+        }
+        javax.swing.JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
+        volver();
+    } else {
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "No se pudo actualizar. Revise la consola para ver el detalle.",
+                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     /**

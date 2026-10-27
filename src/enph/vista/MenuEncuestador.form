@@ -259,7 +259,7 @@
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="18" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Admin (Rol)"/>
+                <Property name="text" type="java.lang.String" value="Encuestador (Rol)"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="Lbl__Usuario1">
