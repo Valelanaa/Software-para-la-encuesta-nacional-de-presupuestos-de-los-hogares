@@ -360,6 +360,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CrearActionPerformed
         // TODO add your handling code here:
+        new CrearUsuario().setVisible(true);
+        dispose();
     }//GEN-LAST:event_Btn_CrearActionPerformed
 
     private void Btn_EditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EditarActionPerformed
