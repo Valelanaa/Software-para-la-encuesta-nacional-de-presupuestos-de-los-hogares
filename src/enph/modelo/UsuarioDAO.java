@@ -357,4 +357,106 @@ public class UsuarioDAO {
             Conexion.close(con);
         }
     }
+    /**
+    * Registra un usuario nuevo en la base de datos.
+    * Genera el siguiente ID y guarda sus datos.
+    */
+   public boolean insertarUsuario(Usuario u) {
+
+       String sqlId =
+               "SELECT NVL(MAX(TO_NUMBER(ID_USUARIO)), 0) + 1 FROM USUARIO";
+
+       String sqlInsertar =
+               "INSERT INTO USUARIO "
+               + "(ID_USUARIO, ID_CIUDAD, NOMBRE_COMPLETO, "
+               + "DOCUMENTO_IDENTIDAD, CONTRASENNA, ROL, TELEFONO) "
+               + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+       Connection con = Conexion.init();
+
+       if (con == null) {
+           System.err.println("No se pudo conectar a la base de datos.");
+           return false;
+       }
+
+       try {
+           // Obtener el siguiente ID disponible.
+           String idUsuario;
+
+           try (PreparedStatement psId = con.prepareStatement(sqlId);
+                ResultSet rs = psId.executeQuery()) {
+
+               if (!rs.next()) {
+                   return false;
+               }
+
+               idUsuario = rs.getString(1);
+           }
+
+           // Insertar el nuevo usuario.
+           try (PreparedStatement ps = con.prepareStatement(sqlInsertar)) {
+
+               ps.setString(1, idUsuario);
+               ps.setString(2, u.getIdCiudad());
+               ps.setString(3, u.getNombreCompleto());
+               ps.setString(4, u.getDocumentoIdentidad());
+               ps.setString(5, u.getContrasenna());
+               ps.setString(6, u.getRol());
+               ps.setString(7, u.getTelefono());
+
+               boolean insertado = ps.executeUpdate() == 1;
+
+               if (insertado) {
+                   System.out.println(
+                           "Usuario creado con ID: " + idUsuario
+                   );
+               }
+
+               return insertado;
+           }
+
+       } catch (SQLException e) {
+           System.err.println("Error al insertar usuario: "
+                   + e.getMessage());
+           e.printStackTrace();
+           return false;
+
+       } finally {
+           Conexion.close(con);
+       }
+   }
+   
+   /**
+    * Comprueba si la cédula ya pertenece a un usuario.
+    */
+   public boolean existeDocumento(String documento) {
+
+       String sql = "SELECT COUNT(*) FROM USUARIO "
+               + "WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
+
+       Connection con = Conexion.init();
+
+       if (con == null) {
+           System.err.println("No se pudo conectar a la base de datos.");
+           return true; // No permitir continuar si no se puede verificar.
+       }
+
+       try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+           ps.setString(1, documento);
+
+           try (ResultSet rs = ps.executeQuery()) {
+               return rs.next() && rs.getInt(1) > 0;
+           }
+
+       } catch (SQLException e) {
+           System.err.println("Error al verificar la cédula: "
+                   + e.getMessage());
+           e.printStackTrace();
+           return true; // Evitar crear el registro si la consulta falla.
+
+       } finally {
+           Conexion.close(con);
+       }
+   }
 }
