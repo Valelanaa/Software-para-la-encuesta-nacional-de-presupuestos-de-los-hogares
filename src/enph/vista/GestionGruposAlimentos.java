@@ -41,7 +41,7 @@ private void cargarGrupos() {
  
     // Una sola columna: el nombre del grupo; las celdas no se pueden editar a mano
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
-            new Object[]{"Nombre"}, 0) {
+            new Object[]{"Alimentos"}, 0) {
         @Override
         public boolean isCellEditable(int fila, int columna) {
             return false;
