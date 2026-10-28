@@ -243,4 +243,230 @@ public boolean insertarHogar(Hogar h) {
             Conexion.close(con);
         }
     }
+    /**
+    * Asigna uno o varios hogares a un encuestador.
+    *
+    * Solo actualiza hogares que todavía no tienen encuestador asignado.
+    * Si alguno no puede asignarse, se revierte toda la operación.
+    *
+    * @param idEncuestador ID del usuario que tiene el rol de encuestador.
+    * @param idsHogares Lista de identificadores de los hogares seleccionados.
+    * @throws SQLException Si ocurre un error al asignar los hogares.
+    */
+   public void asignarHogaresAEncuestador(
+           String idEncuestador,
+           List<String> idsHogares) throws SQLException {
+
+       // Validar los parámetros recibidos.
+       if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+           throw new SQLException("Debe seleccionar un encuestador.");
+       }
+
+       if (idsHogares == null || idsHogares.isEmpty()) {
+           throw new SQLException("Debe seleccionar al menos una familia.");
+       }
+
+       String sql = "UPDATE HOGAR "
+                  + "SET ID_USUARIO = ? "
+                  + "WHERE ID_HOGAR = ? "
+                  + "AND ID_USUARIO IS NULL";
+
+       try (Connection con = Conexion.init()) {
+
+           if (con == null) {
+               throw new SQLException(
+                   "No fue posible conectar con Oracle."
+               );
+           }
+
+           boolean autoCommitOriginal = con.getAutoCommit();
+
+           try {
+               // Iniciar la transacción.
+               con.setAutoCommit(false);
+
+               try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+                   for (String idHogar : idsHogares) {
+
+                       if (idHogar == null || idHogar.trim().isEmpty()) {
+                           throw new SQLException(
+                               "Se encontró un identificador de hogar inválido."
+                           );
+                       }
+
+                       // Asignar el encuestador al hogar seleccionado.
+                       ps.setString(1, idEncuestador.trim());
+                       ps.setString(2, idHogar.trim());
+
+                       int filasActualizadas = ps.executeUpdate();
+
+                       // Debe actualizar exactamente un hogar.
+                       if (filasActualizadas != 1) {
+                           throw new SQLException(
+                               "No se pudo asignar el hogar con ID "
+                               + idHogar
+                               + ". Es posible que ya tenga un encuestador "
+                               + "asignado o que no exista."
+                           );
+                       }
+                   }
+               }
+
+               // Confirmar todas las asignaciones.
+               con.commit();
+
+           } catch (SQLException e) {
+
+               // Si falla alguna asignación, deshacer todas.
+               try {
+                   con.rollback();
+               } catch (SQLException errorRollback) {
+                   e.addSuppressed(errorRollback);
+               }
+
+               throw e;
+
+           } finally {
+               // Restaurar la configuración original de la conexión.
+               try {
+                   con.setAutoCommit(autoCommitOriginal);
+               } catch (SQLException e) {
+                   // Evitar ocultar la excepción principal.
+               }
+           }
+       }
+   }
+   /**
+    * Lista únicamente los hogares que todavía no tienen encuestador.
+    */
+   public List<Hogar> listarHogaresSinEncuestador() throws SQLException {
+
+       List<Hogar> hogares = new ArrayList<>();
+
+       String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
+                  + "DIR_DIRECCION, DIR_BARRIO "
+                  + "FROM HOGAR "
+                  + "WHERE ID_USUARIO IS NULL "
+                  + "ORDER BY NOMBRE_HOGAR";
+
+       try (Connection con = Conexion.init()) {
+
+           if (con == null) {
+               throw new SQLException(
+                   "No fue posible conectar con Oracle."
+               );
+           }
+
+           try (PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+               while (rs.next()) {
+                   String id = rs.getString("ID_HOGAR");
+
+                   Hogar hogar = new Hogar(
+                       rs.getInt("ID_HOGAR"),
+                       rs.getString("NOMBRE_HOGAR"),
+                       rs.getString("DIR_DIRECCION"),
+                       rs.getString("DIR_BARRIO")
+                   );
+
+                   hogar.setIdTexto(id == null ? null : id.trim());
+                   hogares.add(hogar);
+               }
+           }
+       }
+
+       return hogares;
+   }
+   
+    /**
+     * Consulta los hogares que ya están asignados a un encuestador.
+     */
+    public List<Hogar> listarHogaresPorEncuestador(
+            String idEncuestador) throws SQLException {
+
+        List<Hogar> hogares = new ArrayList<>();
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new SQLException("No se ha seleccionado un encuestador.");
+        }
+
+        String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
+                   + "DIR_DIRECCION, DIR_BARRIO "
+                   + "FROM HOGAR "
+                   + "WHERE ID_USUARIO = ? "
+                   + "ORDER BY NOMBRE_HOGAR";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException(
+                    "No fue posible conectar con Oracle."
+                );
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+                ps.setString(1, idEncuestador.trim());
+
+                try (ResultSet rs = ps.executeQuery()) {
+
+                    while (rs.next()) {
+
+                        String id = rs.getString("ID_HOGAR");
+
+                        Hogar hogar = new Hogar(
+                            rs.getInt("ID_HOGAR"),
+                            rs.getString("NOMBRE_HOGAR"),
+                            rs.getString("DIR_DIRECCION"),
+                            rs.getString("DIR_BARRIO")
+                        );
+
+                        hogar.setIdTexto(
+                            id == null ? null : id.trim()
+                        );
+
+                        hogares.add(hogar);
+                    }
+                }
+            }
+        }
+
+        return hogares;
+    }
+    /**
+    * Desasigna un hogar de un encuestador sin eliminar el hogar.
+    *
+    * @param idEncuestador identificador del encuestador
+    * @param idHogar identificador del hogar
+    * @return true si se desasignó correctamente
+    * @throws SQLException si ocurre un error en la base de datos
+    */
+   public boolean desasignarHogar(
+           String idEncuestador,
+           String idHogar) throws SQLException {
+
+       String sql = "UPDATE HOGAR "
+                  + "SET ID_USUARIO = NULL "
+                  + "WHERE ID_HOGAR = ? "
+                  + "AND ID_USUARIO = ?";
+
+       try (Connection con = Conexion.init()) {
+
+           if (con == null) {
+               throw new SQLException(
+                   "No fue posible conectar con Oracle."
+               );
+           }
+
+           try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+               ps.setString(1, idHogar.trim());
+               ps.setString(2, idEncuestador.trim());
+
+               return ps.executeUpdate() == 1;
+           }
+       }
+   }
 }

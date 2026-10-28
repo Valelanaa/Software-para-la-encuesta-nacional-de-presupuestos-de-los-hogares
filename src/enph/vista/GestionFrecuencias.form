@@ -102,22 +102,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="Lbl_Rol">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="1"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Encuestador"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="Lbl__Usuario">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="1"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Carlos P&#xe9;rez Bayona"/>
-      </Properties>
-    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>

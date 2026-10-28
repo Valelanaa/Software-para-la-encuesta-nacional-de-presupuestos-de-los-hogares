@@ -57,8 +57,6 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        Lbl_Rol = new javax.swing.JLabel();
-        Lbl__Usuario = new javax.swing.JLabel();
         Pnl_Central = new javax.swing.JPanel();
         Pnl_Banner = new javax.swing.JPanel();
         Lbl_Titulo = new javax.swing.JLabel();
@@ -126,12 +124,6 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 .addComponent(jButton1)
                 .addContainerGap())
         );
-
-        Lbl_Rol.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl_Rol.setText("Encuestador");
-
-        Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl__Usuario.setText("Carlos Pérez Bayona");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -314,6 +306,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_asignarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_asignarActionPerformed
         // TODO add your handling code here:
+        new AsignarFamilias().setVisible(true); // Muestra el menú de asignar familias
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_asignarActionPerformed
 
     private void Btn_encuestasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_encuestasActionPerformed
@@ -360,11 +354,9 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     private javax.swing.JButton Btn_asignar;
     private javax.swing.JButton Btn_encuestas;
     private javax.swing.JButton Btn_frecuencias;
-    private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
     private javax.swing.JLabel Lbl_Titulo;
     private javax.swing.JLabel Lbl_TituloPantalla;
-    private javax.swing.JLabel Lbl__Usuario;
     private javax.swing.JLabel Lbl__Usuario1;
     private javax.swing.JPanel Pnl_Banner;
     private javax.swing.JPanel Pnl_Central;

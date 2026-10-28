@@ -1,0 +1,541 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package enph.vista;
+
+import javax.swing.table.DefaultTableModel;
+import enph.modelo.Hogar;
+import java.util.List;
+import enph.controlador.FamiliasEncuestadorController;
+/**
+ * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
+ * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
+ * o, si ya tiene una, pregunta si se edita o se elimina.
+ * @author Valeria
+ */
+public class FamiliasEncuestador extends javax.swing.JFrame {
+    
+private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FamiliasEncuestador.class.getName());
+
+private String idEncuestadorSeleccionado;
+private String nombreEncuestadorSeleccionado;
+private FamiliasEncuestadorController controlador;
+private List<Hogar> hogaresMostrados = new java.util.ArrayList<>();
+
+public FamiliasEncuestador() {
+    this(null, null);
+}
+
+public FamiliasEncuestador(
+        String idEncuestador,
+        String nombreEncuestador) {
+
+    initComponents();
+    this.idEncuestadorSeleccionado = idEncuestador;
+    this.nombreEncuestadorSeleccionado = nombreEncuestador;
+    this.idEncuestadorSeleccionado = idEncuestador;
+
+    // Datos del usuario administrador que inició sesión.
+    Lbl__Usuario.setText(
+        enph.modelo.SesionUsuario.nombreParaMostrar()
+    );
+
+    Lbl_Rol.setText(
+        enph.modelo.SesionUsuario.rolParaMostrar()
+    );
+
+    Lbl_Ubicacion.setText(
+        enph.modelo.SesionUsuario.ubicacionParaMostrar()
+    );
+
+    // Nombre del encuestador seleccionado en la pantalla anterior.
+    if (nombreEncuestador != null
+            && !nombreEncuestador.trim().isEmpty()) {
+
+        Lbl_EncuestadorSeleccionado.setText(
+            "Encuestador seleccionado: " + nombreEncuestador
+        );
+
+    } else {
+        Lbl_EncuestadorSeleccionado.setText(
+            "Encuestador seleccionado: ninguno"
+        );
+    }
+
+    setLocationRelativeTo(null);
+
+    String[] columnas = {
+        "Familia", "Dirección", "Barrio"
+    };
+
+    javax.swing.table.DefaultTableModel modelo =
+        new javax.swing.table.DefaultTableModel(
+            new Object[][] {},
+            columnas
+        ) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+    Tbl_Familias.setModel(modelo);
+    // Permite seleccionar varias familias usando Ctrl o Shift.
+    Tbl_Familias.setSelectionMode(
+        javax.swing.ListSelectionModel.SINGLE_SELECTION
+    );
+
+    Tbl_Familias.setRowHeight(32);
+
+    Tbl_Familias.getTableHeader().setFont(
+        new java.awt.Font("Bahnschrift", 1, 18)
+    );
+
+    Tbl_Familias.setAutoResizeMode(
+        javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+    );
+
+    controlador = new FamiliasEncuestadorController(this);
+
+    if (idEncuestadorSeleccionado != null
+            && !idEncuestadorSeleccionado.trim().isEmpty()) {
+
+        controlador.cargarHogares(idEncuestadorSeleccionado);
+
+    } else {
+        javax.swing.JOptionPane.showMessageDialog(
+            this,
+            "No se recibió un encuestador válido.",
+            "Error",
+            javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+    }
+}
+
+
+// Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
+private void ajustarColumnas(javax.swing.JTable tabla) {
+    for (int col = 0; col < tabla.getColumnCount(); col++) {
+        javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
+
+        // Ancho del título
+        java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
+                .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
+        int ancho = comp.getPreferredSize().width;
+
+        // Ancho del dato más largo
+        for (int fila = 0; fila < tabla.getRowCount(); fila++) {
+            comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
+            ancho = Math.max(ancho, comp.getPreferredSize().width);
+        }
+
+        columna.setPreferredWidth(ancho + 20); // 20 px de margen
+    }
+}
+
+
+public void mostrarHogares(List<Hogar> hogares) {
+
+    this.hogaresMostrados = new java.util.ArrayList<>(hogares);
+
+    DefaultTableModel modelo =
+        (DefaultTableModel) Tbl_Familias.getModel();
+
+    modelo.setRowCount(0);
+
+    for (Hogar hogar : hogaresMostrados) {
+        modelo.addRow(new Object[]{
+            hogar.getNombreFamilia(),
+            hogar.getDireccion(),
+            hogar.getBarrio()
+        });
+    }
+
+    ajustarColumnas(Tbl_Familias);
+}
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        Pnl_Contenido = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        Lbl_tituloEncuesta = new javax.swing.JLabel();
+        Lbl_TituloPantalla = new javax.swing.JLabel();
+        Lbl_Rol = new javax.swing.JLabel();
+        Lbl__Usuario = new javax.swing.JLabel();
+        Lbl_EncuestadorSeleccionado = new javax.swing.JLabel();
+        Lbl_Ubicacion = new javax.swing.JLabel();
+        Pnl_Centrado = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Tbl_Familias = new javax.swing.JTable();
+        Btn_Volver = new javax.swing.JButton();
+        Btn_Asignar = new javax.swing.JButton();
+        Btn_Eliminar = new javax.swing.JButton();
+
+        jButton1.setBackground(new java.awt.Color(182, 215, 168));
+        jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(0, 158, 15));
+        jButton1.setText("Ingresar");
+        jButton1.addActionListener(this::jButton1ActionPerformed);
+
+        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jTextField1.addActionListener(this::jTextField1ActionPerformed);
+
+        jLabel4.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jLabel4.setText("Usuario:");
+
+        jLabel3.setFont(new java.awt.Font("Bahnschrift", 1, 40)); // NOI18N
+        jLabel3.setText("Ingresar usuario y contraseña");
+
+        jLabel5.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jLabel5.setText("Contraseña:");
+
+        javax.swing.GroupLayout Pnl_ContenidoLayout = new javax.swing.GroupLayout(Pnl_Contenido);
+        Pnl_Contenido.setLayout(Pnl_ContenidoLayout);
+        Pnl_ContenidoLayout.setHorizontalGroup(
+            Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                        .addGap(118, 118, 118)
+                        .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                        .addGap(189, 189, 189)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3))
+                .addContainerGap())
+        );
+        Pnl_ContenidoLayout.setVerticalGroup(
+            Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addGap(37, 37, 37)
+                .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(66, 66, 66)
+                .addComponent(jButton1)
+                .addContainerGap())
+        );
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel2.setBackground(new java.awt.Color(159, 197, 248));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        Lbl_tituloEncuesta.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
+        Lbl_tituloEncuesta.setText("Encuesta Nacional de Presupuestos de los Hogares (ENPH)");
+
+        Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
+        Lbl_TituloPantalla.setText("Familias asignadas al encuestador");
+
+        Lbl_Rol.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl_Rol.setText("Encuestador");
+
+        Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl__Usuario.setText("Carlos Pérez Bayona");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Lbl_TituloPantalla)
+                    .addComponent(Lbl_tituloEncuesta, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Lbl__Usuario, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(Lbl_Rol, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(25, 25, 25))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(Lbl__Usuario)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Lbl_Rol))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(Lbl_tituloEncuesta, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Lbl_TituloPantalla)))
+                .addContainerGap(17, Short.MAX_VALUE))
+        );
+
+        Lbl_EncuestadorSeleccionado.setFont(new java.awt.Font("Bahnschrift", 1, 24)); // NOI18N
+        Lbl_EncuestadorSeleccionado.setText("Encuestador Selecionado ");
+
+        Lbl_Ubicacion.setFont(new java.awt.Font("Bahnschrift", 1, 24)); // NOI18N
+        Lbl_Ubicacion.setText("Bucaramanga - Santander");
+
+        Pnl_Centrado.setLayout(new java.awt.GridBagLayout());
+
+        Tbl_Familias.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Tbl_Familias.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Familia", "Dirección", "Barrio"
+            }
+        ));
+        jScrollPane1.setViewportView(Tbl_Familias);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 907;
+        gridBagConstraints.ipady = 262;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        Pnl_Centrado.add(jScrollPane1, gridBagConstraints);
+
+        Btn_Volver.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver.setText("Volver ");
+        Btn_Volver.addActionListener(this::Btn_VolverActionPerformed);
+
+        Btn_Asignar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Asignar.setText("Asignar nuevas familias");
+        Btn_Asignar.addActionListener(this::Btn_AsignarActionPerformed);
+
+        Btn_Eliminar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Eliminar.setText("Eliminar");
+        Btn_Eliminar.addActionListener(this::Btn_EliminarActionPerformed);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(41, 41, 41)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Lbl_Ubicacion, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Lbl_EncuestadorSeleccionado))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(Pnl_Centrado, javax.swing.GroupLayout.DEFAULT_SIZE, 971, Short.MAX_VALUE)
+                .addGap(15, 15, 15))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(186, 186, 186)
+                .addComponent(Btn_Asignar)
+                .addGap(80, 80, 80)
+                .addComponent(Btn_Eliminar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(Btn_Volver)
+                .addGap(25, 25, 25))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(35, 35, 35)
+                .addComponent(Lbl_EncuestadorSeleccionado)
+                .addGap(18, 18, 18)
+                .addComponent(Lbl_Ubicacion)
+                .addGap(18, 18, 18)
+                .addComponent(Pnl_Centrado, javax.swing.GroupLayout.PREFERRED_SIZE, 333, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Volver)
+                    .addComponent(Btn_Asignar)
+                    .addComponent(Btn_Eliminar))
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
+        // TODO add your handling code here:
+        new AsignarFamilias().setVisible(true); // vuelve al menú de asignar familias 
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_VolverActionPerformed
+
+    private void Btn_AsignarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_AsignarActionPerformed
+        // TODO add your handling code here:
+        if (idEncuestadorSeleccionado == null
+                || idEncuestadorSeleccionado.trim().isEmpty()) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "No se ha seleccionado un encuestador.",
+                "Encuestador no seleccionado",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        // Abrir la pantalla que permite asignar nuevas familias.
+        FamiliasAsignadas ventana = new FamiliasAsignadas(
+            idEncuestadorSeleccionado,
+            nombreEncuestadorSeleccionado
+        );
+
+        ventana.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_Btn_AsignarActionPerformed
+
+    private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
+        // TODO add your handling code here:
+        // Verificar que exista una familia seleccionada.
+        int filaSeleccionada = Tbl_Familias.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Selecciona la familia que deseas desasignar.",
+                "Familia no seleccionada",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // Convertir el índice de la tabla al índice del modelo.
+        int indiceModelo =
+            Tbl_Familias.convertRowIndexToModel(filaSeleccionada);
+
+        // Obtener el hogar seleccionado.
+        Hogar hogar = hogaresMostrados.get(indiceModelo);
+
+        String idHogar = hogar.getIdTexto();
+
+        // Validar los identificadores.
+        if (idHogar == null || idHogar.trim().isEmpty()
+                || idEncuestadorSeleccionado == null
+                || idEncuestadorSeleccionado.trim().isEmpty()) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "No fue posible identificar el hogar "
+                + "o el encuestador.",
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        // Confirmar antes de desasignar.
+        int confirmacion = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "¿Deseas desasignar la familia \""
+            + hogar.getNombreFamilia()
+            + "\" de este encuestador?\n\n"
+            + "El hogar seguirá registrado en la base de datos.",
+            "Confirmar desasignación",
+            javax.swing.JOptionPane.YES_NO_OPTION,
+            javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirmacion != javax.swing.JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        // Ejecutar la desasignación mediante el controlador.
+        controlador.desasignarHogar(
+            idEncuestadorSeleccionado,
+            idHogar
+        );
+    }//GEN-LAST:event_Btn_EliminarActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new FamiliasEncuestador().setVisible(true));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Asignar;
+    private javax.swing.JButton Btn_Eliminar;
+    private javax.swing.JButton Btn_Volver;
+    private javax.swing.JLabel Lbl_EncuestadorSeleccionado;
+    private javax.swing.JLabel Lbl_Rol;
+    private javax.swing.JLabel Lbl_TituloPantalla;
+    private javax.swing.JLabel Lbl_Ubicacion;
+    private javax.swing.JLabel Lbl__Usuario;
+    private javax.swing.JLabel Lbl_tituloEncuesta;
+    private javax.swing.JPanel Pnl_Centrado;
+    private javax.swing.JPanel Pnl_Contenido;
+    private javax.swing.JTable Tbl_Familias;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
+    // End of variables declaration//GEN-END:variables
+}

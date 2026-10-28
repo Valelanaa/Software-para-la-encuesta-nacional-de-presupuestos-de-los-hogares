@@ -93,8 +93,6 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        Lbl_Rol = new javax.swing.JLabel();
-        Lbl__Usuario = new javax.swing.JLabel();
         Pnl_Central = new javax.swing.JPanel();
         Pnl_Banner = new javax.swing.JPanel();
         Lbl_Titulo = new javax.swing.JLabel();
@@ -161,12 +159,6 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 .addComponent(jButton1)
                 .addContainerGap())
         );
-
-        Lbl_Rol.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl_Rol.setText("Encuestador");
-
-        Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl__Usuario.setText("Carlos Pérez Bayona");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -520,11 +512,9 @@ int fila = Tbl_Frecuencias.getSelectedRow();
     private javax.swing.JButton Btn_Editar;
     private javax.swing.JButton Btn_Eliminar;
     private javax.swing.JButton Btn_Volver;
-    private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
     private javax.swing.JLabel Lbl_Titulo;
     private javax.swing.JLabel Lbl_TituloPantalla;
-    private javax.swing.JLabel Lbl__Usuario;
     private javax.swing.JLabel Lbl__Usuario1;
     private javax.swing.JPanel Pnl_Banner;
     private javax.swing.JPanel Pnl_Central;
