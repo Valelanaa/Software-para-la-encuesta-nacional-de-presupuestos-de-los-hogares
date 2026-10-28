@@ -146,4 +146,138 @@ public class CatalogoDAO {
             Conexion.close(con);
         }
     }
+    
+    // ===== Gestión de frecuencias de compra =====
+
+    /**
+     * Crea una frecuencia nueva.
+     * El ID se calcula como el mayor existente más uno.
+     */
+    public boolean crearFrecuencia(String nombre) {
+        String sqlId = "SELECT NVL(MAX(TO_NUMBER(ID_FRECUENCIA_COMPRA)), 0) + 1 "
+                     + "FROM FRECUENCIA_COMPRA";
+
+        String sqlIns = "INSERT INTO FRECUENCIA_COMPRA "
+                      + "(ID_FRECUENCIA_COMPRA, NOMBRE_FRECUENCIA_COMPRA) "
+                      + "VALUES (?, ?)";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            return false;
+        }
+
+        try (PreparedStatement psId = con.prepareStatement(sqlId);
+             ResultSet rs = psId.executeQuery()) {
+
+            if (!rs.next()) {
+                return false;
+            }
+
+            int nuevoId = rs.getInt(1);
+
+            try (PreparedStatement ps = con.prepareStatement(sqlIns)) {
+                ps.setInt(1, nuevoId);
+                ps.setString(2, nombre.trim());
+
+                return ps.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al crear la frecuencia: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Modifica el nombre de una frecuencia existente.
+     */
+    public boolean editarFrecuencia(int idFrecuencia, String nombre) {
+        String sql = "UPDATE FRECUENCIA_COMPRA "
+                   + "SET NOMBRE_FRECUENCIA_COMPRA = ? "
+                   + "WHERE ID_FRECUENCIA_COMPRA = ?";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            return false;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nombre.trim());
+            ps.setInt(2, idFrecuencia);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al editar la frecuencia: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Comprueba si la frecuencia está siendo utilizada.
+     * Si no se puede comprobar, impide el borrado por seguridad.
+     */
+    public boolean frecuenciaEnUso(int idFrecuencia) {
+        String sql = "SELECT COUNT(*) "
+                   + "FROM CARACTERIZACION_COMPRA "
+                   + "WHERE ID_FRECUENCIA_COMPRA = ?";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            return true;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idFrecuencia);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al consultar el uso de la frecuencia: "
+                             + e.getMessage());
+            e.printStackTrace();
+            return true;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Elimina una frecuencia que no esté siendo utilizada.
+     */
+    public boolean eliminarFrecuencia(int idFrecuencia) {
+        String sql = "DELETE FROM FRECUENCIA_COMPRA "
+                   + "WHERE ID_FRECUENCIA_COMPRA = ?";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            return false;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idFrecuencia);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar la frecuencia: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
 }

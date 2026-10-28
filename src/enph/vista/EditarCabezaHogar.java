@@ -3,7 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.SesionEncuesta;
+import enph.modelo.EncuestaDAO;
+import enph.modelo.CabezaHogar;
+import enph.modelo.CabezaHogarDAO;
+import javax.swing.JOptionPane;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
  * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
@@ -14,21 +18,96 @@ public class EditarCabezaHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarCabezaHogar.class.getName());
 
+private SesionEncuesta sesion;
+private String idHogar;
+private String idCabezaHogar;
 
+
+/**
+ * Constructor sin parámetros.
+ * Se utiliza para abrir la ventana desde el diseñador
+ * o desde la gestión de hogares.
+ */
 public EditarCabezaHogar() {
-    this(null);   // para poder abrir la ventana sola desde el diseñador
+    this((String) null);
 }
 
-public EditarCabezaHogar(String idUsuario) {
+/**
+ * Abre la ventana para editar la cabeza de un hogar específico.
+ */
+public EditarCabezaHogar(String idHogar) {
     initComponents();
 
-    // Datos de quien inició sesión (banner de la ventana)
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    setLocationRelativeTo(null);// centra la ventana en la pantalla
+    this.sesion = null;
+    this.idHogar = idHogar;
+
+    configurarBanner();
+    cargarDatosCabezaHogar();
+
+    setLocationRelativeTo(null);
 }
 
+/**
+ * Abre la ventana conservando la sesión de la encuesta.
+ */
+public EditarCabezaHogar(SesionEncuesta sesion) {
+    initComponents();
 
+    this.sesion = sesion;
+    this.idHogar = (sesion != null)
+        ? String.valueOf(sesion.getIdHogar())
+        : null;
+
+    configurarBanner();
+    cargarDatosCabezaHogar();
+
+    setLocationRelativeTo(null);
+}
+
+private void configurarBanner() {
+    Lbl__Usuario1.setText(
+        enph.modelo.SesionUsuario.nombreParaMostrar()
+    );
+
+    Lbl_Rol1.setText(
+        enph.modelo.SesionUsuario.rolParaMostrar()
+    );
+}
+private void cargarDatosCabezaHogar() {
+
+    if (idHogar == null || idHogar.trim().isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "No se recibió el identificador del hogar.",
+            "Información",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    CabezaHogarDAO dao = new CabezaHogarDAO();
+    CabezaHogar cabeza = dao.buscarPorHogar(idHogar);
+
+    if (cabeza == null) {
+        JOptionPane.showMessageDialog(
+            this,
+            "No se encontró una cabeza de hogar para el hogar "
+                + idHogar + ".",
+            "Información",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+        return;
+    }
+
+    // Guardar el identificador para actualizar el registro correcto.
+    idCabezaHogar = cabeza.getIdCabezaHogar();
+
+    // Mostrar los datos en los campos de la ventana.
+    Txt_Nombre.setText(cabeza.getNombreCompleto());
+    Txt_Documento.setText(cabeza.getDocumentoIdentidad());
+    Txt_Correo.setText(cabeza.getCorreo());
+    Txt_Telefono.setText(cabeza.getTelefono());
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -294,13 +373,102 @@ public EditarCabezaHogar(String idUsuario) {
 
     private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
         // TODO add your handling code here:
-        new EditarHogar().setVisible(true); // vuelve a la pantalla de editar hogar 
-        dispose(); // cierra esta ventana
+if (sesion != null) {
+
+        // Si existe un grupo anterior, regresar a él.
+        if (sesion.hayAnterior()) {
+
+            sesion.retroceder();
+            new FrecuenciaGasto(sesion).setVisible(true);
+
+        } else {
+
+            // Si la encuesta está vacía, se elimina.
+            // Si ya tiene respuestas, se conserva.
+            new EncuestaDAO().eliminarEncuestaVacia(
+                sesion.getIdEncuesta()
+            );
+
+            new FamiliasRegistradas().setVisible(true);
+        }
+
+    } else {
+
+        // Si se abrió desde la gestión de hogares,
+        // regresar a EditarHogar.
+        new EditarHogar().setVisible(true);
+    }
+
+    // Cerrar la ventana actual.
+    this.dispose();
     }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
-        
+        if (idCabezaHogar == null || idCabezaHogar.trim().isEmpty()) {
+        JOptionPane.showMessageDialog(
+            this,
+            "No hay una cabeza de hogar cargada para actualizar.",
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
+
+    String nombre = Txt_Nombre.getText().trim();
+    String documento = Txt_Documento.getText().trim();
+    String correo = Txt_Correo.getText().trim();
+    String telefono = Txt_Telefono.getText().trim();
+
+    if (nombre.isEmpty() || documento.isEmpty()
+            || correo.isEmpty() || telefono.isEmpty()) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Completa todos los campos antes de guardar.",
+            "Campos obligatorios",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    CabezaHogarDAO dao = new CabezaHogarDAO();
+
+    if (dao.existeDocumento(documento, idCabezaHogar)) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Ya existe otra cabeza de hogar con ese documento.",
+            "Documento duplicado",
+            JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    CabezaHogar cabeza = new CabezaHogar();
+
+    cabeza.setIdCabezaHogar(idCabezaHogar);
+    cabeza.setIdHogar(idHogar);
+    cabeza.setNombreCompleto(nombre);
+    cabeza.setDocumentoIdentidad(documento);
+    cabeza.setCorreo(correo);
+    cabeza.setTelefono(telefono);
+
+    if (dao.actualizar(cabeza)) {
+        JOptionPane.showMessageDialog(
+            this,
+            "Los datos de la cabeza de hogar se actualizaron correctamente.",
+            "Actualización exitosa",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    } else {
+        JOptionPane.showMessageDialog(
+            this,
+            "No fue posible actualizar los datos. "
+                + "Revisa la conexión y los mensajes de la consola.",
+            "Error al guardar",
+            JOptionPane.ERROR_MESSAGE
+        );
+    }
        
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 

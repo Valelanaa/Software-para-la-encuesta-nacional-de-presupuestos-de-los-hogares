@@ -308,6 +308,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_frecuenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_frecuenciasActionPerformed
         // TODO add your handling code here:
+        new GestionFrecuencias().setVisible(true); // Muestra la pantalla de gestion de frecuencias
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_frecuenciasActionPerformed
 
     private void Btn_asignarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_asignarActionPerformed

@@ -3,7 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.SesionEncuesta;
+import enph.modelo.EncuestaDAO;
 public class CrearCabezaHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
@@ -11,6 +12,7 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
 
 // Almacena los datos del hogar mientras se completa el formulario.
 private enph.modelo.Hogar hogar;
+private SesionEncuesta sesion;
 
 // Constructor para abrir la ventana desde el diseñador de NetBeans.
 public CrearCabezaHogar() {
@@ -40,19 +42,35 @@ public CrearCabezaHogar(enph.modelo.Hogar hogar) {
     initComponents();
 
     this.hogar = hogar;
+    this.sesion = null;
 
-    // Datos de quien inició sesión.
     Lbl__Usuario1.setText(
-            enph.modelo.SesionUsuario.nombreParaMostrar()
+        enph.modelo.SesionUsuario.nombreParaMostrar()
     );
 
     Lbl_Rol1.setText(
-            enph.modelo.SesionUsuario.rolParaMostrar()
+        enph.modelo.SesionUsuario.rolParaMostrar()
     );
 
     setLocationRelativeTo(null);
 }
 
+public CrearCabezaHogar(SesionEncuesta sesion) {
+    initComponents();
+
+    this.sesion = sesion;
+    this.hogar = null;
+
+    Lbl__Usuario1.setText(
+        enph.modelo.SesionUsuario.nombreParaMostrar()
+    );
+
+    Lbl_Rol1.setText(
+        enph.modelo.SesionUsuario.rolParaMostrar()
+    );
+
+    setLocationRelativeTo(null);
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -318,15 +336,31 @@ public CrearCabezaHogar(enph.modelo.Hogar hogar) {
 
     private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
         // TODO add your handling code here:
-  
-    // Abrir CrearHogar conservando los datos ingresados.
-    CrearHogar pantalla = new CrearHogar(hogar);
+    if (sesion != null) {
 
-    pantalla.setLocationRelativeTo(null);
-    pantalla.setVisible(true);
+            // Si existe un grupo anterior, regresa a él.
+            if (sesion.hayAnterior()) {
+                sesion.retroceder();
+                new FrecuenciaGasto(sesion).setVisible(true);
 
-    // Cerrar la ventana actual.
-    this.dispose();
+            } else {
+                // Si la encuesta está vacía, se elimina.
+                // Si tiene respuestas, no se elimina.
+                new EncuestaDAO().eliminarEncuestaVacia(
+                    sesion.getIdEncuesta()
+                );
+
+                new FamiliasRegistradas().setVisible(true);
+            }
+
+        } else {
+
+            // Si se abrió desde CrearHogar,
+            // conserva el flujo actual.
+            new CrearHogar(hogar).setVisible(true);
+        }
+
+        this.dispose();
     }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed

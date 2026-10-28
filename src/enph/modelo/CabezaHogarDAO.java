@@ -20,37 +20,69 @@ public class CabezaHogarDAO {
     }
 
     public CabezaHogar buscarPorHogar(String idHogar) {
-        String sql = "SELECT ID_CABEZA_DE_HOGAR, ID_HOGAR, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, "
-                   + "CORREO_ELECTRONICO, TELEFONO FROM CABEZA_DE_HOGAR WHERE ID_HOGAR = ?";
 
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return null;
-        }
+    String sql = "SELECT ID_CABEZA_DE_HOGAR, ID_HOGAR, "
+               + "NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, "
+               + "CORREO_ELECTRONICO, TELEFONO "
+               + "FROM CABEZA_DE_HOGAR "
+               + "WHERE TRIM(ID_HOGAR) = TRIM(?)";
 
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, idHogar);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    CabezaHogar c = new CabezaHogar();
-                    c.setIdCabezaHogar(limpiar(rs.getString("ID_CABEZA_DE_HOGAR")));
-                    c.setIdHogar(limpiar(rs.getString("ID_HOGAR")));
-                    c.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
-                    c.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
-                    c.setCorreo(limpiar(rs.getString("CORREO_ELECTRONICO")));
-                    c.setTelefono(limpiar(rs.getString("TELEFONO")));
-                    return c;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al buscar la cabeza de hogar: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            Conexion.close(con);
-        }
+    Connection con = Conexion.init();
+
+    if (con == null) {
+        System.err.println("No se pudo conectar a la base de datos.");
         return null;
     }
+
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, idHogar);
+
+        try (ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                CabezaHogar c = new CabezaHogar();
+
+                c.setIdCabezaHogar(
+                    limpiar(rs.getString("ID_CABEZA_DE_HOGAR"))
+                );
+
+                c.setIdHogar(
+                    limpiar(rs.getString("ID_HOGAR"))
+                );
+
+                c.setNombreCompleto(
+                    limpiar(rs.getString("NOMBRE_COMPLETO"))
+                );
+
+                c.setDocumentoIdentidad(
+                    limpiar(rs.getString("DOCUMENTO_IDENTIDAD"))
+                );
+
+                c.setCorreo(
+                    limpiar(rs.getString("CORREO_ELECTRONICO"))
+                );
+
+                c.setTelefono(
+                    limpiar(rs.getString("TELEFONO"))
+                );
+
+                return c;
+            }
+        }
+
+    } catch (SQLException e) {
+        System.err.println(
+            "Error al buscar la cabeza de hogar: " + e.getMessage()
+        );
+        e.printStackTrace();
+
+    } finally {
+        Conexion.close(con);
+    }
+
+    return null;
+}
 
     public boolean existeDocumento(String documento, String idExcluido) {
         String sql = "SELECT COUNT(*) FROM CABEZA_DE_HOGAR "
