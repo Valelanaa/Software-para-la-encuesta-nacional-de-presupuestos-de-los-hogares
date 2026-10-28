@@ -66,4 +66,84 @@ public class CatalogoDAO {
         }
         return lista;
     }
+
+    // ===== Gestión de grupos de alimentos (pantalla GestionGruposAlimentos) =====
+
+    // Crea un grupo nuevo; el id es el mayor existente + 1 (igual que en UsuarioDAO).
+    public boolean crearGrupo(String nombre) {
+        String sqlId = "SELECT NVL(MAX(TO_NUMBER(ID_GRUPO_ALIMENTO)), 0) + 1 FROM GRUPO_ALIMENTO";
+        String sqlIns = "INSERT INTO GRUPO_ALIMENTO (ID_GRUPO_ALIMENTO, NOMBRE_GRUPO_ALIMENTO) VALUES (?, ?)";
+        Connection con = Conexion.init();
+        if (con == null) return false;
+        try (PreparedStatement psId = con.prepareStatement(sqlId);
+             ResultSet rs = psId.executeQuery()) {
+            rs.next();
+            int nuevoId = rs.getInt(1);
+            try (PreparedStatement ps = con.prepareStatement(sqlIns)) {
+                ps.setInt(1, nuevoId);
+                ps.setString(2, nombre);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al crear el grupo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    // Cambia el nombre de un grupo existente.
+    public boolean editarGrupo(int idGrupo, String nombre) {
+        String sql = "UPDATE GRUPO_ALIMENTO SET NOMBRE_GRUPO_ALIMENTO = ? WHERE ID_GRUPO_ALIMENTO = ?";
+        Connection con = Conexion.init();
+        if (con == null) return false;
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nombre);
+            ps.setInt(2, idGrupo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al editar el grupo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    // Indica si el grupo ya tiene respuestas guardadas en alguna encuesta.
+    public boolean grupoEnUso(int idGrupo) {
+        String sql = "SELECT COUNT(*) FROM CARACTERIZACION_COMPRA WHERE ID_GRUPO_ALIMENTO = ?";
+        Connection con = Conexion.init();
+        if (con == null) return true; // ante la duda no se permite borrar
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idGrupo);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al consultar el grupo: " + e.getMessage());
+            e.printStackTrace();
+            return true;
+        } finally {
+            Conexion.close(con);
+        }
+    }
+
+    // Elimina un grupo (solo debe llamarse si grupoEnUso devolvió false).
+    public boolean eliminarGrupo(int idGrupo) {
+        String sql = "DELETE FROM GRUPO_ALIMENTO WHERE ID_GRUPO_ALIMENTO = ?";
+        Connection con = Conexion.init();
+        if (con == null) return false;
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idGrupo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar el grupo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
 }

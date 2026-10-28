@@ -15,6 +15,9 @@ public class MenuAdmin extends javax.swing.JFrame {
     public MenuAdmin() {
 
         initComponents();
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
         setLocationRelativeTo(null);// centra la ventana en la pantalla
     }
@@ -299,6 +302,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_alimentosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_alimentosActionPerformed
         // TODO add your handling code here:
+        new GestionGruposAlimentos().setVisible(true); // Muestra la pantalla de gestion de grupos de alimentos
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_alimentosActionPerformed
 
     private void Btn_frecuenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_frecuenciasActionPerformed
