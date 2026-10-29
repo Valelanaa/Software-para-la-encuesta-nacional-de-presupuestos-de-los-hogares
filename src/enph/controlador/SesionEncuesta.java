@@ -8,6 +8,9 @@ import enph.modelo.CatalogoDAO;
 import enph.modelo.EncuestaDAO;
 import enph.modelo.ItemCatalogo;
 import java.util.List;
+import enph.modelo.CaracterizacionDAO;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Guarda el estado de una encuesta mientras el encuestador la va llenando.
@@ -76,7 +79,47 @@ public static SesionEncuesta editar(int idHogar) {
     sesion.edicion = true;
     return sesion;
 }
+    /**
+     * Reabre la encuesta existente del hogar pero solo con los grupos de
+     * alimentos que todavía no tienen respuesta. FrecuenciaGasto y
+     * PrimeraCondicion funcionan igual: solo recorren esa lista más corta.
+     * Si no falta ningún grupo, abre la encuesta completa para editarla.
+     */
+    public static SesionEncuesta completar(int idHogar) {
+        int idEncuesta = new EncuestaDAO().obtenerIdEncuesta(idHogar);
+        if (idEncuesta < 0) {
+            return null;
+        }
 
+        CatalogoDAO catalogoDAO = new CatalogoDAO();
+        List<ItemCatalogo> todos = catalogoDAO.listarGrupos();
+        List<ItemCatalogo> frecuencias = catalogoDAO.listarFrecuencias();
+
+        if (todos.isEmpty() || frecuencias.isEmpty()) {
+            return null;
+        }
+
+        Set<Integer> respondidos =
+                new CaracterizacionDAO().listarGruposRespondidos(idEncuesta);
+        if (respondidos == null) {
+            return null;
+        }
+
+        List<ItemCatalogo> faltantes = new ArrayList<>();
+        for (ItemCatalogo grupo : todos) {
+            if (!respondidos.contains(grupo.getId())) {
+                faltantes.add(grupo);
+            }
+        }
+
+        // Marcada como incompleta pero con todos los grupos respondidos:
+        // se abre completa en modo edición para que se pueda revisar.
+        if (faltantes.isEmpty()) {
+            return editar(idHogar);
+        }
+
+        return new SesionEncuesta(idHogar, idEncuesta, faltantes, frecuencias);
+    }
     //Datos de la encuesta
     public int getIdHogar() { return idHogar; }
     public int getIdEncuesta() { return idEncuesta; }

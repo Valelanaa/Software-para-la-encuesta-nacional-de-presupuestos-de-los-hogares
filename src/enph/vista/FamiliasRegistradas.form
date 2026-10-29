@@ -102,41 +102,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="Lbl_Rol">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="1"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Encuestador"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="Lbl__Usuario">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="1"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Carlos P&#xe9;rez Bayona"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="Btn_Volver">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="0"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Volver al men&#xfa;"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Btn_VolverActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="Btn_Volver2">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Bahnschrift" size="18" style="0"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value="Volver al men&#xfa;"/>
-      </Properties>
-    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>

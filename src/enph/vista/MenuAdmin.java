@@ -3,8 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import java.util.List;
-import java.util.ArrayList;
 
 public class MenuAdmin extends javax.swing.JFrame {
     
@@ -21,27 +19,7 @@ public class MenuAdmin extends javax.swing.JFrame {
 
         setLocationRelativeTo(null);// centra la ventana en la pantalla
     }
-
-// Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
-private void ajustarColumnas(javax.swing.JTable tabla) {
-    for (int col = 0; col < tabla.getColumnCount(); col++) {
-        javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
-
-        // Ancho del título
-        java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
-                .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
-        int ancho = comp.getPreferredSize().width;
-
-        // Ancho del dato más largo
-        for (int fila = 0; fila < tabla.getRowCount(); fila++) {
-            comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
-            ancho = Math.max(ancho, comp.getPreferredSize().width);
-        }
-
-        columna.setPreferredWidth(ancho + 20); // 20 px de margen
-    }
-}
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -186,7 +164,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Btn_asignar.addActionListener(this::Btn_asignarActionPerformed);
 
         Btn_encuestas.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        Btn_encuestas.setText("Gestión de Encuestas");
+        Btn_encuestas.setText("Informe de Encuestas");
         Btn_encuestas.addActionListener(this::Btn_encuestasActionPerformed);
 
         Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 36)); // NOI18N
@@ -312,6 +290,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_encuestasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_encuestasActionPerformed
         // TODO add your handling code here:
+        new InformeEncuesta().setVisible(true); // Muestra el menú de asignar familias
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_encuestasActionPerformed
 
     private void Btn_CerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CerrarSesionActionPerformed

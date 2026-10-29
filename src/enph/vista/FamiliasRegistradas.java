@@ -63,6 +63,8 @@ private List<Hogar> hogaresMostrados = new ArrayList<>();
         FamiliasController controlador =
             new FamiliasController(this);
 
+        configurarResaltadoIncompletas();
+
         controlador.cargarHogares();
     }
 
@@ -107,6 +109,36 @@ public void mostrarHogares(List<Hogar> hogares) {
     // Ajustar el ancho de las columnas
     ajustarColumnas(Tbl_Familias);
 }
+// Pinta de amarillo las familias cuya encuesta fue marcada como incompleta.
+private void configurarResaltadoIncompletas() {
+    javax.swing.table.DefaultTableCellRenderer renderizador =
+            new javax.swing.table.DefaultTableCellRenderer() {
+        @Override
+        public java.awt.Component getTableCellRendererComponent(
+                javax.swing.JTable tabla, Object valor, boolean seleccionada,
+                boolean foco, int fila, int columna) {
+
+            java.awt.Component celda = super.getTableCellRendererComponent(
+                    tabla, valor, seleccionada, foco, fila, columna);
+
+            if (seleccionada) {
+                celda.setBackground(tabla.getSelectionBackground());
+                celda.setForeground(tabla.getSelectionForeground());
+            } else {
+                int indice = tabla.convertRowIndexToModel(fila);
+                boolean incompleta = indice < hogaresMostrados.size()
+                        && hogaresMostrados.get(indice).isIncompleta();
+
+                celda.setBackground(incompleta
+                        ? new java.awt.Color(255, 224, 130)   // amarillo
+                        : java.awt.Color.WHITE);
+                celda.setForeground(java.awt.Color.BLACK);
+            }
+            return celda;
+        }
+    };
+    Tbl_Familias.setDefaultRenderer(Object.class, renderizador);
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -123,10 +155,6 @@ public void mostrarHogares(List<Hogar> hogares) {
         jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        Lbl_Rol = new javax.swing.JLabel();
-        Lbl__Usuario = new javax.swing.JLabel();
-        Btn_Volver = new javax.swing.JButton();
-        Btn_Volver2 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -193,19 +221,6 @@ public void mostrarHogares(List<Hogar> hogares) {
                 .addComponent(jButton1)
                 .addContainerGap())
         );
-
-        Lbl_Rol.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl_Rol.setText("Encuestador");
-
-        Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
-        Lbl__Usuario.setText("Carlos Pérez Bayona");
-
-        Btn_Volver.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        Btn_Volver.setText("Volver al menú");
-        Btn_Volver.addActionListener(this::Btn_VolverActionPerformed);
-
-        Btn_Volver2.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
-        Btn_Volver2.setText("Volver al menú");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -364,35 +379,98 @@ public void mostrarHogares(List<Hogar> hogares) {
      */
     
     private void Tbl_FamiliasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Tbl_FamiliasMouseClicked
-         int fila = Tbl_Familias.getSelectedRow();
-    // Clic en una zona vacía de la tabla: no hay nada que hacer
-    if (fila == -1 || fila >= hogaresMostrados.size()) {
-        return;
-    }
-    // El hogar de esa fila (la lista y la tabla tienen el mismo orden)
-    Hogar hogar = hogaresMostrados.get(fila);
+           int fila = Tbl_Familias.getSelectedRow();
+        // Clic en una zona vacía de la tabla: no hay nada que hacer
+        if (fila == -1 || fila >= hogaresMostrados.size()) {
+            return;
+        }
+        // El hogar de esa fila (la lista y la tabla tienen el mismo orden)
+        Hogar hogar = hogaresMostrados.get(fila);
         enph.modelo.EncuestaDAO encuestaDAO = new enph.modelo.EncuestaDAO();
 
-    if (encuestaDAO.hogarTieneEncuesta(hogar.getIdHogar())) {
-        // Familia con encuesta: se le pregunta al encuestador qué hacer
-        Object[] opciones = {"Editar", "Eliminar", "Cancelar"};
-        int opcion = javax.swing.JOptionPane.showOptionDialog(
-                this,
-                "Esta familia ya tiene una encuesta registrada.\n¿Qué desea hacer?",
-                "Encuesta existente",
-                javax.swing.JOptionPane.DEFAULT_OPTION,
-                javax.swing.JOptionPane.QUESTION_MESSAGE,
-                null, opciones, opciones[0]);
+        if (encuestaDAO.hogarTieneEncuesta(hogar.getIdHogar())) {
+            // Familia con encuesta: se le pregunta al encuestador qué hacer.
+            // Si el administrador la marcó como incompleta, aparece "Completar".
+            boolean incompleta = hogar.isIncompleta();
+            Object[] opciones = incompleta
+                    ? new Object[]{"Completar", "Editar", "Eliminar", "Cancelar"}
+                    : new Object[]{"Editar", "Eliminar", "Cancelar"};
+            String mensaje = incompleta
+                    ? "El administrador marcó esta encuesta como incompleta.\n"
+                      + "Faltan respuestas de algunos grupos de alimentos.\n¿Qué desea hacer?"
+                    : "Esta familia ya tiene una encuesta registrada.\n¿Qué desea hacer?";
 
-        if (opcion == 0) {   //Editar                   
-             // Abre la encuesta existente desde el grupo 1, con sus respuestas
+            int opcion = javax.swing.JOptionPane.showOptionDialog(
+                    this,
+                    mensaje,
+                    "Encuesta existente",
+                    javax.swing.JOptionPane.DEFAULT_OPTION,
+                    javax.swing.JOptionPane.QUESTION_MESSAGE,
+                    null, opciones, opciones[0]);
+
+            // Se compara por texto porque las posiciones cambian según las opciones
+            Object elegida = opcion >= 0 ? opciones[opcion] : null;
+
+            if ("Completar".equals(elegida) || "Editar".equals(elegida)) {
+                // Completar: solo los grupos sin respuesta. Editar: desde el grupo 1.
+                enph.controlador.SesionEncuesta sesion =
+                        "Completar".equals(elegida)
+                        ? enph.controlador.SesionEncuesta.completar(hogar.getIdHogar())
+                        : enph.controlador.SesionEncuesta.editar(hogar.getIdHogar());
+
+                if (sesion == null) {
+                    javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            "No se pudo abrir la encuesta.",
+                            "Error",
+                            javax.swing.JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                new FrecuenciaGasto(sesion).setVisible(true);
+                this.dispose();
+
+            } else if ("Eliminar".equals(elegida)) {
+                // Se pide confirmación porque el borrado no se puede deshacer
+                int confirmar = javax.swing.JOptionPane.showConfirmDialog(
+                        this,
+                        "Se borrará la encuesta y todas sus respuestas.\n"
+                        + "Esta acción no se puede deshacer. ¿Continuar?",
+                        "Confirmar eliminación",
+                        javax.swing.JOptionPane.YES_NO_OPTION,
+                        javax.swing.JOptionPane.WARNING_MESSAGE
+                );
+
+                if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
+                    if (encuestaDAO.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "Encuesta eliminada. Ya puede registrar una nueva."
+                        );
+                        // Recarga la tabla para quitar el resaltado
+                        new FamiliasController(this).cargarHogares();
+                    } else {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "No se pudo eliminar la encuesta.",
+                                "Error",
+                                javax.swing.JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                }
+            }
+            // Cancelar (o cerrar el cuadro): no hace nada
+
+        } else {
+            // Familia sin encuesta: se crea una nueva y se abre el primer grupo
             enph.controlador.SesionEncuesta sesion =
-                    enph.controlador.SesionEncuesta.editar(hogar.getIdHogar());
+                    enph.controlador.SesionEncuesta.iniciar(hogar.getIdHogar());
 
             if (sesion == null) {
                 javax.swing.JOptionPane.showMessageDialog(
                         this,
-                        "No se pudo abrir la encuesta para editarla.",
+                        "No se pudo iniciar la encuesta. Verifique la conexión y que existan grupos y frecuencias registrados.",
                         "Error",
                         javax.swing.JOptionPane.ERROR_MESSAGE
                 );
@@ -400,61 +478,9 @@ public void mostrarHogares(List<Hogar> hogares) {
             }
 
             new FrecuenciaGasto(sesion).setVisible(true);
-            this.dispose();
-
-        } else if (opcion == 1) {                // Eliminar
-            // Se pide confirmación porque el borrado no se puede deshacer
-            int confirmar = javax.swing.JOptionPane.showConfirmDialog(
-                    this,
-                    "Se borrará la encuesta y todas sus respuestas.\n"
-                    + "Esta acción no se puede deshacer. ¿Continuar?",
-                    "Confirmar eliminación",
-                    javax.swing.JOptionPane.YES_NO_OPTION,
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-
-            if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
-                // Borra las respuestas y la encuesta de ese hogar
-                if (encuestaDAO.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
-                    javax.swing.JOptionPane.showMessageDialog(
-                            this,
-                            "Encuesta eliminada. Ya puede registrar una nueva."
-                    );
-                } else {
-                    javax.swing.JOptionPane.showMessageDialog(
-                            this,
-                            "No se pudo eliminar la encuesta.",
-                            "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE
-                    );
-                }
-            }
+            this.dispose(); // cierra esta ventana al pasar a la encuesta
         }
-        // Cancelar (o cerrar el cuadro): no hace nada
-
-    } else {
-        // Familia sin encuesta: se crea una nueva y se abre el primer grupo
-        enph.controlador.SesionEncuesta sesion =
-                enph.controlador.SesionEncuesta.iniciar(hogar.getIdHogar());
-
-        if (sesion == null) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo iniciar la encuesta. Verifique la conexión y que existan grupos y frecuencias registrados.",
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
-
-        new FrecuenciaGasto(sesion).setVisible(true);
-        this.dispose(); // cierra esta ventana al pasar a la encuesta
-    }
     }//GEN-LAST:event_Tbl_FamiliasMouseClicked
-
-    private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_Volver1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_Volver1ActionPerformed
         // TODO add your handling code here:
@@ -488,14 +514,10 @@ public void mostrarHogares(List<Hogar> hogares) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Btn_Volver;
     private javax.swing.JButton Btn_Volver1;
-    private javax.swing.JButton Btn_Volver2;
-    private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
     private javax.swing.JLabel Lbl_TituloPantalla;
     private javax.swing.JLabel Lbl_Ubicacion;
-    private javax.swing.JLabel Lbl__Usuario;
     private javax.swing.JLabel Lbl__Usuario1;
     private javax.swing.JPanel Pnl_Centrado;
     private javax.swing.JPanel Pnl_Contenido;

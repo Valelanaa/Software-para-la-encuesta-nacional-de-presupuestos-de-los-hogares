@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Acceso a datos de la tabla HOGAR: lee las familias que se muestran
@@ -31,10 +33,14 @@ public class HogarDAO {
     public List<Hogar> listarHogares() throws SQLException {
 
         List<Hogar> hogares = new ArrayList<>();
-        String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
-                   + "DIR_DIRECCION, DIR_BARRIO "
-                   + "FROM HOGAR "
-                   + "ORDER BY NOMBRE_HOGAR";
+        String sql = "SELECT H.ID_HOGAR, H.NOMBRE_HOGAR, "
+            + "H.DIR_DIRECCION, H.DIR_BARRIO, "
+            + "CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
+            + "                  WHERE E.ID_HOGAR = H.ID_HOGAR "
+            + "                  AND E.INCOMPLETA = 1) "
+            + "     THEN 1 ELSE 0 END AS INCOMPLETA "
+            + "FROM HOGAR H "
+            + "ORDER BY H.NOMBRE_HOGAR";
 
         try (Connection con = Conexion.init()) {
             if (con == null) {
@@ -49,6 +55,7 @@ public class HogarDAO {
                         rs.getString("DIR_DIRECCION"),
                         rs.getString("DIR_BARRIO")
                     );
+                    hogar.setIncompleta(rs.getInt("INCOMPLETA") == 1);
                     hogares.add(hogar);
                 }
             }
@@ -469,4 +476,137 @@ public boolean insertarHogar(Hogar h) {
            }
        }
    }
+    /**
+     * Cuenta, por cada encuestador, cuántos de sus hogares ya tienen una
+     * encuesta registrada y cuántos todavía no.
+     * La llave del mapa es el ID_USUARIO; el valor es {realizadas, pendientes}.
+     * Los encuestadores sin hogares asignados no aparecen en el mapa.
+     */
+    public Map<String, int[]> contarEncuestasPorEncuestador() throws SQLException {
+
+        Map<String, int[]> conteos = new HashMap<>();
+
+        String sql = "SELECT H.ID_USUARIO, "
+                   + "SUM(CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
+                   + "                      WHERE E.ID_HOGAR = H.ID_HOGAR) "
+                   + "         THEN 1 ELSE 0 END) AS REALIZADAS, "
+                   + "SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM ENCUESTA E "
+                   + "                          WHERE E.ID_HOGAR = H.ID_HOGAR) "
+                   + "         THEN 1 ELSE 0 END) AS PENDIENTES "
+                   + "FROM HOGAR H "
+                   + "WHERE H.ID_USUARIO IS NOT NULL "
+                   + "GROUP BY H.ID_USUARIO";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    conteos.put(
+                        limpiar(rs.getString("ID_USUARIO")),
+                        new int[]{ rs.getInt("REALIZADAS"), rs.getInt("PENDIENTES") }
+                    );
+                }
+            }
+        }
+        return conteos;
+    }
+    /**
+     * Familias asignadas a un encuestador con el estado de su encuesta.
+     * Cada fila es {nombre de la familia, "Realizada" o "Pendiente", id del hogar}.
+     * Es "Realizada" si el hogar tiene al menos un registro en ENCUESTA.
+     */
+    public List<String[]> listarEstadoEncuestasPorEncuestador(
+            String idEncuestador) throws SQLException {
+
+        List<String[]> filas = new ArrayList<>();
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new SQLException("No se ha seleccionado un encuestador.");
+        }
+
+        String sql = "SELECT H.NOMBRE_HOGAR, "
+                   + "CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
+                   + "                  WHERE E.ID_HOGAR = H.ID_HOGAR) "
+                   + "     THEN 'Realizada' ELSE 'Pendiente' END AS ESTADO, "
+                   + "H.ID_HOGAR "
+                   + "FROM HOGAR H "
+                   + "WHERE H.ID_USUARIO = ? "
+                   + "ORDER BY H.NOMBRE_HOGAR";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, idEncuestador.trim());
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        filas.add(new String[]{
+                            limpiar(rs.getString("NOMBRE_HOGAR")),
+                            rs.getString("ESTADO"),
+                            limpiar(rs.getString("ID_HOGAR"))
+                        });
+                    }
+                }
+            }
+        }
+        return filas;
+    }
+        /**
+     * Datos de una familia y de su encuesta más reciente.
+     * Devuelve {nombre, dirección, barrio, ciudad, fechaInicio, fechaFin}.
+     * Las fechas son null si el hogar todavía no tiene encuesta.
+     * Devuelve null si el hogar no existe.
+     */
+    public String[] buscarDetalleEncuesta(String idHogar) throws SQLException {
+
+        String sql = "SELECT H.NOMBRE_HOGAR, H.DIR_DIRECCION, H.DIR_BARRIO, "
+                   + "C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO, "
+                   + "(SELECT TO_CHAR(E.FECHA_INICIO, 'DD/MM/YYYY HH24:MI') "
+                   + " FROM ENCUESTA E WHERE E.ID_HOGAR = H.ID_HOGAR "
+                   + " AND TO_NUMBER(E.ID_ENCUESTA) = (SELECT MAX(TO_NUMBER(E2.ID_ENCUESTA)) "
+                   + "     FROM ENCUESTA E2 WHERE E2.ID_HOGAR = H.ID_HOGAR)), "
+                   + "(SELECT TO_CHAR(E.FECHA_FIN, 'DD/MM/YYYY HH24:MI') "
+                   + " FROM ENCUESTA E WHERE E.ID_HOGAR = H.ID_HOGAR "
+                   + " AND TO_NUMBER(E.ID_ENCUESTA) = (SELECT MAX(TO_NUMBER(E2.ID_ENCUESTA)) "
+                   + "     FROM ENCUESTA E2 WHERE E2.ID_HOGAR = H.ID_HOGAR)) "
+                   + "FROM HOGAR H "
+                   + "JOIN CIUDAD C ON C.ID_CIUDAD = H.ID_CIUDAD "
+                   + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
+                   + "WHERE H.ID_HOGAR = ?";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, idHogar);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new String[]{
+                            limpiar(rs.getString(1)),
+                            limpiar(rs.getString(2)),
+                            limpiar(rs.getString(3)),
+                            limpiar(rs.getString(4)),
+                            rs.getString(5),   // null si no hay encuesta
+                            rs.getString(6)
+                        };
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

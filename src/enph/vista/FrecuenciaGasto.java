@@ -64,6 +64,8 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         } else {
             // Era el último grupo: se registra la fecha de fin y se vuelve a la lista de familias
             new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
+            new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
+            new EncuestaDAO().quitarMarcaIncompleta(sesion.getIdEncuesta());
             javax.swing.JOptionPane.showMessageDialog(
                     actual,
                     "Se han completado los " + sesion.getTotalGrupos() + " grupos de alimentos."
@@ -108,6 +110,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         Btt_Cancelar = new javax.swing.JButton();
         Cmb_Frecuencia = new javax.swing.JComboBox<>();
         Lbl_Contador = new javax.swing.JLabel();
+        Btt_CerrarEncuesta = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -182,6 +185,12 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         Lbl_Contador.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         Lbl_Contador.setText("1/25");
 
+        Btt_CerrarEncuesta.setBackground(new java.awt.Color(234, 153, 153));
+        Btt_CerrarEncuesta.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btt_CerrarEncuesta.setForeground(new java.awt.Color(207, 42, 39));
+        Btt_CerrarEncuesta.setText("Cerrar encuesta");
+        Btt_CerrarEncuesta.addActionListener(this::Btt_CerrarEncuestaActionPerformed);
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
@@ -192,13 +201,15 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                .addGap(25, 25, 25)
-                                .addComponent(Lbl_GrupoAlimento))
-                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
                                 .addGap(79, 79, 79)
                                 .addComponent(Lbl_Frecuencia)
                                 .addGap(18, 18, 18)
-                                .addComponent(Cmb_Frecuencia, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(Cmb_Frecuencia, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                .addGap(25, 25, 25)
+                                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(Lbl_GrupoAlimento)
+                                    .addComponent(Btt_CerrarEncuesta))))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -226,7 +237,8 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btt_Continuar)
-                    .addComponent(Btt_Cancelar))
+                    .addComponent(Btt_Cancelar)
+                    .addComponent(Btt_CerrarEncuesta))
                 .addContainerGap())
         );
 
@@ -323,6 +335,25 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_Cmb_FrecuenciaActionPerformed
 
+    private void Btt_CerrarEncuestaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btt_CerrarEncuestaActionPerformed
+        // TODO add your handling code here:
+        // Registra la fecha de fin de la encuesta.
+        // Si no hay ninguna respuesta guardada, la encuesta se elimina en lugar de finalizarse.
+        new EncuestaDAO().eliminarEncuestaVacia(sesion.getIdEncuesta());
+        new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "La encuesta se marcó como finalizada.",
+                "Encuesta finalizada",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE
+        );
+
+        // Vuelve a la lista de familias.
+        new FamiliasRegistradas().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_Btt_CerrarEncuestaActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -330,6 +361,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btt_Cancelar;
+    private javax.swing.JButton Btt_CerrarEncuesta;
     private javax.swing.JButton Btt_Continuar;
     private javax.swing.JComboBox<String> Cmb_Frecuencia;
     private javax.swing.JLabel Lbl_Contador;

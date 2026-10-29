@@ -7,6 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CaracterizacionDAO {
 
@@ -179,5 +183,89 @@ public class CaracterizacionDAO {
         }
 
         return null;
+    }
+        /**
+     * Respuestas de la encuesta más reciente de un hogar.
+     * Cada fila es {alimento, frecuencia, valor de la última compra,
+     * volvería a comprar}, ordenada por grupo de alimento.
+     * Devuelve una lista vacía si el hogar no tiene encuesta o respuestas.
+     */
+    public List<String[]> listarRespuestasPorHogar(String idHogar) throws SQLException {
+
+        List<String[]> filas = new ArrayList<>();
+
+        String sql = "SELECT G.NOMBRE_GRUPO_ALIMENTO, F.NOMBRE_FRECUENCIA_COMPRA, "
+                   + "C.VALOR_ULTIMA_COMPRA, C.INTENCION_DE_COMPRA "
+                   + "FROM CARACTERIZACION_COMPRA C "
+                   + "JOIN GRUPO_ALIMENTO G ON G.ID_GRUPO_ALIMENTO = C.ID_GRUPO_ALIMENTO "
+                   + "JOIN FRECUENCIA_COMPRA F ON F.ID_FRECUENCIA_COMPRA = C.ID_FRECUENCIA_COMPRA "
+                   + "WHERE TO_NUMBER(C.ID_ENCUESTA) = "
+                   + "  (SELECT MAX(TO_NUMBER(E.ID_ENCUESTA)) FROM ENCUESTA E "
+                   + "   WHERE E.ID_HOGAR = ?) "
+                   + "ORDER BY G.ID_GRUPO_ALIMENTO";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, idHogar.trim());
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+
+                        // Valor: sin ceros sobrantes; "-" si no aplica.
+                        BigDecimal valor = rs.getBigDecimal(3);
+                        String textoValor = (valor == null)
+                                ? "-" : valor.stripTrailingZeros().toPlainString();
+
+                        // Intención: 1 = Sí, 0 = No, null = no aplica.
+                        int intencion = rs.getInt(4);
+                        String textoIntencion = rs.wasNull()
+                                ? "-" : (intencion == 1 ? "Sí" : "No");
+
+                        filas.add(new String[]{
+                            rs.getString(1) == null ? "" : rs.getString(1).trim(),
+                            rs.getString(2) == null ? "" : rs.getString(2).trim(),
+                            textoValor,
+                            textoIntencion
+                        });
+                    }
+                }
+            }
+        }
+        return filas;
+    }
+        /**
+     * IDs de los grupos de alimentos que ya tienen respuesta en la encuesta.
+     * Devuelve null si falla la consulta.
+     */
+    public Set<Integer> listarGruposRespondidos(int idEncuesta) {
+        String sql = "SELECT ID_GRUPO_ALIMENTO FROM CARACTERIZACION_COMPRA "
+                   + "WHERE ID_ENCUESTA = ?";
+
+        Connection con = Conexion.init();
+        if (con == null) return null;
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idEncuesta);
+
+            Set<Integer> ids = new HashSet<>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getInt(1));
+                }
+            }
+            return ids;
+
+        } catch (SQLException e) {
+            System.err.println("Error al consultar los grupos respondidos: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        } finally {
+            Conexion.close(con);
+        }
     }
 }

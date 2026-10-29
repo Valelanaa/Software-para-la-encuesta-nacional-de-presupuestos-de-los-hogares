@@ -207,4 +207,32 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
             return rs.next() ? rs.getInt(1) : 1;
         }
     }
+        /** Marca la encuesta como incompleta (lo hace el administrador). */
+    public boolean marcarIncompleta(int idEncuesta) {
+        return actualizarMarca(idEncuesta, 1);
+    }
+
+    /** Quita la marca de incompleta (al terminar los grupos que faltaban). */
+    public void quitarMarcaIncompleta(int idEncuesta) {
+        actualizarMarca(idEncuesta, 0);
+    }
+
+    private boolean actualizarMarca(int idEncuesta, int valor) {
+        String sql = "UPDATE ENCUESTA SET INCOMPLETA = ? WHERE ID_ENCUESTA = ?";
+
+        Connection con = Conexion.init();
+        if (con == null) return false;
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, valor);
+            ps.setInt(2, idEncuesta);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar la marca de incompleta: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            Conexion.close(con);
+        }
+    }
 }

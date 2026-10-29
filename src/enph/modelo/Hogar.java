@@ -14,6 +14,7 @@ public class Hogar {
     private String idCiudad;      // ID_CIUDAD
     private String ciudad;        // "Ciudad - Departamento"
     private String nombreCabeza;  // nombre de la cabeza de hogar
+    private boolean incompleta; // true si el administrador marcó su encuesta como incompleta
 
     public Hogar(int idHogar, String nombreFamilia, String direccion, String barrio) {
         this.idHogar = idHogar;
@@ -40,7 +41,8 @@ public class Hogar {
     public String getIdCiudad() { return idCiudad; }
     public String getCiudad() { return ciudad; }
     public String getNombreCabeza() { return nombreCabeza; }
-
+    public boolean isIncompleta() { return incompleta; }
+    public void setIncompleta(boolean incompleta) { this.incompleta = incompleta; }
     public void setIdTexto(String idTexto) { this.idTexto = idTexto; }
     public void setNombreFamilia(String nombreFamilia) { this.nombreFamilia = nombreFamilia; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
