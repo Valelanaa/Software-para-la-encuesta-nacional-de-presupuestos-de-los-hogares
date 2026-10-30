@@ -324,6 +324,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
         // TODO add your handling code here:
+    // TODO add your handling code here:
         int fila = Tbl_Hogares.getSelectedRow();
         if (fila < 0) {
             javax.swing.JOptionPane.showMessageDialog(this,
@@ -334,10 +335,19 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         int indice = Tbl_Hogares.convertRowIndexToModel(fila);
         enph.modelo.Hogar seleccionado = hogaresEnTabla.get(indice);
 
+        // Un hogar con encuesta no se elimina: se perdería información histórica
+        if (new enph.modelo.EncuestaDAO().hogarTieneEncuesta(seleccionado.getIdHogar())) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "El hogar \"" + seleccionado.getNombreFamilia() + "\" ya tiene una encuesta registrada,\n"
+                    + "por eso no se puede eliminar.",
+                    "Acción no permitida", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         // Confirmación antes de borrar: la acción no se puede deshacer
         int opcion = javax.swing.JOptionPane.showConfirmDialog(this,
                 "¿Seguro que desea eliminar el hogar \"" + seleccionado.getNombreFamilia() + "\"?\n"
-                + "También se eliminarán su cabeza de hogar, sus encuestas y sus respuestas.\n"
+                + "También se eliminará su cabeza de hogar.\n"
                 + "Esta acción no se puede deshacer.",
                 "Eliminar hogar", javax.swing.JOptionPane.YES_NO_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE);
