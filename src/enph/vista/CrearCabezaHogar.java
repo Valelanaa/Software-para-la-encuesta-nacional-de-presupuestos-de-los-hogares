@@ -365,6 +365,53 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
+        // Solo aplica cuando se llegó desde CrearHogar con los datos del hogar.
+        if (hogar == null) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No hay datos del hogar. Vuelve a la pantalla anterior.",
+                    "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String nombre = Txt_Nombre.getText().trim();
+        String documento = Txt_Documento.getText().trim();
+        String correo = Txt_Correo.getText().trim();
+        String telefono = Txt_Telefono.getText().trim();
+
+        if (nombre.isEmpty() || documento.isEmpty()
+                || correo.isEmpty() || telefono.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Completa todos los campos antes de guardar.",
+                    "Campos obligatorios", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // "-1" no coincide con ningún ID: busca el documento en todas las cabezas.
+        if (new enph.modelo.CabezaHogarDAO().existeDocumento(documento, "-1")) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Ya existe una cabeza de hogar con ese documento.",
+                    "Documento duplicado", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        enph.modelo.CabezaHogar cabeza = new enph.modelo.CabezaHogar();
+        cabeza.setNombreCompleto(nombre);
+        cabeza.setDocumentoIdentidad(documento);
+        cabeza.setCorreo(correo);
+        cabeza.setTelefono(telefono);
+
+        if (new enph.modelo.HogarDAO().insertarHogarConCabeza(hogar, cabeza)) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "El hogar y su cabeza de hogar se crearon correctamente.",
+                    "Hogar creado", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            new GestionHogar().setVisible(true); // vuelve a la lista de hogares
+            dispose();
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "No fue posible crear el hogar. "
+                    + "Revisa la conexión y los mensajes de la consola.",
+                    "Error al guardar", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
         
        
     }//GEN-LAST:event_Btn_GuardarActionPerformed

@@ -609,4 +609,70 @@ public boolean insertarHogar(Hogar h) {
         }
         return null;
     }
+    /**
+     * Crea el hogar y su cabeza de hogar en una sola transacción.
+     * Si falla cualquiera de los dos inserts no se guarda nada.
+     * Los IDs se calculan con MAX + 1, igual que USUARIO y ENCUESTA.
+     */
+    public boolean insertarHogarConCabeza(Hogar h, CabezaHogar c) {
+
+        String sqlHogar = "INSERT INTO HOGAR "
+                        + "(ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_DIRECCION, DIR_BARRIO) "
+                        + "VALUES (?, ?, ?, ?, ?)";
+
+        String sqlCabeza = "INSERT INTO CABEZA_DE_HOGAR "
+                         + "(ID_CABEZA_DE_HOGAR, ID_HOGAR, NOMBRE_COMPLETO, "
+                         + "DOCUMENTO_IDENTIDAD, CORREO_ELECTRONICO, TELEFONO) "
+                         + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+            con.setAutoCommit(false);
+
+            // 1. Calcular el ID del hogar e insertarlo.
+            String idHogar = String.valueOf(
+                    EncuestaDAO.siguienteId(con, "HOGAR", "ID_HOGAR"));
+
+            try (PreparedStatement ps = con.prepareStatement(sqlHogar)) {
+                ps.setString(1, idHogar);
+                ps.setString(2, h.getIdCiudad());
+                ps.setString(3, h.getNombreFamilia());
+                ps.setString(4, h.getDireccion());
+                ps.setString(5, h.getBarrio());
+                ps.executeUpdate();
+            }
+
+            // 2. Calcular el ID de la cabeza e insertarla asociada a ese hogar.
+            String idCabeza = String.valueOf(
+                    EncuestaDAO.siguienteId(con, "CABEZA_DE_HOGAR", "ID_CABEZA_DE_HOGAR"));
+
+            try (PreparedStatement ps = con.prepareStatement(sqlCabeza)) {
+                ps.setString(1, idCabeza);
+                ps.setString(2, idHogar);
+                ps.setString(3, c.getNombreCompleto());
+                ps.setString(4, c.getDocumentoIdentidad());
+                ps.setString(5, c.getCorreo());
+                ps.setString(6, c.getTelefono());
+                ps.executeUpdate();
+            }
+
+            con.commit();
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error al crear el hogar y su cabeza: " + e.getMessage());
+            e.printStackTrace();
+            try { con.rollback(); } catch (SQLException ignorada) { }
+            return false;
+
+        } finally {
+            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+            Conexion.close(con);
+        }
+    }
 }
