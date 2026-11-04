@@ -13,6 +13,10 @@ import java.sql.Statement;
 
 public class EncuestaDAO {
 
+    // Valores de ENCUESTA.ESTADO (VARCHAR2(1)). Cámbialos aquí si en tu base usas otras letras.
+    public static final String ESTADO_COMPLETA = "C";
+    public static final String ESTADO_INCOMPLETA = "I";
+
     /**
      * Indica si el hogar ya tiene al menos una encuesta registrada.
      * Lo usa FamiliasRegistradas para decidir entre iniciar una encuesta
@@ -90,7 +94,11 @@ public int obtenerIdEncuesta(int idHogar) {
  *  Se hace en una transacción: o se borra todo, o no se borra nada.
  */
 public boolean eliminarEncuestasDelHogar(int idHogar) {
-    // Primero las respuestas (tabla hija), porque dependen de la encuesta
+    // Primero el detalle de cada respuesta (valor e intención de compra)
+    String sqlDetalle = "DELETE FROM DETALLE_COMPRA WHERE ID_CARACTERIZACION IN "
+            + "(SELECT ID_CARACTERIZACION FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
+            + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?))";
+    // Luego las respuestas (tabla hija), porque dependen de la encuesta
     String sqlRespuestas = "DELETE FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
             + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?)";
     // Después la encuesta (tabla padre)
@@ -100,10 +108,13 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
     if (con == null) return false;
 
     try {
-        // Desactiva el guardado automático para agrupar los dos DELETE
+        // Desactiva el guardado automático para agrupar los DELETE
         con.setAutoCommit(false);
-        try (PreparedStatement a = con.prepareStatement(sqlRespuestas);
+        try (PreparedStatement d = con.prepareStatement(sqlDetalle);
+             PreparedStatement a = con.prepareStatement(sqlRespuestas);
              PreparedStatement b = con.prepareStatement(sqlEncuesta)) {
+            d.setInt(1, idHogar);
+            d.executeUpdate();
             a.setInt(1, idHogar);
             a.executeUpdate();
             b.setInt(1, idHogar);
@@ -126,8 +137,8 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
      * Devuelve el id generado, o -1 si falla.
      */
     public int crearEncuesta(int idHogar) {
-        String sql = "INSERT INTO ENCUESTA (ID_ENCUESTA, FECHA_INICIO, FECHA_FIN, ID_HOGAR) "
-                   + "VALUES (?, SYSDATE, SYSDATE, ?)";
+        String sql = "INSERT INTO ENCUESTA (ID_ENCUESTA, FECHA_INICIO, FECHA_FIN, ID_HOGAR, ESTADO) "
+                   + "VALUES (?, SYSDATE, SYSDATE, ?, ?)";
 
         Connection con = Conexion.init();
         if (con == null) {
@@ -139,6 +150,7 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
             int idEncuesta = siguienteId(con, "ENCUESTA", "ID_ENCUESTA");
             ps.setInt(1, idEncuesta);
             ps.setInt(2, idHogar);
+            ps.setString(3, ESTADO_COMPLETA); // ESTADO es obligatorio en la tabla
             ps.executeUpdate();
             return idEncuesta;
 
@@ -209,22 +221,22 @@ public boolean eliminarEncuestasDelHogar(int idHogar) {
     }
         /** Marca la encuesta como incompleta (lo hace el administrador). */
     public boolean marcarIncompleta(int idEncuesta) {
-        return actualizarMarca(idEncuesta, 1);
+        return actualizarMarca(idEncuesta, ESTADO_INCOMPLETA);
     }
 
     /** Quita la marca de incompleta (al terminar los grupos que faltaban). */
     public void quitarMarcaIncompleta(int idEncuesta) {
-        actualizarMarca(idEncuesta, 0);
+        actualizarMarca(idEncuesta, ESTADO_COMPLETA);
     }
 
-    private boolean actualizarMarca(int idEncuesta, int valor) {
-        String sql = "UPDATE ENCUESTA SET INCOMPLETA = ? WHERE ID_ENCUESTA = ?";
+    private boolean actualizarMarca(int idEncuesta, String estado) {
+        String sql = "UPDATE ENCUESTA SET ESTADO = ? WHERE ID_ENCUESTA = ?";
 
         Connection con = Conexion.init();
         if (con == null) return false;
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, valor);
+            ps.setString(1, estado);
             ps.setInt(2, idEncuesta);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

@@ -21,6 +21,7 @@ public class SesionUsuario {
     // Se llama al cerrar sesión, para que no quede nadie guardado
     public static void cerrar() {
         actual = null;
+        Conexion.usarGeneral(); // vuelve al usuario general de la base de datos
     }
 
     // Devuelve el usuario que inició sesión, o null si no hay sesión

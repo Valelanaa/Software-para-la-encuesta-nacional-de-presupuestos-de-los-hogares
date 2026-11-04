@@ -424,9 +424,11 @@ private void cargarUsuario(String idUsuario) {
             ? usuarioEditado.getIdCiudad()
             : (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "");
 
+    boolean esEncuestador = "ENCUESTADOR".equalsIgnoreCase(rol);
+
     // Validaciones antes de tocar la base de datos
-    if (nombre.isEmpty() || cedula.isEmpty() || telefono.isEmpty()
-            || contrasenna.isEmpty() || idCiudad.isEmpty()) {
+    if (nombre.isEmpty() || cedula.isEmpty() || contrasenna.isEmpty()
+        || (esEncuestador && (telefono.isEmpty() || idCiudad.isEmpty()))) {
         javax.swing.JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.",
                 "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;

@@ -34,10 +34,10 @@ public class HogarDAO {
 
         List<Hogar> hogares = new ArrayList<>();
         String sql = "SELECT H.ID_HOGAR, H.NOMBRE_HOGAR, "
-            + "H.DIR_DIRECCION, H.DIR_BARRIO, "
+            + "H.DIR_NUMERO, H.DIR_BARRIO, "
             + "CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
             + "                  WHERE E.ID_HOGAR = H.ID_HOGAR "
-            + "                  AND E.INCOMPLETA = 1) "
+            + "                  AND E.ESTADO = '" + EncuestaDAO.ESTADO_INCOMPLETA + "') "
             + "     THEN 1 ELSE 0 END AS INCOMPLETA "
             + "FROM HOGAR H "
             + "ORDER BY H.NOMBRE_HOGAR";
@@ -52,7 +52,7 @@ public class HogarDAO {
                     Hogar hogar = new Hogar(
                         rs.getInt("ID_HOGAR"),
                         rs.getString("NOMBRE_HOGAR"),
-                        rs.getString("DIR_DIRECCION"),
+                        rs.getString("DIR_NUMERO"),
                         rs.getString("DIR_BARRIO")
                     );
                     hogar.setIncompleta(rs.getInt("INCOMPLETA") == 1);
@@ -68,7 +68,7 @@ public class HogarDAO {
      * ordenados por nombre. Es la que usa la tabla de GestionHogar.
      */
     public List<Hogar> listarHogaresConDetalle() {
-        String sql = "SELECT H.ID_HOGAR, H.ID_CIUDAD, H.NOMBRE_HOGAR, H.DIR_DIRECCION, H.DIR_BARRIO, "
+        String sql = "SELECT H.ID_HOGAR, H.ID_CIUDAD, H.NOMBRE_HOGAR, H.DIR_NUMERO, H.DIR_BARRIO, "
                    + "C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO, "
                    + "(SELECT MIN(CH.NOMBRE_COMPLETO) FROM CABEZA_DE_HOGAR CH WHERE CH.ID_HOGAR = H.ID_HOGAR) "
                    + "FROM HOGAR H "
@@ -108,7 +108,7 @@ public class HogarDAO {
 
     // Trae los datos de un hogar (incluida su ciudad) para EditarHogar
     public Hogar buscarPorId(String idHogar) {
-        String sql = "SELECT ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_DIRECCION, DIR_BARRIO "
+        String sql = "SELECT ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO "
                    + "FROM HOGAR WHERE ID_HOGAR = ?";
 
         Connection con = Conexion.init();
@@ -123,7 +123,7 @@ public class HogarDAO {
                 if (rs.next()) {
                     String id = limpiar(rs.getString("ID_HOGAR"));
                     Hogar h = new Hogar(idNumerico(id), limpiar(rs.getString("NOMBRE_HOGAR")),
-                            limpiar(rs.getString("DIR_DIRECCION")), limpiar(rs.getString("DIR_BARRIO")));
+                            limpiar(rs.getString("DIR_NUMERO")), limpiar(rs.getString("DIR_BARRIO")));
                     h.setIdTexto(id);
                     h.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
                     return h;
@@ -147,7 +147,7 @@ public class HogarDAO {
 public boolean insertarHogar(Hogar h) {
 
     String sql = "INSERT INTO HOGAR "
-               + "(ID_CIUDAD, NOMBRE_HOGAR, DIR_DIRECCION, DIR_BARRIO) "
+               + "(ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO) "
                + "VALUES (?, ?, ?, ?)";
 
     Connection con = Conexion.init();
@@ -178,7 +178,7 @@ public boolean insertarHogar(Hogar h) {
     
     // Actualiza ciudad, nombre, dirección y barrio del hogar
     public boolean actualizarHogar(Hogar h) {
-        String sql = "UPDATE HOGAR SET ID_CIUDAD = ?, NOMBRE_HOGAR = ?, DIR_DIRECCION = ?, DIR_BARRIO = ? "
+        String sql = "UPDATE HOGAR SET ID_CIUDAD = ?, NOMBRE_HOGAR = ?, DIR_NUMERO = ?, DIR_BARRIO = ? "
                    + "WHERE ID_HOGAR = ?";
 
         Connection con = Conexion.init();
@@ -210,6 +210,9 @@ public boolean insertarHogar(Hogar h) {
      */
     public boolean eliminarHogar(String idHogar) {
         // Primero las tablas hijas y al final el hogar (por las llaves foráneas)
+        String sqlDetalle    = "DELETE FROM DETALLE_COMPRA WHERE ID_CARACTERIZACION IN "
+                             + "(SELECT ID_CARACTERIZACION FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
+                             + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?))";
         String sqlRespuestas = "DELETE FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
                              + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?)";
         String sqlEncuestas  = "DELETE FROM ENCUESTA WHERE ID_HOGAR = ?";
@@ -223,8 +226,8 @@ public boolean insertarHogar(Hogar h) {
         }
 
         try {
-            con.setAutoCommit(false); // agrupa los 4 DELETE en una sola transacción
-            String[] consultas = {sqlRespuestas, sqlEncuestas, sqlCabeza, sqlHogar};
+            con.setAutoCommit(false); // agrupa los 5 DELETE en una sola transacción
+            String[] consultas = {sqlDetalle, sqlRespuestas, sqlEncuestas, sqlCabeza, sqlHogar};
             int filasHogar = 0;
             for (String sql : consultas) {
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -256,7 +259,7 @@ public boolean insertarHogar(Hogar h) {
     * Solo actualiza hogares que todavía no tienen encuestador asignado.
     * Si alguno no puede asignarse, se revierte toda la operación.
     *
-    * @param idEncuestador ID del usuario que tiene el rol de encuestador.
+    * @param idEncuestador ID_ENCUESTADOR de la tabla ENCUESTADOR.
     * @param idsHogares Lista de identificadores de los hogares seleccionados.
     * @throws SQLException Si ocurre un error al asignar los hogares.
     */
@@ -274,9 +277,9 @@ public boolean insertarHogar(Hogar h) {
        }
 
        String sql = "UPDATE HOGAR "
-                  + "SET ID_USUARIO = ? "
+                  + "SET ID_ENCUESTADOR = ? "
                   + "WHERE ID_HOGAR = ? "
-                  + "AND ID_USUARIO IS NULL";
+                  + "AND ID_ENCUESTADOR IS NULL";
 
        try (Connection con = Conexion.init()) {
 
@@ -352,9 +355,9 @@ public boolean insertarHogar(Hogar h) {
        List<Hogar> hogares = new ArrayList<>();
 
        String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
-                  + "DIR_DIRECCION, DIR_BARRIO "
+                  + "DIR_NUMERO, DIR_BARRIO "
                   + "FROM HOGAR "
-                  + "WHERE ID_USUARIO IS NULL "
+                  + "WHERE ID_ENCUESTADOR IS NULL "
                   + "ORDER BY NOMBRE_HOGAR";
 
        try (Connection con = Conexion.init()) {
@@ -374,7 +377,7 @@ public boolean insertarHogar(Hogar h) {
                    Hogar hogar = new Hogar(
                        rs.getInt("ID_HOGAR"),
                        rs.getString("NOMBRE_HOGAR"),
-                       rs.getString("DIR_DIRECCION"),
+                       rs.getString("DIR_NUMERO"),
                        rs.getString("DIR_BARRIO")
                    );
 
@@ -400,9 +403,9 @@ public boolean insertarHogar(Hogar h) {
         }
 
         String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
-                   + "DIR_DIRECCION, DIR_BARRIO "
+                   + "DIR_NUMERO, DIR_BARRIO "
                    + "FROM HOGAR "
-                   + "WHERE ID_USUARIO = ? "
+                   + "WHERE ID_ENCUESTADOR = ? "
                    + "ORDER BY NOMBRE_HOGAR";
 
         try (Connection con = Conexion.init()) {
@@ -426,7 +429,7 @@ public boolean insertarHogar(Hogar h) {
                         Hogar hogar = new Hogar(
                             rs.getInt("ID_HOGAR"),
                             rs.getString("NOMBRE_HOGAR"),
-                            rs.getString("DIR_DIRECCION"),
+                            rs.getString("DIR_NUMERO"),
                             rs.getString("DIR_BARRIO")
                         );
 
@@ -455,9 +458,9 @@ public boolean insertarHogar(Hogar h) {
            String idHogar) throws SQLException {
 
        String sql = "UPDATE HOGAR "
-                  + "SET ID_USUARIO = NULL "
+                  + "SET ID_ENCUESTADOR = NULL "
                   + "WHERE ID_HOGAR = ? "
-                  + "AND ID_USUARIO = ?";
+                  + "AND ID_ENCUESTADOR = ?";
 
        try (Connection con = Conexion.init()) {
 
@@ -479,14 +482,14 @@ public boolean insertarHogar(Hogar h) {
     /**
      * Cuenta, por cada encuestador, cuántos de sus hogares ya tienen una
      * encuesta registrada y cuántos todavía no.
-     * La llave del mapa es el ID_USUARIO; el valor es {realizadas, pendientes}.
+     * La llave del mapa es el ID_ENCUESTADOR; el valor es {realizadas, pendientes}.
      * Los encuestadores sin hogares asignados no aparecen en el mapa.
      */
     public Map<String, int[]> contarEncuestasPorEncuestador() throws SQLException {
 
         Map<String, int[]> conteos = new HashMap<>();
 
-        String sql = "SELECT H.ID_USUARIO, "
+        String sql = "SELECT H.ID_ENCUESTADOR, "
                    + "SUM(CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
                    + "                      WHERE E.ID_HOGAR = H.ID_HOGAR) "
                    + "         THEN 1 ELSE 0 END) AS REALIZADAS, "
@@ -494,8 +497,8 @@ public boolean insertarHogar(Hogar h) {
                    + "                          WHERE E.ID_HOGAR = H.ID_HOGAR) "
                    + "         THEN 1 ELSE 0 END) AS PENDIENTES "
                    + "FROM HOGAR H "
-                   + "WHERE H.ID_USUARIO IS NOT NULL "
-                   + "GROUP BY H.ID_USUARIO";
+                   + "WHERE H.ID_ENCUESTADOR IS NOT NULL "
+                   + "GROUP BY H.ID_ENCUESTADOR";
 
         try (Connection con = Conexion.init()) {
 
@@ -508,7 +511,7 @@ public boolean insertarHogar(Hogar h) {
 
                 while (rs.next()) {
                     conteos.put(
-                        limpiar(rs.getString("ID_USUARIO")),
+                        limpiar(rs.getString("ID_ENCUESTADOR")),
                         new int[]{ rs.getInt("REALIZADAS"), rs.getInt("PENDIENTES") }
                     );
                 }
@@ -536,7 +539,7 @@ public boolean insertarHogar(Hogar h) {
                    + "     THEN 'Realizada' ELSE 'Pendiente' END AS ESTADO, "
                    + "H.ID_HOGAR "
                    + "FROM HOGAR H "
-                   + "WHERE H.ID_USUARIO = ? "
+                   + "WHERE H.ID_ENCUESTADOR = ? "
                    + "ORDER BY H.NOMBRE_HOGAR";
 
         try (Connection con = Conexion.init()) {
@@ -569,7 +572,7 @@ public boolean insertarHogar(Hogar h) {
      */
     public String[] buscarDetalleEncuesta(String idHogar) throws SQLException {
 
-        String sql = "SELECT H.NOMBRE_HOGAR, H.DIR_DIRECCION, H.DIR_BARRIO, "
+        String sql = "SELECT H.NOMBRE_HOGAR, H.DIR_NUMERO, H.DIR_BARRIO, "
                    + "C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO, "
                    + "(SELECT TO_CHAR(E.FECHA_INICIO, 'DD/MM/YYYY HH24:MI') "
                    + " FROM ENCUESTA E WHERE E.ID_HOGAR = H.ID_HOGAR "
@@ -612,12 +615,12 @@ public boolean insertarHogar(Hogar h) {
     /**
      * Crea el hogar y su cabeza de hogar en una sola transacción.
      * Si falla cualquiera de los dos inserts no se guarda nada.
-     * Los IDs se calculan con MAX + 1, igual que USUARIO y ENCUESTA.
+     * Los IDs se calculan con MAX + 1, igual que PAR_USUARIO y ENCUESTA.
      */
     public boolean insertarHogarConCabeza(Hogar h, CabezaHogar c) {
 
         String sqlHogar = "INSERT INTO HOGAR "
-                        + "(ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_DIRECCION, DIR_BARRIO) "
+                        + "(ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO) "
                         + "VALUES (?, ?, ?, ?, ?)";
 
         String sqlCabeza = "INSERT INTO CABEZA_DE_HOGAR "

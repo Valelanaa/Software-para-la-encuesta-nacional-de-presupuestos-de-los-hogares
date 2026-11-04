@@ -1,5 +1,6 @@
 package enph.controlador;
 
+import enph.modelo.Conexion;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
 import enph.modelo.UsuarioDAO;
@@ -56,7 +57,10 @@ public class InicioSesionController {
             SesionUsuario.iniciar(usuario);
 
             String rol = usuario.getRol() == null ? "" : usuario.getRol().trim();
-            System.out.println("Rol leído de la base: [" + rol + "]"); // para depurar; bórrar después
+
+            // A partir de aquí todas las consultas usan el usuario de base de datos
+            // que corresponde al rol (administrador o encuestador)
+            Conexion.usarRol(rol);
 
             try {
                 if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {

@@ -44,8 +44,8 @@ private void cargarEncuestadores() {
 
     // Conservar únicamente los usuarios con rol ENCUESTADOR.
     for (enph.modelo.Usuario usuario : usuarios) {
-        if (usuario.getRol() != null
-                && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")) {
+        if (usuario.getRol() != null && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
+        && usuario.getIdEncuestador() != null) {
             encuestadoresEnTabla.add(usuario);
         }
     }
@@ -76,7 +76,7 @@ private void cargarEncuestadores() {
 
     for (enph.modelo.Usuario usuario : encuestadoresEnTabla) {
         // Sin hogares asignados queda en 0 y 0.
-        int[] c = conteos.getOrDefault(usuario.getIdUsuario(), new int[]{0, 0});
+        int[] c = conteos.getOrDefault(usuario.getIdEncuestador(), new int[]{0, 0});
 
         modelo.addRow(new Object[]{
             usuario.getNombreCompleto(),
@@ -342,7 +342,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
         // Abrir el detalle enviando el ID y el nombre del encuestador.
     DetallesInforme pantalla = new DetallesInforme(
-        encuestador.getIdUsuario(),
+        encuestador.getIdEncuestador(), 
         encuestador.getNombreCompleto()
     );
 

@@ -45,7 +45,8 @@ private void cargarEncuestadores() {
     // Conservar únicamente los usuarios con rol ENCUESTADOR.
     for (enph.modelo.Usuario usuario : usuarios) {
         if (usuario.getRol() != null
-                && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")) {
+        && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
+        && usuario.getIdEncuestador() != null) {
             encuestadoresEnTabla.add(usuario);
         }
     }
@@ -323,7 +324,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     // Abrir la pantalla enviando el ID y el nombre del encuestador.
     FamiliasEncuestador pantalla = new FamiliasEncuestador(
-        encuestador.getIdUsuario(),
+        encuestador.getIdEncuestador(),
         encuestador.getNombreCompleto()
     );
 

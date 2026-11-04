@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package enph.modelo;
 
 import java.sql.Connection;
@@ -12,15 +8,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Acceso a datos de la tabla USUARIO: comprueba las credenciales escritas en
- * InicioSesion, lista los usuarios registrados y permite consultar y actualizar
- * los datos de uno de ellos (pantallas GestionUsuarios y EditarUsuario).
+ * Acceso a datos de los usuarios del sistema.
+ * Las credenciales y el rol están en la tabla PAR_USUARIO. Los usuarios con rol
+ * ENCUESTADOR además tienen una fila en la tabla ENCUESTADOR (teléfono, ciudad y su
+ * ID_ENCUESTADOR); las dos tablas se relacionan por DOCUMENTO_IDENTIDAD.
+ * Sirve a InicioSesion, GestionUsuarios, CrearUsuario y EditarUsuario.
  */
 public class UsuarioDAO {
 
     // Quita espacios sobrantes y evita null (las columnas CHAR rellenan con espacios)
     private static String limpiar(String s) {
         return s == null ? "" : s.trim();
+    }
+
+    // Igual que limpiar, pero devuelve null si no hay valor (por ejemplo, un administrador sin ciudad)
+    private static String limpiarONull(String s) {
+        return (s == null || s.trim().isEmpty()) ? null : s.trim();
+    }
+
+    private static boolean esEncuestador(String rol) {
+        return rol != null && "ENCUESTADOR".equalsIgnoreCase(rol.trim());
     }
 
     /**
@@ -36,10 +43,7 @@ public class UsuarioDAO {
     // Cuenta cuántos usuarios coinciden con esas dos credenciales;
     // si hay al menos uno, el acceso es válido.
     public boolean validarUsuario(String documento, String contrasenna) {
-        // TRIM quita espacios sobrantes en ambos lados (la base y lo digitado).
-        // Los "?" son parámetros: el texto del usuario nunca se pega a la consulta,
-        // lo que evita la inyección SQL.
-        String sql = "SELECT COUNT(*) FROM USUARIO WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(CONTRASENNA) = TRIM(?)";
+        String sql = "SELECT COUNT(*) FROM PAR_USUARIO WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(CONTRASENNA) = TRIM(?)";
 
         Connection con = Conexion.init();
         PreparedStatement ps = null;
@@ -57,18 +61,14 @@ public class UsuarioDAO {
             ps.setString(2, contrasenna);
 
             rs = ps.executeQuery();
-            // COUNT(*) siempre devuelve una fila: mayor que 0 significa que
-            // existe un usuario con ese documento y esa contraseña
             if (rs.next()) {
                 esValido = rs.getInt(1) > 0;
             }
 
         } catch (SQLException e) {
-            // Ante cualquier error el acceso se niega (esValido sigue en false)
             System.err.println("Error al validar usuario: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            // Se cierran los recursos en orden: resultado, consulta y conexión
             try {
                 if (rs != null) rs.close();
                 if (ps != null) ps.close();
@@ -82,17 +82,19 @@ public class UsuarioDAO {
     }
 
     /**
-     * Autentica y devuelve el usuario completo (id, nombre, rol, ciudad y departamento).
+     * Autentica y devuelve el usuario completo (id, nombre, rol y, si es encuestador,
+     * su ID_ENCUESTADOR, ciudad y departamento). Los administradores no tienen fila en
+     * ENCUESTADOR, por eso se usa LEFT JOIN: su ciudad y departamento quedan en null.
      * Si las credenciales no coinciden o hay un error, devuelve null.
      * Este es el método que usa InicioSesionController para llenar la sesión.
      */
     public Usuario autenticar(String documento, String contrasenna) {
-        // Se une USUARIO con CIUDAD y DEPARTAMENTO para obtener la ubicación
         String sql = "SELECT U.ID_USUARIO, U.DOCUMENTO_IDENTIDAD, U.NOMBRE_COMPLETO, U.ROL, "
-                   + "C.NOMBRE_CIUDAD, D.NOMBRE_DEPARTAMENTO "
-                   + "FROM USUARIO U "
-                   + "JOIN CIUDAD C ON C.ID_CIUDAD = U.ID_CIUDAD "
-                   + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
+                   + "E.ID_ENCUESTADOR, C.NOMBRE_CIUDAD, D.NOMBRE_DEPARTAMENTO "
+                   + "FROM PAR_USUARIO U "
+                   + "LEFT JOIN ENCUESTADOR E ON TRIM(E.DOCUMENTO_IDENTIDAD) = TRIM(U.DOCUMENTO_IDENTIDAD) "
+                   + "LEFT JOIN CIUDAD C ON C.ID_CIUDAD = E.ID_CIUDAD "
+                   + "LEFT JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
                    + "WHERE TRIM(U.DOCUMENTO_IDENTIDAD) = TRIM(?) AND TRIM(U.CONTRASENNA) = TRIM(?)";
 
         Connection con = Conexion.init();
@@ -117,8 +119,9 @@ public class UsuarioDAO {
                 usuario.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
                 usuario.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
                 usuario.setRol(limpiar(rs.getString("ROL")));
-                usuario.setCiudad(limpiar(rs.getString("NOMBRE_CIUDAD")));
-                usuario.setDepartamento(limpiar(rs.getString("NOMBRE_DEPARTAMENTO")));
+                usuario.setIdEncuestador(limpiarONull(rs.getString("ID_ENCUESTADOR")));
+                usuario.setCiudad(limpiarONull(rs.getString("NOMBRE_CIUDAD")));
+                usuario.setDepartamento(limpiarONull(rs.getString("NOMBRE_DEPARTAMENTO")));
                 // la contraseña no se guarda en el objeto: ya no hace falta
             }
 
@@ -139,12 +142,16 @@ public class UsuarioDAO {
     }
 
     /**
-     * Devuelve todos los usuarios registrados (id, nombre, documento y rol),
-     * ordenados por nombre. Si falla la conexión o la consulta, devuelve una lista vacía.
-     * La usa la tabla de GestionUsuarios.
+     * Devuelve todos los usuarios registrados (id, nombre, documento, rol y, si es
+     * encuestador, su ID_ENCUESTADOR), ordenados por nombre.
+     * Si falla la conexión o la consulta, devuelve una lista vacía.
+     * La usan GestionUsuarios, AsignarFamilias e InformeEncuesta.
      */
     public List<Usuario> listarUsuarios() {
-        String sql = "SELECT ID_USUARIO, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, ROL FROM USUARIO ORDER BY NOMBRE_COMPLETO";
+        String sql = "SELECT U.ID_USUARIO, U.NOMBRE_COMPLETO, U.DOCUMENTO_IDENTIDAD, U.ROL, E.ID_ENCUESTADOR "
+                   + "FROM PAR_USUARIO U "
+                   + "LEFT JOIN ENCUESTADOR E ON TRIM(E.DOCUMENTO_IDENTIDAD) = TRIM(U.DOCUMENTO_IDENTIDAD) "
+                   + "ORDER BY U.NOMBRE_COMPLETO";
 
         List<Usuario> usuarios = new ArrayList<>();
         Connection con = Conexion.init();
@@ -163,6 +170,7 @@ public class UsuarioDAO {
                 u.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
                 u.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
                 u.setRol(limpiar(rs.getString("ROL")));
+                u.setIdEncuestador(limpiarONull(rs.getString("ID_ENCUESTADOR")));
                 usuarios.add(u);
             }
 
@@ -176,12 +184,16 @@ public class UsuarioDAO {
     }
 
     /**
-     * Trae todos los datos de un usuario (incluida ciudad, teléfono y contraseña)
-     * para mostrarlos en EditarUsuario. Devuelve null si no existe o hay un error.
+     * Trae todos los datos de un usuario para mostrarlos en EditarUsuario.
+     * La ciudad y el teléfono salen de ENCUESTADOR (quedan vacíos para un administrador).
+     * Devuelve null si no existe o hay un error.
      */
     public Usuario buscarPorId(String idUsuario) {
-        String sql = "SELECT ID_USUARIO, ID_CIUDAD, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, "
-                   + "CONTRASENNA, ROL, TELEFONO FROM USUARIO WHERE ID_USUARIO = ?";
+        String sql = "SELECT U.ID_USUARIO, U.NOMBRE_COMPLETO, U.DOCUMENTO_IDENTIDAD, "
+                   + "U.CONTRASENNA, U.ROL, E.ID_ENCUESTADOR, E.ID_CIUDAD, E.TELEFONO "
+                   + "FROM PAR_USUARIO U "
+                   + "LEFT JOIN ENCUESTADOR E ON TRIM(E.DOCUMENTO_IDENTIDAD) = TRIM(U.DOCUMENTO_IDENTIDAD) "
+                   + "WHERE U.ID_USUARIO = ?";
 
         Connection con = Conexion.init();
         if (con == null) {
@@ -195,11 +207,12 @@ public class UsuarioDAO {
                 if (rs.next()) {
                     Usuario u = new Usuario();
                     u.setIdUsuario(limpiar(rs.getString("ID_USUARIO")));
-                    u.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
                     u.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
                     u.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
                     u.setContrasenna(limpiar(rs.getString("CONTRASENNA")));
                     u.setRol(limpiar(rs.getString("ROL")));
+                    u.setIdEncuestador(limpiarONull(rs.getString("ID_ENCUESTADOR")));
+                    u.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
                     u.setTelefono(limpiar(rs.getString("TELEFONO")));
                     return u;
                 }
@@ -250,7 +263,7 @@ public class UsuarioDAO {
      * Se usa antes de guardar para no repetir cédulas.
      */
     public boolean existeDocumento(String documento, String idExcluido) {
-        String sql = "SELECT COUNT(*) FROM USUARIO "
+        String sql = "SELECT COUNT(*) FROM PAR_USUARIO "
                    + "WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?) AND ID_USUARIO <> ?";
 
         Connection con = Conexion.init();
@@ -275,54 +288,24 @@ public class UsuarioDAO {
     }
 
     /**
-     * Actualiza en la base los datos del usuario (ciudad, nombre, documento,
-     * contraseña, rol y teléfono). Devuelve true si se modificó exactamente una fila.
+     * Actualiza el usuario en PAR_USUARIO (nombre, documento, contraseña y rol) y, si es
+     * encuestador, también su fila en ENCUESTADOR (nombre, documento, teléfono y ciudad);
+     * si todavía no tenía fila, la crea. Si el rol pasa a ADMINISTRADOR, se borra su fila
+     * de ENCUESTADOR y sus hogares quedan sin encuestador asignado.
+     * Todo en una sola transacción. Devuelve true si se modificó exactamente un usuario.
      */
     public boolean actualizarUsuario(Usuario u) {
-        String sql = "UPDATE USUARIO SET ID_CIUDAD = ?, NOMBRE_COMPLETO = ?, DOCUMENTO_IDENTIDAD = ?, "
-                   + "CONTRASENNA = ?, ROL = ?, TELEFONO = ? WHERE ID_USUARIO = ?";
-
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, u.getIdCiudad());
-            ps.setString(2, u.getNombreCompleto());
-            ps.setString(3, u.getDocumentoIdentidad());
-            ps.setString(4, u.getContrasenna());
-            ps.setString(5, u.getRol());
-            ps.setString(6, u.getTelefono());
-            ps.setString(7, u.getIdUsuario());
-            return ps.executeUpdate() == 1; // la conexión confirma sola (autocommit)
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar usuario: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            Conexion.close(con);
-        }
-    }
-        /**
-     * Elimina un usuario junto con los hogares que tiene asignados y todo lo que
-     * depende de ellos (cabeza de hogar, encuestas y respuestas). Se hace en una
-     * sola transacción: si algo falla, se deshace y no se borra nada.
-     */
-    public boolean eliminarUsuario(String idUsuario) {
-        // Primero las tablas hijas y al final el usuario (por las llaves foráneas)
-        String[] consultas = {
-            "DELETE FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
-                + "(SELECT E.ID_ENCUESTA FROM ENCUESTA E JOIN HOGAR H ON H.ID_HOGAR = E.ID_HOGAR "
-                + "WHERE H.ID_USUARIO = ?)",
-            "DELETE FROM ENCUESTA WHERE ID_HOGAR IN "
-                + "(SELECT ID_HOGAR FROM HOGAR WHERE ID_USUARIO = ?)",
-            "DELETE FROM CABEZA_DE_HOGAR WHERE ID_HOGAR IN "
-                + "(SELECT ID_HOGAR FROM HOGAR WHERE ID_USUARIO = ?)",
-            "DELETE FROM HOGAR WHERE ID_USUARIO = ?",
-            "DELETE FROM USUARIO WHERE ID_USUARIO = ?"
-        };
+        String sqlDocActual = "SELECT DOCUMENTO_IDENTIDAD FROM PAR_USUARIO WHERE ID_USUARIO = ?";
+        String sqlUsuario = "UPDATE PAR_USUARIO SET NOMBRE_COMPLETO = ?, DOCUMENTO_IDENTIDAD = ?, "
+                          + "CONTRASENNA = ?, ROL = ? WHERE ID_USUARIO = ?";
+        String sqlEncActualizar = "UPDATE ENCUESTADOR SET NOMBRE_COMPLETO = ?, DOCUMENTO_IDENTIDAD = ?, "
+                                + "TELEFONO = ?, ID_CIUDAD = ? WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
+        String sqlEncInsertar = "INSERT INTO ENCUESTADOR "
+                              + "(ID_ENCUESTADOR, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, TELEFONO, ID_CIUDAD) "
+                              + "VALUES (?, ?, ?, ?, ?)";
+        String sqlDesasignar = "UPDATE HOGAR SET ID_ENCUESTADOR = NULL WHERE ID_ENCUESTADOR IN "
+                             + "(SELECT ID_ENCUESTADOR FROM ENCUESTADOR WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?))";
+        String sqlEncEliminar = "DELETE FROM ENCUESTADOR WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
 
         Connection con = Conexion.init();
         if (con == null) {
@@ -331,22 +314,132 @@ public class UsuarioDAO {
         }
 
         try {
-            con.setAutoCommit(false); // agrupa todos los DELETE en una sola transacción
-            int filasUsuario = 0;
-            for (int i = 0; i < consultas.length; i++) {
-                try (PreparedStatement ps = con.prepareStatement(consultas[i])) {
-                    ps.setString(1, idUsuario);
-                    int filas = ps.executeUpdate();
-                    if (i == consultas.length - 1) {
-                        filasUsuario = filas; // filas borradas de USUARIO
-                    }
+            con.setAutoCommit(false);
+
+            // Documento que tiene hoy el usuario: con él se ubica su fila en ENCUESTADOR
+            String docActual = null;
+            try (PreparedStatement ps = con.prepareStatement(sqlDocActual)) {
+                ps.setString(1, u.getIdUsuario());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) docActual = limpiar(rs.getString(1));
                 }
             }
-            if (filasUsuario != 1) {
-                con.rollback(); // el usuario no existía: no se confirma nada
+            if (docActual == null) {
+                con.rollback(); // el usuario no existe
                 return false;
             }
-            con.commit(); // confirma todos los borrados a la vez
+
+            try (PreparedStatement ps = con.prepareStatement(sqlUsuario)) {
+                ps.setString(1, u.getNombreCompleto());
+                ps.setString(2, u.getDocumentoIdentidad());
+                ps.setString(3, u.getContrasenna());
+                ps.setString(4, u.getRol());
+                ps.setString(5, u.getIdUsuario());
+                if (ps.executeUpdate() != 1) {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+            if (esEncuestador(u.getRol())) {
+                int filas;
+                try (PreparedStatement ps = con.prepareStatement(sqlEncActualizar)) {
+                    ps.setString(1, u.getNombreCompleto());
+                    ps.setString(2, u.getDocumentoIdentidad());
+                    ps.setString(3, u.getTelefono());
+                    ps.setString(4, u.getIdCiudad());
+                    ps.setString(5, docActual);
+                    filas = ps.executeUpdate();
+                }
+                if (filas == 0) { // era administrador: ahora se crea su fila de encuestador
+                    try (PreparedStatement ps = con.prepareStatement(sqlEncInsertar)) {
+                        ps.setString(1, String.valueOf(
+                                EncuestaDAO.siguienteId(con, "ENCUESTADOR", "ID_ENCUESTADOR")));
+                        ps.setString(2, u.getNombreCompleto());
+                        ps.setString(3, u.getDocumentoIdentidad());
+                        ps.setString(4, u.getTelefono());
+                        ps.setString(5, u.getIdCiudad());
+                        ps.executeUpdate();
+                    }
+                }
+            } else {
+                // Pasó a administrador: libera sus hogares y borra su fila de encuestador
+                try (PreparedStatement ps = con.prepareStatement(sqlDesasignar)) {
+                    ps.setString(1, docActual);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(sqlEncEliminar)) {
+                    ps.setString(1, docActual);
+                    ps.executeUpdate();
+                }
+            }
+
+            con.commit();
+            return true;
+
+        } catch (SQLException e) {
+            try { con.rollback(); } catch (SQLException ignorada) { }
+            System.err.println("Error al actualizar usuario: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Elimina un usuario de PAR_USUARIO y, si era encuestador, su fila de ENCUESTADOR.
+     * Los hogares que tenía asignados NO se borran: quedan sin encuestador (ID_ENCUESTADOR
+     * en null) y conservan sus encuestas. Todo en una sola transacción.
+     */
+    public boolean eliminarUsuario(String idUsuario) {
+        String sqlDoc = "SELECT DOCUMENTO_IDENTIDAD FROM PAR_USUARIO WHERE ID_USUARIO = ?";
+        String sqlDesasignar = "UPDATE HOGAR SET ID_ENCUESTADOR = NULL WHERE ID_ENCUESTADOR IN "
+                             + "(SELECT ID_ENCUESTADOR FROM ENCUESTADOR WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?))";
+        String sqlEncuestador = "DELETE FROM ENCUESTADOR WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
+        String sqlUsuario = "DELETE FROM PAR_USUARIO WHERE ID_USUARIO = ?";
+
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+            con.setAutoCommit(false); // agrupa todos los cambios en una sola transacción
+
+            String documento = null;
+            try (PreparedStatement ps = con.prepareStatement(sqlDoc)) {
+                ps.setString(1, idUsuario);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) documento = limpiar(rs.getString(1));
+                }
+            }
+            if (documento == null) {
+                con.rollback(); // el usuario no existía
+                return false;
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sqlDesasignar)) {
+                ps.setString(1, documento);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement(sqlEncuestador)) {
+                ps.setString(1, documento);
+                ps.executeUpdate();
+            }
+            int filasUsuario;
+            try (PreparedStatement ps = con.prepareStatement(sqlUsuario)) {
+                ps.setString(1, idUsuario);
+                filasUsuario = ps.executeUpdate();
+            }
+
+            if (filasUsuario != 1) {
+                con.rollback();
+                return false;
+            }
+            con.commit();
             return true;
         } catch (SQLException e) {
             try { con.rollback(); } catch (SQLException ignorada) { }
@@ -354,109 +447,96 @@ public class UsuarioDAO {
             e.printStackTrace();
             return false;
         } finally {
+            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
             Conexion.close(con);
         }
     }
+
     /**
-    * Registra un usuario nuevo en la base de datos.
-    * Genera el siguiente ID y guarda sus datos.
-    */
-   public boolean insertarUsuario(Usuario u) {
+     * Registra un usuario nuevo: lo guarda en PAR_USUARIO y, si su rol es ENCUESTADOR,
+     * también en ENCUESTADOR (con teléfono y ciudad). Los IDs se calculan con MAX + 1.
+     * Si falla cualquiera de los dos inserts no se guarda nada.
+     */
+    public boolean insertarUsuario(Usuario u) {
+        String sqlUsuario = "INSERT INTO PAR_USUARIO "
+                          + "(ID_USUARIO, DOCUMENTO_IDENTIDAD, CONTRASENNA, ROL, NOMBRE_COMPLETO) "
+                          + "VALUES (?, ?, ?, ?, ?)";
+        String sqlEncuestador = "INSERT INTO ENCUESTADOR "
+                              + "(ID_ENCUESTADOR, NOMBRE_COMPLETO, DOCUMENTO_IDENTIDAD, TELEFONO, ID_CIUDAD) "
+                              + "VALUES (?, ?, ?, ?, ?)";
 
-       String sqlId =
-               "SELECT NVL(MAX(TO_NUMBER(ID_USUARIO)), 0) + 1 FROM USUARIO";
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
 
-       String sqlInsertar =
-               "INSERT INTO USUARIO "
-               + "(ID_USUARIO, ID_CIUDAD, NOMBRE_COMPLETO, "
-               + "DOCUMENTO_IDENTIDAD, CONTRASENNA, ROL, TELEFONO) "
-               + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try {
+            con.setAutoCommit(false);
 
-       Connection con = Conexion.init();
+            String idUsuario = String.valueOf(
+                    EncuestaDAO.siguienteId(con, "PAR_USUARIO", "ID_USUARIO"));
 
-       if (con == null) {
-           System.err.println("No se pudo conectar a la base de datos.");
-           return false;
-       }
+            try (PreparedStatement ps = con.prepareStatement(sqlUsuario)) {
+                ps.setString(1, idUsuario);
+                ps.setString(2, u.getDocumentoIdentidad());
+                ps.setString(3, u.getContrasenna());
+                ps.setString(4, u.getRol());
+                ps.setString(5, u.getNombreCompleto());
+                ps.executeUpdate();
+            }
 
-       try {
-           // Obtener el siguiente ID disponible.
-           String idUsuario;
+            if (esEncuestador(u.getRol())) {
+                try (PreparedStatement ps = con.prepareStatement(sqlEncuestador)) {
+                    ps.setString(1, String.valueOf(
+                            EncuestaDAO.siguienteId(con, "ENCUESTADOR", "ID_ENCUESTADOR")));
+                    ps.setString(2, u.getNombreCompleto());
+                    ps.setString(3, u.getDocumentoIdentidad());
+                    ps.setString(4, u.getTelefono());
+                    ps.setString(5, u.getIdCiudad());
+                    ps.executeUpdate();
+                }
+            }
 
-           try (PreparedStatement psId = con.prepareStatement(sqlId);
-                ResultSet rs = psId.executeQuery()) {
+            con.commit();
+            System.out.println("Usuario creado con ID: " + idUsuario);
+            return true;
 
-               if (!rs.next()) {
-                   return false;
-               }
+        } catch (SQLException e) {
+            System.err.println("Error al insertar usuario: " + e.getMessage());
+            e.printStackTrace();
+            try { con.rollback(); } catch (SQLException ignorada) { }
+            return false;
+        } finally {
+            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+            Conexion.close(con);
+        }
+    }
 
-               idUsuario = rs.getString(1);
-           }
+    /**
+     * Comprueba si la cédula ya pertenece a un usuario.
+     */
+    public boolean existeDocumento(String documento) {
+        String sql = "SELECT COUNT(*) FROM PAR_USUARIO "
+                   + "WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
 
-           // Insertar el nuevo usuario.
-           try (PreparedStatement ps = con.prepareStatement(sqlInsertar)) {
+        Connection con = Conexion.init();
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return true; // No permitir continuar si no se puede verificar.
+        }
 
-               ps.setString(1, idUsuario);
-               ps.setString(2, u.getIdCiudad());
-               ps.setString(3, u.getNombreCompleto());
-               ps.setString(4, u.getDocumentoIdentidad());
-               ps.setString(5, u.getContrasenna());
-               ps.setString(6, u.getRol());
-               ps.setString(7, u.getTelefono());
-
-               boolean insertado = ps.executeUpdate() == 1;
-
-               if (insertado) {
-                   System.out.println(
-                           "Usuario creado con ID: " + idUsuario
-                   );
-               }
-
-               return insertado;
-           }
-
-       } catch (SQLException e) {
-           System.err.println("Error al insertar usuario: "
-                   + e.getMessage());
-           e.printStackTrace();
-           return false;
-
-       } finally {
-           Conexion.close(con);
-       }
-   }
-   
-   /**
-    * Comprueba si la cédula ya pertenece a un usuario.
-    */
-   public boolean existeDocumento(String documento) {
-
-       String sql = "SELECT COUNT(*) FROM USUARIO "
-               + "WHERE TRIM(DOCUMENTO_IDENTIDAD) = TRIM(?)";
-
-       Connection con = Conexion.init();
-
-       if (con == null) {
-           System.err.println("No se pudo conectar a la base de datos.");
-           return true; // No permitir continuar si no se puede verificar.
-       }
-
-       try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-           ps.setString(1, documento);
-
-           try (ResultSet rs = ps.executeQuery()) {
-               return rs.next() && rs.getInt(1) > 0;
-           }
-
-       } catch (SQLException e) {
-           System.err.println("Error al verificar la cédula: "
-                   + e.getMessage());
-           e.printStackTrace();
-           return true; // Evitar crear el registro si la consulta falla.
-
-       } finally {
-           Conexion.close(con);
-       }
-   }
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, documento);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar la cédula: " + e.getMessage());
+            e.printStackTrace();
+            return true; // Evitar crear el registro si la consulta falla.
+        } finally {
+            Conexion.close(con);
+        }
+    }
 }
