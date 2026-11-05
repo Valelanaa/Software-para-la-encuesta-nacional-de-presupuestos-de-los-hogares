@@ -1,441 +1,84 @@
 package enph.modelo;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import oracle.jdbc.OracleConnection;
+import oracle.jdbc.OracleTypes;
 
 /**
- * Acceso a datos de la tabla HOGAR: lee las familias que se muestran
- * en las pantallas y permite consultar y actualizar un hogar.
+ * Acceso a datos de la tabla HOGAR.
+ *
+ * Todas las operaciones se realizan mediante procedimientos almacenados
+ * en Oracle. No se utilizan consultas SQL directamente desde Java.
  */
 public class HogarDAO {
 
-    // Quita espacios sobrantes y evita null (las columnas CHAR rellenan con espacios)
+    /**
+     * Quita espacios sobrantes y evita valores null.
+     */
     private static String limpiar(String s) {
         return s == null ? "" : s.trim();
     }
 
-    // ID_HOGAR es texto en la base; si no es un número devuelve 0 en lugar de fallar
+    /**
+     * Convierte el identificador del hogar a número.
+     * Si no es numérico, devuelve 0.
+     */
     private static int idNumerico(String id) {
         try {
-            return Integer.parseInt(id);
+            return Integer.parseInt(limpiar(id));
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
-    // Lee todos los hogares, ordenados por nombre (la usa FamiliasRegistradas)
+    /**
+     * Ejecuta PR_LISTAR_HOGARES.
+     *
+     * Lista los hogares e identifica si tienen una encuesta incompleta.
+     */
     public List<Hogar> listarHogares() throws SQLException {
 
         List<Hogar> hogares = new ArrayList<>();
-        String sql = "SELECT H.ID_HOGAR, H.NOMBRE_HOGAR, "
-            + "H.DIR_NUMERO, H.DIR_BARRIO, "
-            + "CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
-            + "                  WHERE E.ID_HOGAR = H.ID_HOGAR "
-            + "                  AND E.ESTADO = '" + EncuestaDAO.ESTADO_INCOMPLETA + "') "
-            + "     THEN 1 ELSE 0 END AS INCOMPLETA "
-            + "FROM HOGAR H "
-            + "ORDER BY H.NOMBRE_HOGAR";
+
+        String llamada = "{call PR_LISTAR_HOGARES(?)}";
 
         try (Connection con = Conexion.init()) {
+
             if (con == null) {
                 throw new SQLException("No fue posible conectar con Oracle.");
             }
-            try (PreparedStatement ps = con.prepareStatement(sql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Hogar hogar = new Hogar(
-                        rs.getInt("ID_HOGAR"),
-                        rs.getString("NOMBRE_HOGAR"),
-                        rs.getString("DIR_NUMERO"),
-                        rs.getString("DIR_BARRIO")
-                    );
-                    hogar.setIncompleta(rs.getInt("INCOMPLETA") == 1);
-                    hogares.add(hogar);
-                }
-            }
-        }
-        return hogares;
-    }
 
-    /**
-     * Lista los hogares con su ciudad y el nombre de su cabeza de hogar,
-     * ordenados por nombre. Es la que usa la tabla de GestionHogar.
-     */
-    public List<Hogar> listarHogaresConDetalle() {
-        String sql = "SELECT H.ID_HOGAR, H.ID_CIUDAD, H.NOMBRE_HOGAR, H.DIR_NUMERO, H.DIR_BARRIO, "
-                   + "C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO, "
-                   + "(SELECT MIN(CH.NOMBRE_COMPLETO) FROM CABEZA_DE_HOGAR CH WHERE CH.ID_HOGAR = H.ID_HOGAR) "
-                   + "FROM HOGAR H "
-                   + "JOIN CIUDAD C ON C.ID_CIUDAD = H.ID_CIUDAD "
-                   + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
-                   + "ORDER BY H.NOMBRE_HOGAR";
+            try (CallableStatement cs = con.prepareCall(llamada)) {
 
-        List<Hogar> hogares = new ArrayList<>();
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return hogares;
-        }
+                cs.registerOutParameter(1, OracleTypes.CURSOR);
 
-        try (PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                cs.execute();
 
-            while (rs.next()) {
-                String id = limpiar(rs.getString(1));
-                Hogar h = new Hogar(idNumerico(id), limpiar(rs.getString(3)),
-                        limpiar(rs.getString(4)), limpiar(rs.getString(5)));
-                h.setIdTexto(id);
-                h.setIdCiudad(limpiar(rs.getString(2)));
-                h.setCiudad(limpiar(rs.getString(6)));
-                h.setNombreCabeza(limpiar(rs.getString(7)));
-                hogares.add(h);
-            }
+                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
 
-        } catch (SQLException e) {
-            System.err.println("Error al listar hogares: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            Conexion.close(con);
-        }
-        return hogares;
-    }
+                    while (rs != null && rs.next()) {
 
-    // Trae los datos de un hogar (incluida su ciudad) para EditarHogar
-    public Hogar buscarPorId(String idHogar) {
-        String sql = "SELECT ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO "
-                   + "FROM HOGAR WHERE ID_HOGAR = ?";
-
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return null;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, idHogar);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String id = limpiar(rs.getString("ID_HOGAR"));
-                    Hogar h = new Hogar(idNumerico(id), limpiar(rs.getString("NOMBRE_HOGAR")),
-                            limpiar(rs.getString("DIR_NUMERO")), limpiar(rs.getString("DIR_BARRIO")));
-                    h.setIdTexto(id);
-                    h.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
-                    return h;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al buscar hogar: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            Conexion.close(con);
-        }
-        return null;
-    }
-
-    /**
- * Inserta un hogar nuevo en la base de datos.
- *
- * @param h hogar con ciudad, nombre, dirección y barrio
- * @return true si se insertó correctamente; false en caso contrario
- */
-public boolean insertarHogar(Hogar h) {
-
-    String sql = "INSERT INTO HOGAR "
-               + "(ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO) "
-               + "VALUES (?, ?, ?, ?)";
-
-    Connection con = Conexion.init();
-
-    if (con == null) {
-        System.err.println("No se pudo conectar a la base de datos.");
-        return false;
-    }
-
-    try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-        ps.setString(1, h.getIdCiudad());
-        ps.setString(2, h.getNombreFamilia());
-        ps.setString(3, h.getDireccion());
-        ps.setString(4, h.getBarrio());
-
-        return ps.executeUpdate() == 1;
-
-    } catch (SQLException e) {
-        System.err.println("Error al insertar el hogar: " + e.getMessage());
-        e.printStackTrace();
-        return false;
-
-    } finally {
-        Conexion.close(con);
-    }
-}
-    
-    // Actualiza ciudad, nombre, dirección y barrio del hogar
-    public boolean actualizarHogar(Hogar h) {
-        String sql = "UPDATE HOGAR SET ID_CIUDAD = ?, NOMBRE_HOGAR = ?, DIR_NUMERO = ?, DIR_BARRIO = ? "
-                   + "WHERE ID_HOGAR = ?";
-
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return false;
-        }
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, h.getIdCiudad());
-            ps.setString(2, h.getNombreFamilia());
-            ps.setString(3, h.getDireccion());
-            ps.setString(4, h.getBarrio());
-            ps.setString(5, h.getIdTexto());
-            return ps.executeUpdate() == 1;
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar hogar: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            Conexion.close(con);
-        }
-    }
-    
-        /**
-     * Elimina un hogar junto con su cabeza de hogar, sus encuestas y las
-     * respuestas de esas encuestas. Todo se hace en una sola transacción:
-     * si algo falla, se deshace y no se borra nada.
-     */
-    public boolean eliminarHogar(String idHogar) {
-        // Primero las tablas hijas y al final el hogar (por las llaves foráneas)
-        String sqlDetalle    = "DELETE FROM DETALLE_COMPRA WHERE ID_CARACTERIZACION IN "
-                             + "(SELECT ID_CARACTERIZACION FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
-                             + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?))";
-        String sqlRespuestas = "DELETE FROM CARACTERIZACION_COMPRA WHERE ID_ENCUESTA IN "
-                             + "(SELECT ID_ENCUESTA FROM ENCUESTA WHERE ID_HOGAR = ?)";
-        String sqlEncuestas  = "DELETE FROM ENCUESTA WHERE ID_HOGAR = ?";
-        String sqlCabeza     = "DELETE FROM CABEZA_DE_HOGAR WHERE ID_HOGAR = ?";
-        String sqlHogar      = "DELETE FROM HOGAR WHERE ID_HOGAR = ?";
-
-        Connection con = Conexion.init();
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return false;
-        }
-
-        try {
-            con.setAutoCommit(false); // agrupa los 5 DELETE en una sola transacción
-            String[] consultas = {sqlDetalle, sqlRespuestas, sqlEncuestas, sqlCabeza, sqlHogar};
-            int filasHogar = 0;
-            for (String sql : consultas) {
-                try (PreparedStatement ps = con.prepareStatement(sql)) {
-                    ps.setString(1, idHogar);
-                    int filas = ps.executeUpdate();
-                    if (sql == sqlHogar) {
-                        filasHogar = filas;
-                    }
-                }
-            }
-            if (filasHogar != 1) {
-                con.rollback(); // el hogar no existía: no se confirma nada
-                return false;
-            }
-            con.commit(); // confirma todos los borrados a la vez
-            return true;
-        } catch (SQLException e) {
-            try { con.rollback(); } catch (SQLException ignorada) { }
-            System.err.println("Error al eliminar el hogar: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            Conexion.close(con);
-        }
-    }
-    /**
-    * Asigna uno o varios hogares a un encuestador.
-    *
-    * Solo actualiza hogares que todavía no tienen encuestador asignado.
-    * Si alguno no puede asignarse, se revierte toda la operación.
-    *
-    * @param idEncuestador ID_ENCUESTADOR de la tabla ENCUESTADOR.
-    * @param idsHogares Lista de identificadores de los hogares seleccionados.
-    * @throws SQLException Si ocurre un error al asignar los hogares.
-    */
-   public void asignarHogaresAEncuestador(
-           String idEncuestador,
-           List<String> idsHogares) throws SQLException {
-
-       // Validar los parámetros recibidos.
-       if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
-           throw new SQLException("Debe seleccionar un encuestador.");
-       }
-
-       if (idsHogares == null || idsHogares.isEmpty()) {
-           throw new SQLException("Debe seleccionar al menos una familia.");
-       }
-
-       String sql = "UPDATE HOGAR "
-                  + "SET ID_ENCUESTADOR = ? "
-                  + "WHERE ID_HOGAR = ? "
-                  + "AND ID_ENCUESTADOR IS NULL";
-
-       try (Connection con = Conexion.init()) {
-
-           if (con == null) {
-               throw new SQLException(
-                   "No fue posible conectar con Oracle."
-               );
-           }
-
-           boolean autoCommitOriginal = con.getAutoCommit();
-
-           try {
-               // Iniciar la transacción.
-               con.setAutoCommit(false);
-
-               try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-                   for (String idHogar : idsHogares) {
-
-                       if (idHogar == null || idHogar.trim().isEmpty()) {
-                           throw new SQLException(
-                               "Se encontró un identificador de hogar inválido."
-                           );
-                       }
-
-                       // Asignar el encuestador al hogar seleccionado.
-                       ps.setString(1, idEncuestador.trim());
-                       ps.setString(2, idHogar.trim());
-
-                       int filasActualizadas = ps.executeUpdate();
-
-                       // Debe actualizar exactamente un hogar.
-                       if (filasActualizadas != 1) {
-                           throw new SQLException(
-                               "No se pudo asignar el hogar con ID "
-                               + idHogar
-                               + ". Es posible que ya tenga un encuestador "
-                               + "asignado o que no exista."
-                           );
-                       }
-                   }
-               }
-
-               // Confirmar todas las asignaciones.
-               con.commit();
-
-           } catch (SQLException e) {
-
-               // Si falla alguna asignación, deshacer todas.
-               try {
-                   con.rollback();
-               } catch (SQLException errorRollback) {
-                   e.addSuppressed(errorRollback);
-               }
-
-               throw e;
-
-           } finally {
-               // Restaurar la configuración original de la conexión.
-               try {
-                   con.setAutoCommit(autoCommitOriginal);
-               } catch (SQLException e) {
-                   // Evitar ocultar la excepción principal.
-               }
-           }
-       }
-   }
-   /**
-    * Lista únicamente los hogares que todavía no tienen encuestador.
-    */
-   public List<Hogar> listarHogaresSinEncuestador() throws SQLException {
-
-       List<Hogar> hogares = new ArrayList<>();
-
-       String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
-                  + "DIR_NUMERO, DIR_BARRIO "
-                  + "FROM HOGAR "
-                  + "WHERE ID_ENCUESTADOR IS NULL "
-                  + "ORDER BY NOMBRE_HOGAR";
-
-       try (Connection con = Conexion.init()) {
-
-           if (con == null) {
-               throw new SQLException(
-                   "No fue posible conectar con Oracle."
-               );
-           }
-
-           try (PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
-
-               while (rs.next()) {
-                   String id = rs.getString("ID_HOGAR");
-
-                   Hogar hogar = new Hogar(
-                       rs.getInt("ID_HOGAR"),
-                       rs.getString("NOMBRE_HOGAR"),
-                       rs.getString("DIR_NUMERO"),
-                       rs.getString("DIR_BARRIO")
-                   );
-
-                   hogar.setIdTexto(id == null ? null : id.trim());
-                   hogares.add(hogar);
-               }
-           }
-       }
-
-       return hogares;
-   }
-   
-    /**
-     * Consulta los hogares que ya están asignados a un encuestador.
-     */
-    public List<Hogar> listarHogaresPorEncuestador(
-            String idEncuestador) throws SQLException {
-
-        List<Hogar> hogares = new ArrayList<>();
-
-        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
-            throw new SQLException("No se ha seleccionado un encuestador.");
-        }
-
-        String sql = "SELECT ID_HOGAR, NOMBRE_HOGAR, "
-                   + "DIR_NUMERO, DIR_BARRIO "
-                   + "FROM HOGAR "
-                   + "WHERE ID_ENCUESTADOR = ? "
-                   + "ORDER BY NOMBRE_HOGAR";
-
-        try (Connection con = Conexion.init()) {
-
-            if (con == null) {
-                throw new SQLException(
-                    "No fue posible conectar con Oracle."
-                );
-            }
-
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-                ps.setString(1, idEncuestador.trim());
-
-                try (ResultSet rs = ps.executeQuery()) {
-
-                    while (rs.next()) {
-
-                        String id = rs.getString("ID_HOGAR");
+                        String id = limpiar(rs.getString("ID_HOGAR"));
 
                         Hogar hogar = new Hogar(
-                            rs.getInt("ID_HOGAR"),
-                            rs.getString("NOMBRE_HOGAR"),
-                            rs.getString("DIR_NUMERO"),
-                            rs.getString("DIR_BARRIO")
+                                idNumerico(id),
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO"))
                         );
 
-                        hogar.setIdTexto(
-                            id == null ? null : id.trim()
-                        );
+                        hogar.setIdTexto(id);
+
+                        hogar.setIncompleta(rs.getInt("INCOMPLETA") == 1);
 
                         hogares.add(hogar);
                     }
@@ -445,60 +88,352 @@ public boolean insertarHogar(Hogar h) {
 
         return hogares;
     }
+
     /**
-    * Desasigna un hogar de un encuestador sin eliminar el hogar.
-    *
-    * @param idEncuestador identificador del encuestador
-    * @param idHogar identificador del hogar
-    * @return true si se desasignó correctamente
-    * @throws SQLException si ocurre un error en la base de datos
-    */
-   public boolean desasignarHogar(
-           String idEncuestador,
-           String idHogar) throws SQLException {
-
-       String sql = "UPDATE HOGAR "
-                  + "SET ID_ENCUESTADOR = NULL "
-                  + "WHERE ID_HOGAR = ? "
-                  + "AND ID_ENCUESTADOR = ?";
-
-       try (Connection con = Conexion.init()) {
-
-           if (con == null) {
-               throw new SQLException(
-                   "No fue posible conectar con Oracle."
-               );
-           }
-
-           try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-               ps.setString(1, idHogar.trim());
-               ps.setString(2, idEncuestador.trim());
-
-               return ps.executeUpdate() == 1;
-           }
-       }
-   }
-    /**
-     * Cuenta, por cada encuestador, cuántos de sus hogares ya tienen una
-     * encuesta registrada y cuántos todavía no.
-     * La llave del mapa es el ID_ENCUESTADOR; el valor es {realizadas, pendientes}.
-     * Los encuestadores sin hogares asignados no aparecen en el mapa.
+     * Ejecuta PR_LISTAR_HOGARES_DETALLE.
+     *
+     * Lista los hogares con su ciudad y el nombre de la cabeza de hogar.
      */
-    public Map<String, int[]> contarEncuestasPorEncuestador() throws SQLException {
+    public List<Hogar> listarHogaresConDetalle() {
 
-        Map<String, int[]> conteos = new HashMap<>();
+        List<Hogar> hogares = new ArrayList<>();
 
-        String sql = "SELECT H.ID_ENCUESTADOR, "
-                   + "SUM(CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
-                   + "                      WHERE E.ID_HOGAR = H.ID_HOGAR) "
-                   + "         THEN 1 ELSE 0 END) AS REALIZADAS, "
-                   + "SUM(CASE WHEN NOT EXISTS (SELECT 1 FROM ENCUESTA E "
-                   + "                          WHERE E.ID_HOGAR = H.ID_HOGAR) "
-                   + "         THEN 1 ELSE 0 END) AS PENDIENTES "
-                   + "FROM HOGAR H "
-                   + "WHERE H.ID_ENCUESTADOR IS NOT NULL "
-                   + "GROUP BY H.ID_ENCUESTADOR";
+        String llamada = "{call PR_LISTAR_HOGARES_DETALLE(?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                System.err.println("No se pudo conectar a la base de datos.");
+                return hogares;
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.registerOutParameter(1, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+
+                    while (rs != null && rs.next()) {
+
+                        String id = limpiar(rs.getString("ID_HOGAR"));
+
+                        Hogar hogar = new Hogar(
+                                idNumerico(id),
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO"))
+                        );
+
+                        hogar.setIdTexto(id);
+
+                        hogar.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
+
+                        hogar.setCiudad(limpiar(rs.getString("CIUDAD")));
+
+                        hogar.setNombreCabeza(limpiar(rs.getString("NOMBRE_CABEZA")));
+
+                        hogares.add(hogar);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al listar hogares: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return hogares;
+    }
+
+    /**
+     * Ejecuta PR_BUSCAR_HOGAR.
+     *
+     * Busca un hogar por su identificador.
+     */
+    public Hogar buscarPorId(String idHogar) {
+
+        String llamada = "{call PR_BUSCAR_HOGAR(?, ?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                System.err.println("No se pudo conectar a la base de datos.");
+                return null;
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, idHogar);
+
+                cs.registerOutParameter(2, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+
+                    if (rs != null && rs.next()) {
+
+                        String id = limpiar(rs.getString("ID_HOGAR"));
+
+                        Hogar hogar = new Hogar(
+                                idNumerico(id),
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO"))
+                        );
+
+                        hogar.setIdTexto(id);
+
+                        hogar.setIdCiudad(
+                                limpiar(rs.getString("ID_CIUDAD"))
+                        );
+
+                        return hogar;
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al buscar hogar: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * Ejecuta PR_INSERTAR_HOGAR.
+     *
+     * Inserta un hogar nuevo.
+     */
+    public boolean insertarHogar(Hogar h) {
+
+        String llamada = "{call PR_INSERTAR_HOGAR(?, ?, ?, ?, ?)}";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+
+            con.setAutoCommit(false);
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, h.getIdCiudad());
+                cs.setString(2, h.getNombreFamilia());
+                cs.setString(3, h.getDireccion());
+                cs.setString(4, h.getBarrio());
+
+                cs.registerOutParameter(5, Types.NUMERIC);
+
+                cs.execute();
+
+                boolean resultado = cs.getInt(5) == 1;
+
+                if (resultado) {
+                    con.commit();
+                } else {
+                    con.rollback();
+                }
+
+                return resultado;
+            }
+
+        } catch (SQLException e) {
+
+            try {
+                con.rollback();
+            } catch (SQLException errorRollback) {
+                e.addSuppressed(errorRollback);
+            }
+
+            System.err.println("Error al insertar el hogar: " + e.getMessage());
+            e.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error al restaurar la transacción.");
+            }
+
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Ejecuta PR_ACTUALIZAR_HOGAR.
+     *
+     * Actualiza ciudad, nombre, dirección y barrio.
+     */
+    public boolean actualizarHogar(Hogar h) {
+
+        String llamada = "{call PR_ACTUALIZAR_HOGAR(?, ?, ?, ?, ?, ?)}";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+
+            con.setAutoCommit(false);
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, h.getIdTexto());
+                cs.setString(2, h.getIdCiudad());
+                cs.setString(3, h.getNombreFamilia());
+                cs.setString(4, h.getDireccion());
+                cs.setString(5, h.getBarrio());
+
+                cs.registerOutParameter(6, Types.NUMERIC);
+
+                cs.execute();
+
+                boolean resultado = cs.getInt(6) == 1;
+
+                if (resultado) {
+                    con.commit();
+                } else {
+                    con.rollback();
+                }
+
+                return resultado;
+            }
+
+        } catch (SQLException e) {
+
+            try {
+                con.rollback();
+            } catch (SQLException errorRollback) {
+                e.addSuppressed(errorRollback);
+            }
+
+            System.err.println("Error al actualizar hogar: " + e.getMessage());
+            e.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error al restaurar la transacción.");
+            }
+
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Ejecuta PR_ELIMINAR_HOGAR.
+     *
+     * Elimina el hogar y sus registros relacionados en una transacción.
+     */
+    public boolean eliminarHogar(String idHogar) {
+
+        String llamada = "{call PR_ELIMINAR_HOGAR(?, ?)}";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+
+            con.setAutoCommit(false);
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, idHogar);
+
+                cs.registerOutParameter(2, Types.NUMERIC);
+
+                cs.execute();
+
+                boolean resultado = cs.getInt(2) == 1;
+
+                if (resultado) {
+                    con.commit();
+                } else {
+                    con.rollback();
+                }
+
+                return resultado;
+            }
+
+        } catch (SQLException e) {
+
+            try {
+                con.rollback();
+            } catch (SQLException errorRollback) {
+                e.addSuppressed(errorRollback);
+            }
+
+            System.err.println("Error al eliminar el hogar: " + e.getMessage());
+            e.printStackTrace();
+
+            return false;
+
+        } finally {
+
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error al restaurar la transacción.");
+            }
+
+            Conexion.close(con);
+        }
+    }
+
+    /**
+     * Ejecuta PR_ASIGNAR_HOGARES.
+     *
+     * Asigna uno o varios hogares a un encuestador.
+     *
+     * Se utiliza SYS.ODCIVARCHAR2LIST para enviar la lista de IDs a Oracle.
+     */
+    public void asignarHogaresAEncuestador(String idEncuestador,List<String> idsHogares) throws SQLException {
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new SQLException("Debe seleccionar un encuestador.");
+        }
+
+        if (idsHogares == null || idsHogares.isEmpty()) {
+            throw new SQLException("Debe seleccionar al menos una familia.");
+        }
+
+        // Validar los identificadores antes de enviarlos a Oracle.
+        String[] ids = new String[idsHogares.size()];
+
+        for (int i = 0; i < idsHogares.size(); i++) {
+
+            String id = idsHogares.get(i);
+
+            if (id == null || id.trim().isEmpty()) {
+                throw new SQLException("Se encontró un identificador de hogar inválido.");
+            }
+
+            ids[i] = id.trim();
+        }
+
+        String llamada = "{call PR_ASIGNAR_HOGARES(?, ?, ?)}";
 
         try (Connection con = Conexion.init()) {
 
@@ -506,23 +441,254 @@ public boolean insertarHogar(Hogar h) {
                 throw new SQLException("No fue posible conectar con Oracle.");
             }
 
-            try (PreparedStatement ps = con.prepareStatement(sql);
-                 ResultSet rs = ps.executeQuery()) {
+            boolean autoCommitOriginal = con.getAutoCommit();
 
-                while (rs.next()) {
-                    conteos.put(
-                        limpiar(rs.getString("ID_ENCUESTADOR")),
-                        new int[]{ rs.getInt("REALIZADAS"), rs.getInt("PENDIENTES") }
+            try {
+
+                con.setAutoCommit(false);
+
+                OracleConnection oracleCon = con.unwrap(OracleConnection.class);
+
+                Array arregloIds = oracleCon.createOracleArray("SYS.ODCIVARCHAR2LIST",ids);
+
+                try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                    cs.setString(1, idEncuestador.trim());
+                    cs.setArray(2, arregloIds);
+
+                    cs.registerOutParameter(3, Types.NUMERIC);
+
+                    cs.execute();
+
+                    int resultado = cs.getInt(3);
+
+                    if (resultado == 1) {
+                        con.commit();
+                    } else {
+                        con.rollback();
+                        throw new SQLException("No se pudieron asignar todos los hogares.");
+                    }
+
+                } finally {
+                    arregloIds.free();
+                }
+
+            } catch (SQLException e) {
+
+                try {
+                    con.rollback();
+                } catch (SQLException errorRollback) {
+                    e.addSuppressed(errorRollback);
+                }
+
+                throw e;
+
+            } finally {
+
+                try {
+                    con.setAutoCommit(autoCommitOriginal);
+                } catch (SQLException e) {
+                    System.err.println(
+                            "Error al restaurar la transacción."
                     );
                 }
             }
         }
+    }
+
+    /**
+     * Ejecuta PR_HOGARES_SIN_ENCUESTADOR.
+     *
+     * Lista los hogares que todavía no tienen un encuestador asignado.
+     */
+    public List<Hogar> listarHogaresSinEncuestador() throws SQLException {
+
+        List<Hogar> hogares = new ArrayList<>();
+
+        String llamada = "{call PR_HOGARES_SIN_ENCUESTADOR(?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.registerOutParameter(1, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+
+                    while (rs != null && rs.next()) {
+
+                        String id = limpiar(rs.getString("ID_HOGAR"));
+
+                        Hogar hogar = new Hogar(
+                                idNumerico(id),
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO"))
+                        );
+
+                        hogar.setIdTexto(id);
+
+                        hogares.add(hogar);
+                    }
+                }
+            }
+        }
+
+        return hogares;
+    }
+
+    /**
+     * Ejecuta PR_HOGARES_POR_ENCUESTADOR.
+     *
+     * Consulta los hogares que tiene asignados un encuestador.
+     */
+    public List<Hogar> listarHogaresPorEncuestador(String idEncuestador) throws SQLException {
+
+        List<Hogar> hogares = new ArrayList<>();
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new SQLException("No se ha seleccionado un encuestador.");
+        }
+
+        String llamada = "{call PR_HOGARES_POR_ENCUESTADOR(?, ?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, idEncuestador.trim());
+
+                cs.registerOutParameter(2, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+
+                    while (rs != null && rs.next()) {
+
+                        String id = limpiar(rs.getString("ID_HOGAR"));
+
+                        Hogar hogar = new Hogar(
+                                idNumerico(id),
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO"))
+                        );
+
+                        hogar.setIdTexto(id);
+
+                        hogares.add(hogar);
+                    }
+                }
+            }
+        }
+
+        return hogares;
+    }
+
+    /**
+     * Ejecuta PR_DESASIGNAR_HOGAR.
+     *
+     * Desasigna un hogar de un encuestador sin eliminar el hogar.
+     */
+    public boolean desasignarHogar(String idEncuestador,String idHogar) throws SQLException {
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new SQLException("No se ha seleccionado un encuestador.");
+        }
+
+        if (idHogar == null || idHogar.trim().isEmpty()) {
+            throw new SQLException("No se ha seleccionado un hogar.");
+        }
+
+        String llamada = "{call PR_DESASIGNAR_HOGAR(?, ?, ?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, idHogar.trim());
+                cs.setString(2, idEncuestador.trim());
+
+                cs.registerOutParameter(3, Types.NUMERIC);
+
+                cs.execute();
+
+                return cs.getInt(3) == 1;
+            }
+        }
+    }
+
+    /**
+     * Ejecuta PR_CONTAR_ENCUESTAS.
+     *
+     * Devuelve un mapa cuya llave es el ID del encuestador
+     * y cuyo valor contiene:
+     *
+     * [0] Cantidad de hogares con encuesta realizada.
+     * [1] Cantidad de hogares pendientes.
+     */
+    public Map<String, int[]> contarEncuestasPorEncuestador() throws SQLException {
+
+        Map<String, int[]> conteos = new HashMap<>();
+
+        String llamada = "{call PR_CONTAR_ENCUESTAS(?)}";
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.registerOutParameter(1, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+
+                    while (rs != null && rs.next()) {
+
+                        String idEncuestador = limpiar(rs.getString("ID_ENCUESTADOR"));
+
+                        int realizadas = rs.getInt("REALIZADAS");
+                        int pendientes = rs.getInt("PENDIENTES");
+
+                        conteos.put(
+                                idEncuestador,
+                                new int[]{realizadas, pendientes}
+                        );
+                    }
+                }
+            }
+        }
+
         return conteos;
     }
+
     /**
-     * Familias asignadas a un encuestador con el estado de su encuesta.
-     * Cada fila es {nombre de la familia, "Realizada" o "Pendiente", id del hogar}.
-     * Es "Realizada" si el hogar tiene al menos un registro en ENCUESTA.
+     * Ejecuta PR_ESTADO_ENCUESTAS.
+     *
+     * Devuelve una lista de arreglos String:
+     *
+     * [0] Nombre de la familia.
+     * [1] Estado: Realizada o Pendiente.
+     * [2] ID del hogar.
      */
     public List<String[]> listarEstadoEncuestasPorEncuestador(
             String idEncuestador) throws SQLException {
@@ -533,14 +699,7 @@ public boolean insertarHogar(Hogar h) {
             throw new SQLException("No se ha seleccionado un encuestador.");
         }
 
-        String sql = "SELECT H.NOMBRE_HOGAR, "
-                   + "CASE WHEN EXISTS (SELECT 1 FROM ENCUESTA E "
-                   + "                  WHERE E.ID_HOGAR = H.ID_HOGAR) "
-                   + "     THEN 'Realizada' ELSE 'Pendiente' END AS ESTADO, "
-                   + "H.ID_HOGAR "
-                   + "FROM HOGAR H "
-                   + "WHERE H.ID_ENCUESTADOR = ? "
-                   + "ORDER BY H.NOMBRE_HOGAR";
+        String llamada ="{call PR_ESTADO_ENCUESTAS(?, ?)}";
 
         try (Connection con = Conexion.init()) {
 
@@ -548,44 +707,50 @@ public boolean insertarHogar(Hogar h) {
                 throw new SQLException("No fue posible conectar con Oracle.");
             }
 
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setString(1, idEncuestador.trim());
+            try (CallableStatement cs = con.prepareCall(llamada)) {
 
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
+                cs.setString(1, idEncuestador.trim());
+
+                cs.registerOutParameter(2, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+
+                    while (rs != null && rs.next()) {
+
                         filas.add(new String[]{
-                            limpiar(rs.getString("NOMBRE_HOGAR")),
-                            rs.getString("ESTADO"),
-                            limpiar(rs.getString("ID_HOGAR"))
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("ESTADO")),
+                                limpiar(rs.getString("ID_HOGAR"))
                         });
                     }
                 }
             }
         }
+
         return filas;
     }
-        /**
-     * Datos de una familia y de su encuesta más reciente.
-     * Devuelve {nombre, dirección, barrio, ciudad, fechaInicio, fechaFin}.
-     * Las fechas son null si el hogar todavía no tiene encuesta.
+
+    /**
+     * Ejecuta PR_BUSCAR_DETALLE_ENCUESTA.
+     *
+     * Devuelve un arreglo String:
+     *
+     * [0] Nombre de la familia.
+     * [1] Dirección.
+     * [2] Barrio.
+     * [3] Ciudad.
+     * [4] Fecha de inicio.
+     * [5] Fecha de finalización.
+     *
+     * Las fechas son null si no hay encuesta.
      * Devuelve null si el hogar no existe.
      */
-    public String[] buscarDetalleEncuesta(String idHogar) throws SQLException {
+    public String[] buscarDetalleEncuesta(
+            String idHogar) throws SQLException {
 
-        String sql = "SELECT H.NOMBRE_HOGAR, H.DIR_NUMERO, H.DIR_BARRIO, "
-                   + "C.NOMBRE_CIUDAD || ' - ' || D.NOMBRE_DEPARTAMENTO, "
-                   + "(SELECT TO_CHAR(E.FECHA_INICIO, 'DD/MM/YYYY HH24:MI') "
-                   + " FROM ENCUESTA E WHERE E.ID_HOGAR = H.ID_HOGAR "
-                   + " AND TO_NUMBER(E.ID_ENCUESTA) = (SELECT MAX(TO_NUMBER(E2.ID_ENCUESTA)) "
-                   + "     FROM ENCUESTA E2 WHERE E2.ID_HOGAR = H.ID_HOGAR)), "
-                   + "(SELECT TO_CHAR(E.FECHA_FIN, 'DD/MM/YYYY HH24:MI') "
-                   + " FROM ENCUESTA E WHERE E.ID_HOGAR = H.ID_HOGAR "
-                   + " AND TO_NUMBER(E.ID_ENCUESTA) = (SELECT MAX(TO_NUMBER(E2.ID_ENCUESTA)) "
-                   + "     FROM ENCUESTA E2 WHERE E2.ID_HOGAR = H.ID_HOGAR)) "
-                   + "FROM HOGAR H "
-                   + "JOIN CIUDAD C ON C.ID_CIUDAD = H.ID_CIUDAD "
-                   + "JOIN DEPARTAMENTO D ON D.ID_DEPARTAMENTO = C.ID_DEPARTAMENTO "
-                   + "WHERE H.ID_HOGAR = ?";
+        String llamada = "{call PR_BUSCAR_DETALLE_ENCUESTA(?, ?)}";
 
         try (Connection con = Conexion.init()) {
 
@@ -593,88 +758,118 @@ public boolean insertarHogar(Hogar h) {
                 throw new SQLException("No fue posible conectar con Oracle.");
             }
 
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setString(1, idHogar);
+            try (CallableStatement cs = con.prepareCall(llamada)) {
 
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
+                cs.setString(1, idHogar);
+
+                cs.registerOutParameter(2, OracleTypes.CURSOR);
+
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+
+                    if (rs != null && rs.next()) {
+
                         return new String[]{
-                            limpiar(rs.getString(1)),
-                            limpiar(rs.getString(2)),
-                            limpiar(rs.getString(3)),
-                            limpiar(rs.getString(4)),
-                            rs.getString(5),   // null si no hay encuesta
-                            rs.getString(6)
+                                limpiar(rs.getString("NOMBRE_HOGAR")),
+                                limpiar(rs.getString("DIR_NUMERO")),
+                                limpiar(rs.getString("DIR_BARRIO")),
+                                limpiar(rs.getString("CIUDAD")),
+                                rs.getString("FECHA_INICIO"),
+                                rs.getString("FECHA_FIN")
                         };
                     }
                 }
             }
         }
+
         return null;
     }
+
     /**
+     * Ejecuta PR_INSERTAR_HOGAR_CON_CABEZA.
+     *
      * Crea el hogar y su cabeza de hogar en una sola transacción.
-     * Si falla cualquiera de los dos inserts no se guarda nada.
-     * Los IDs se calculan con MAX + 1, igual que PAR_USUARIO y ENCUESTA.
      */
     public boolean insertarHogarConCabeza(Hogar h, CabezaHogar c) {
 
-        String sqlHogar = "INSERT INTO HOGAR "
-                        + "(ID_HOGAR, ID_CIUDAD, NOMBRE_HOGAR, DIR_NUMERO, DIR_BARRIO) "
-                        + "VALUES (?, ?, ?, ?, ?)";
-
-        String sqlCabeza = "INSERT INTO CABEZA_DE_HOGAR "
-                         + "(ID_CABEZA_DE_HOGAR, ID_HOGAR, NOMBRE_COMPLETO, "
-                         + "DOCUMENTO_IDENTIDAD, CORREO_ELECTRONICO, TELEFONO) "
-                         + "VALUES (?, ?, ?, ?, ?, ?)";
+        String llamada = "{call PR_INSERTAR_HOGAR_CON_CABEZA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 
         Connection con = Conexion.init();
+
         if (con == null) {
             System.err.println("No se pudo conectar a la base de datos.");
             return false;
         }
 
         try {
+
             con.setAutoCommit(false);
 
-            // 1. Calcular el ID del hogar e insertarlo.
-            String idHogar = String.valueOf(
-                    EncuestaDAO.siguienteId(con, "HOGAR", "ID_HOGAR"));
+            try (CallableStatement cs = con.prepareCall(llamada)) {
 
-            try (PreparedStatement ps = con.prepareStatement(sqlHogar)) {
-                ps.setString(1, idHogar);
-                ps.setString(2, h.getIdCiudad());
-                ps.setString(3, h.getNombreFamilia());
-                ps.setString(4, h.getDireccion());
-                ps.setString(5, h.getBarrio());
-                ps.executeUpdate();
+                // Datos del hogar.
+                cs.setString(1, h.getIdCiudad());
+                cs.setString(2, h.getNombreFamilia());
+                cs.setString(3, h.getDireccion());
+                cs.setString(4, h.getBarrio());
+
+                // Datos de la cabeza de hogar.
+                cs.setString(5, c.getNombreCompleto());
+                cs.setString(6, c.getDocumentoIdentidad());
+                cs.setString(7, c.getCorreo());
+                cs.setString(8, c.getTelefono());
+
+                // Parámetros de salida.
+                cs.registerOutParameter(9, Types.VARCHAR);
+                cs.registerOutParameter(10, Types.VARCHAR);
+                cs.registerOutParameter(11, Types.NUMERIC);
+
+                cs.execute();
+
+                String idHogar = cs.getString(9);
+                String idCabeza = cs.getString(10);
+
+                boolean resultado = cs.getInt(11) == 1;
+
+                if (resultado) {
+
+                    con.commit();
+
+                    // Guardar los IDs generados en los objetos.
+                    h.setIdTexto(limpiar(idHogar));
+
+                    c.setIdHogar(limpiar(idHogar));
+                    c.setIdCabezaHogar(limpiar(idCabeza));
+
+                } else {
+                    con.rollback();
+                }
+
+                return resultado;
             }
-
-            // 2. Calcular el ID de la cabeza e insertarla asociada a ese hogar.
-            String idCabeza = String.valueOf(
-                    EncuestaDAO.siguienteId(con, "CABEZA_DE_HOGAR", "ID_CABEZA_DE_HOGAR"));
-
-            try (PreparedStatement ps = con.prepareStatement(sqlCabeza)) {
-                ps.setString(1, idCabeza);
-                ps.setString(2, idHogar);
-                ps.setString(3, c.getNombreCompleto());
-                ps.setString(4, c.getDocumentoIdentidad());
-                ps.setString(5, c.getCorreo());
-                ps.setString(6, c.getTelefono());
-                ps.executeUpdate();
-            }
-
-            con.commit();
-            return true;
 
         } catch (SQLException e) {
-            System.err.println("Error al crear el hogar y su cabeza: " + e.getMessage());
+
+            try {
+                con.rollback();
+            } catch (SQLException errorRollback) {
+                e.addSuppressed(errorRollback);
+            }
+
+            System.err.println("Error al crear el hogar y su cabeza: "+ e.getMessage());
             e.printStackTrace();
-            try { con.rollback(); } catch (SQLException ignorada) { }
+
             return false;
 
         } finally {
-            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error al restaurar la transacción.");
+            }
+
             Conexion.close(con);
         }
     }

@@ -4,6 +4,8 @@
  */
 package enph.vista;
 
+import enph.controlador.InicioSesionController;
+
 
 /**
  *Pantalla de inicio de sesión: es la primera que ve el encuestador.
@@ -15,22 +17,16 @@ package enph.vista;
 public class InicioSesion extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(InicioSesion.class.getName());
-
+    private InicioSesionController controlador;
     /**
      * Creates new form NewJFrame
      */
     public InicioSesion() {
-        initComponents(); 
-        //setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); Para que la ventana se abra en pantalla completa automaticamente
-        // Centrar la ventana
+    initComponents();
     setLocationRelativeTo(null);
 
-    // Conectar el botón con el controlador: la ventana no valida nada por sí sola, solo le avisa al controlador que se pulsó
-    enph.controlador.InicioSesionController controlador =
-            new enph.controlador.InicioSesionController(this);
-    // Al pulsar "Ingresar" se ejecuta iniciarSesion(), que lee los campos por medio de los getters de abajo
-    jButton1.addActionListener(e -> controlador.iniciarSesion());
-    }
+    controlador = new InicioSesionController(this);
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -194,6 +190,7 @@ public class InicioSesion extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        controlador.iniciarSesion();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

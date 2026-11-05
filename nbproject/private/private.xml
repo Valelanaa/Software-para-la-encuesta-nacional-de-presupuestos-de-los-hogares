@@ -5,6 +5,20 @@
         <group>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/HogarDAO.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearCabezaHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdmin.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/Conexion.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuEncuestador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/EncuestaDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/SesionUsuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/InicioSesionController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/UsuarioDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CaracterizacionDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FamiliasEncuestador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/InformeEncuesta.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearUsuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/EditarUsuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CabezaHogarDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FrecuenciaGasto.java</file>
         </group>
     </open-files>
 </project-private>

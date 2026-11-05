@@ -9,92 +9,123 @@ import enph.vista.MenuAdmin;
 import enph.vista.MenuEncuestador;
 import javax.swing.JOptionPane;
 
-/**
- * Controlador de la pantalla InicioSesion (patrón MVC).
- * Lee lo que el usuario escribió en la ventana, le pide a UsuarioDAO
- * que verifique las credenciales y, si son correctas, guarda la sesión
- * y abre la pantalla que corresponde a su rol: MenuAdmin para el
- * administrador y FamiliasRegistradas para el encuestador.
- */
 public class InicioSesionController {
 
-    private final InicioSesion vista; // ventana de inicio de sesión
-    private final UsuarioDAO usuarioDAO; // acceso a la tabla ENCUESTADOR
+    private final InicioSesion vista;
+    private final UsuarioDAO usuarioDAO;
 
-    // la ventana InicioSesion que este controlador atiende
     public InicioSesionController(InicioSesion vista) {
         this.vista = vista;
         this.usuarioDAO = new UsuarioDAO();
     }
 
-    /**
-     * Se ejecuta al pulsar el botón de ingresar: valida los campos, comprueba
-     * las credenciales en la base de datos y abre la siguiente pantalla.
-     */
     public void iniciarSesion() {
-        // trim() quita espacios accidentales al inicio y al final del usuario
-        String documento = vista.getTxtUsuario().getText().trim();
-        // El campo de contraseña entrega un arreglo de caracteres (char[]),
-        // por seguridad; aquí se convierte a String para compararla
-        String password = new String(vista.getTxtPassword().getPassword());
 
-        // Validación previa: no se consulta la base de datos con campos vacíos
+        // Obtener los datos ingresados
+        String documento = vista.getTxtUsuario().getText().trim();
+
+        String password = new String(
+                vista.getTxtPassword().getPassword()
+        );
+
+        // Validar campos vacíos
         if (documento.isEmpty() || password.isEmpty()) {
+
             JOptionPane.showMessageDialog(
                     vista,
-                    "Por favor, ingrese el usuario y la contraseña.",
+                    "Ingrese su documento y contraseña.",
                     "Campos incompletos",
                     JOptionPane.WARNING_MESSAGE
             );
+
             return;
         }
 
-        // Consulta a la base de datos: devuelve el usuario (con nombre y rol)
-        // si el documento y la contraseña coinciden, o null si no
+        // Consultar usuario en Oracle
         Usuario usuario = usuarioDAO.autenticar(documento, password);
 
-        if (usuario != null) {
-            SesionUsuario.iniciar(usuario);
+        // Validar autenticación
+        if (usuario == null) {
 
-            String rol = usuario.getRol() == null ? "" : usuario.getRol().trim();
+            JOptionPane.showMessageDialog(
+                    vista,
+                    "Documento o contraseña incorrectos, "
+                    + "o no fue posible validar el acceso.",
+                    "Error de inicio de sesión",
+                    JOptionPane.ERROR_MESSAGE
+            );
 
-            // A partir de aquí todas las consultas usan el usuario de base de datos
-            // que corresponde al rol (administrador o encuestador)
-            Conexion.usarRol(rol);
+            vista.getTxtPassword().setText("");
+            return;
+        }
 
-            try {
-                if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {
-                    MenuAdmin menu = new MenuAdmin();
-                    menu.setLocationRelativeTo(null);
-                    menu.setVisible(true);
-                    vista.dispose();
+        // Obtener el rol registrado en Oracle
+        String rol = usuario.getRol() == null
+                ? ""
+                : usuario.getRol().trim();
 
-                } else if ("ENCUESTADOR".equalsIgnoreCase(rol)) {
-                    MenuEncuestador menu2 = new MenuEncuestador();
-                    menu2.setLocationRelativeTo(null);
-                    menu2.setVisible(true);
-                    vista.dispose();
+        // Verificar que tenga un rol reconocido
+        if (!"ADMINISTRADOR".equalsIgnoreCase(rol)
+                && !"ENCUESTADOR".equalsIgnoreCase(rol)) {
 
-                } else {
-                    // Rol desconocido: no se abre ninguna pantalla
-                    SesionUsuario.cerrar();
-                    JOptionPane.showMessageDialog(
-                            vista,
-                            "El rol del usuario (" + rol + ") no tiene una pantalla asignada.",
-                            "Rol no reconocido",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                }
-            } catch (Exception e) {
-                SesionUsuario.cerrar();
-                JOptionPane.showMessageDialog(
-                        vista,
-                        "No se pudo abrir la pantalla: " + e.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                e.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    vista,
+                    "El usuario no tiene un rol válido asignado.",
+                    "Rol no reconocido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        // Cambiar la conexión de Oracle según el rol
+        if (!Conexion.usarRol(rol)) {
+            JOptionPane.showMessageDialog(
+                    vista,
+                    "No fue posible configurar el acceso según el rol.",
+                    "Error de conexión",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            Conexion.usarGeneral();
+            return;
+        }
+
+        // Guardar el usuario autenticado
+        SesionUsuario.iniciar(usuario);
+
+        try {
+
+            if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {
+
+                // Abrir menú del administrador
+                MenuAdmin menu = new MenuAdmin();
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+
+            } else {
+
+                // Abrir menú del encuestador
+                MenuEncuestador menu = new MenuEncuestador();
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
             }
+
+            // Cerrar ventana de inicio de sesión
+            vista.dispose();
+
+        } catch (Exception e) {
+
+            SesionUsuario.cerrar();
+
+            JOptionPane.showMessageDialog(
+                    vista,
+                    "No fue posible abrir el menú correspondiente:\n"
+                    + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            e.printStackTrace();
         }
     }
 }
