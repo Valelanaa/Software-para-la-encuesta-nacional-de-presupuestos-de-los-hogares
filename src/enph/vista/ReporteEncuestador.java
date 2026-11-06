@@ -78,7 +78,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 private LocalDate obtenerFecha(String texto) {
     return LocalDate.parse(texto.trim(), formatoFecha);
 }
-private void generarReporte() throws SQLException {
+private void generarReporte() {
     try {
         LocalDate desde = obtenerFecha(txt_FechaDesde.getText());
         LocalDate hasta = obtenerFecha(txt_FechaHasta.getText());
@@ -457,12 +457,8 @@ private void generarReporte() throws SQLException {
     }//GEN-LAST:event_txt_FechaHastaActionPerformed
 
     private void Btn_GenerarReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GenerarReporteActionPerformed
-        try {
-            // TODO add your handling code here:
-            generarReporte();
-        } catch (SQLException ex) {
-            System.getLogger(ReporteEncuestador.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
+    // TODO add your handling code here:
+        generarReporte();
     }//GEN-LAST:event_Btn_GenerarReporteActionPerformed
 
     /**
