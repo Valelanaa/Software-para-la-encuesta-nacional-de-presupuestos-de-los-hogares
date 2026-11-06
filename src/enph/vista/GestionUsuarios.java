@@ -38,7 +38,7 @@ public GestionUsuarios() {
 
 // Lee los usuarios de la base de datos y los muestra en la tabla
 private void cargarUsuarios() {
-    usuariosEnTabla = new enph.modelo.UsuarioDAO().listarUsuarios();
+    usuariosEnTabla = enph.Main.listarUsuarios();
 
     // Modelo con las mismas columnas del diseño; las celdas no se pueden editar a mano
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
@@ -348,7 +348,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (new enph.modelo.UsuarioDAO().eliminarUsuario(seleccionado.getIdUsuario())) {
+        if (enph.Main.eliminarUsuario(seleccionado.getIdUsuario())) {
             javax.swing.JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
             cargarUsuarios(); // actualiza la tabla sin el usuario borrado
         } else {

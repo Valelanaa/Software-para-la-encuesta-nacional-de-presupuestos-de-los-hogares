@@ -36,7 +36,7 @@ public GestionHogar() {
 }
 
 private void cargarHogares() {
-    hogaresEnTabla = new enph.modelo.HogarDAO().listarHogaresConDetalle();
+    hogaresEnTabla = enph.Main.listarHogaresConDetalle();
 
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
             new Object[]{"Hogar", "Dirección", "Barrio", "Ciudad", "Cabeza de hogar"}, 0) {
@@ -336,7 +336,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         enph.modelo.Hogar seleccionado = hogaresEnTabla.get(indice);
 
         // Un hogar con encuesta no se elimina: se perdería información histórica
-        if (new enph.modelo.EncuestaDAO().hogarTieneEncuesta(seleccionado.getIdHogar())) {
+        if (enph.Main.hogarTieneEncuesta(seleccionado.getIdHogar())) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "El hogar \"" + seleccionado.getNombreFamilia() + "\" ya tiene una encuesta registrada,\n"
                     + "por eso no se puede eliminar.",
@@ -355,7 +355,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (new enph.modelo.HogarDAO().eliminarHogar(seleccionado.getIdTexto())) {
+        if (enph.Main.eliminarHogar(seleccionado.getIdTexto())) {
             javax.swing.JOptionPane.showMessageDialog(this, "Hogar eliminado correctamente.");
             cargarHogares(); // actualiza la tabla sin el hogar borrado
         } else {

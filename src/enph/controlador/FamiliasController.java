@@ -5,10 +5,8 @@
 
 package enph.controlador;
 
-import enph.modelo.HogarDAO;
 import enph.modelo.Hogar;
 import enph.vista.FamiliasRegistradas;
-
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -23,11 +21,9 @@ import javax.swing.JOptionPane;
 public class FamiliasController {
 
     private final FamiliasRegistradas vista; // ventana que mostrará las familias
-    private final HogarDAO hogarDAO; // acceso a la tabla HOGAR
     //la ventana FamiliasRegistradas que este controlador atiende
     public FamiliasController(FamiliasRegistradas vista) {
         this.vista = vista;
-        this.hogarDAO = new HogarDAO();
     }
     /**
      * Lee los hogares de la base de datos y los muestra en la tabla de la vista.
@@ -38,7 +34,7 @@ public class FamiliasController {
 
         try {
             // Consulta a la base de datos
-            List<Hogar> hogares = hogarDAO.listarHogares();
+            List<Hogar> hogares = enph.Main.listarHogares();
         // La vista se encarga de llenar la tabla con esa lista
             vista.mostrarHogares(hogares);
 

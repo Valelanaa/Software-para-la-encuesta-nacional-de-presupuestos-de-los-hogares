@@ -37,8 +37,7 @@ public InformeEncuesta() {
 }
 private void cargarEncuestadores() {
     // Consultar los usuarios registrados.
-    List<enph.modelo.Usuario> usuarios =
-            new enph.modelo.UsuarioDAO().listarUsuarios();
+    List<enph.modelo.Usuario> usuarios = enph.Main.listarUsuarios();
 
     encuestadoresEnTabla = new ArrayList<>();
 
@@ -53,7 +52,7 @@ private void cargarEncuestadores() {
     // Conteo de encuestas realizadas y pendientes por encuestador.
     java.util.Map<String, int[]> conteos = new java.util.HashMap<>();
     try {
-        conteos = new enph.modelo.HogarDAO().contarEncuestasPorEncuestador();
+        conteos = enph.Main.contarEncuestasPorEncuestador();
     } catch (java.sql.SQLException ex) {
         javax.swing.JOptionPane.showMessageDialog(
             this,

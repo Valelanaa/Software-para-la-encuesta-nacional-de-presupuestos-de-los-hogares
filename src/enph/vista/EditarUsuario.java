@@ -79,7 +79,7 @@ private void volver() {
 // Llena el combo de ciudades desde la base de datos
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
+    ciudades.addAll(enph.Main.listarCiudades());
     Cmb_Ciudad.removeAllItems();
     for (enph.modelo.ItemCiudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
@@ -88,7 +88,7 @@ private void cargarCiudades() {
 
 // Lee el usuario de la base y muestra sus datos en los campos
 private void cargarUsuario(String idUsuario) {
-    usuarioEditado = new enph.modelo.UsuarioDAO().buscarPorId(idUsuario);
+    usuarioEditado = enph.Main.buscarUsuarioPorId(idUsuario);
     if (usuarioEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(this,
                 "No se pudo cargar el usuario.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -446,8 +446,7 @@ private void cargarUsuario(String idUsuario) {
         return;
     }
 
-    enph.modelo.UsuarioDAO dao = new enph.modelo.UsuarioDAO();
-    if (dao.existeDocumento(cedula, usuarioEditado.getIdUsuario())) {
+    if (enph.Main.usuarioExisteDocumento(cedula, usuarioEditado.getIdUsuario())) {
         javax.swing.JOptionPane.showMessageDialog(this, "Ya existe otro usuario con esa cédula.",
                 "Cédula repetida", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
@@ -461,7 +460,7 @@ private void cargarUsuario(String idUsuario) {
     usuarioEditado.setRol(rol);
     usuarioEditado.setIdCiudad(idCiudad);
 
-    if (dao.actualizarUsuario(usuarioEditado)) {
+    if (enph.Main.actualizarUsuario(usuarioEditado)) {
         // Si se editó el usuario de la sesión, se refresca su sesión (banner)
         enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
         if (sesion != null && usuarioEditado.getIdUsuario().equals(sesion.getIdUsuario())) {

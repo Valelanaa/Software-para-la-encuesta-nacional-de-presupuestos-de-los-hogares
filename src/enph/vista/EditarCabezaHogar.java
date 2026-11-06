@@ -4,9 +4,7 @@
  */
 package enph.vista;
 import enph.controlador.SesionEncuesta;
-import enph.modelo.EncuestaDAO;
 import enph.modelo.CabezaHogar;
-import enph.modelo.CabezaHogarDAO;
 import javax.swing.JOptionPane;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
@@ -85,8 +83,7 @@ private void cargarDatosCabezaHogar() {
         return;
     }
 
-    CabezaHogarDAO dao = new CabezaHogarDAO();
-    CabezaHogar cabeza = dao.buscarPorHogar(idHogar);
+    CabezaHogar cabeza = enph.Main.buscarCabezaPorHogar(idHogar);
 
     if (cabeza == null) {
         JOptionPane.showMessageDialog(
@@ -382,13 +379,9 @@ if (sesion != null) {
             new FrecuenciaGasto(sesion).setVisible(true);
 
         } else {
-
             // Si la encuesta está vacía, se elimina.
             // Si ya tiene respuestas, se conserva.
-            new EncuestaDAO().eliminarEncuestaVacia(
-                sesion.getIdEncuesta()
-            );
-
+            enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
             new FamiliasRegistradas().setVisible(true);
         }
 
@@ -432,9 +425,7 @@ if (sesion != null) {
         return;
     }
 
-    CabezaHogarDAO dao = new CabezaHogarDAO();
-
-    if (dao.existeDocumento(documento, idCabezaHogar)) {
+    if (enph.Main.cabezaExisteDocumento(documento, idCabezaHogar)) {
         JOptionPane.showMessageDialog(
             this,
             "Ya existe otra cabeza de hogar con ese documento.",
@@ -453,7 +444,7 @@ if (sesion != null) {
     cabeza.setCorreo(correo);
     cabeza.setTelefono(telefono);
 
-    if (dao.actualizar(cabeza)) {
+    if (enph.Main.actualizarCabezaHogar(cabeza)) {
         JOptionPane.showMessageDialog(
             this,
             "Los datos de la cabeza de hogar se actualizaron correctamente.",

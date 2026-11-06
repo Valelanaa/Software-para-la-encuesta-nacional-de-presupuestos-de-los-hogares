@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
+import enph.Main;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -38,7 +39,7 @@ public AsignarFamilias() {
 private void cargarEncuestadores() {
     // Consultar los usuarios registrados.
     List<enph.modelo.Usuario> usuarios =
-            new enph.modelo.UsuarioDAO().listarUsuarios();
+            Main.listarUsuarios();
 
     encuestadoresEnTabla = new ArrayList<>();
 

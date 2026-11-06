@@ -49,7 +49,7 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
         }
 
         try {
-            String[] d = new enph.modelo.HogarDAO().buscarDetalleEncuesta(idHogar);
+            String[] d = enph.Main.buscarDetalleEncuesta(idHogar);
 
             if (d == null) {
                 javax.swing.JOptionPane.showMessageDialog(

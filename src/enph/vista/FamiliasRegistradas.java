@@ -386,9 +386,9 @@ private void configurarResaltadoIncompletas() {
         }
         // El hogar de esa fila (la lista y la tabla tienen el mismo orden)
         Hogar hogar = hogaresMostrados.get(fila);
-        enph.modelo.EncuestaDAO encuestaDAO = new enph.modelo.EncuestaDAO();
+        
 
-        if (encuestaDAO.hogarTieneEncuesta(hogar.getIdHogar())) {
+        if (enph.Main.hogarTieneEncuesta(hogar.getIdHogar())) {
             // Familia con encuesta: se le pregunta al encuestador qué hacer.
             // Si el administrador la marcó como incompleta, aparece "Completar".
             boolean incompleta = hogar.isIncompleta();
@@ -443,7 +443,7 @@ private void configurarResaltadoIncompletas() {
                 );
 
                 if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
-                    if (encuestaDAO.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
+                    if (enph.Main.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
                                 "Encuesta eliminada. Ya puede registrar una nueva."

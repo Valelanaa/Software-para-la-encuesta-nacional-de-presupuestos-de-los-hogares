@@ -50,8 +50,7 @@ public class RespuestasEncuesta extends javax.swing.JFrame {
 
         if (idHogar != null && !idHogar.trim().isEmpty()) {
             try {
-                filas = new enph.modelo.CaracterizacionDAO()
-                        .listarRespuestasPorHogar(idHogar);
+                filas = enph.Main.listarRespuestasPorHogar(idHogar);
             } catch (java.sql.SQLException ex) {
                 javax.swing.JOptionPane.showMessageDialog(
                     this,
@@ -325,8 +324,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
         int idEncuesta;
         try {
-            idEncuesta = new enph.modelo.EncuestaDAO()
-                    .obtenerIdEncuesta(Integer.parseInt(idHogar.trim()));
+            idEncuesta = enph.Main.obtenerIdEncuesta(Integer.parseInt(idHogar.trim()));
         } catch (NumberFormatException ex) {
             idEncuesta = -1;
         }
@@ -354,7 +352,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (new enph.modelo.EncuestaDAO().marcarIncompleta(idEncuesta)) {
+        if (enph.Main.marcarEncuestaIncompleta(idEncuesta)) {
             javax.swing.JOptionPane.showMessageDialog(
                 this,
                 "La encuesta se marcó como incompleta.",

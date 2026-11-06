@@ -4,11 +4,8 @@
  */
 package enph.controlador;
 
-import enph.modelo.CatalogoDAO;
-import enph.modelo.EncuestaDAO;
 import enph.modelo.ItemCatalogo;
 import java.util.List;
-import enph.modelo.CaracterizacionDAO;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -42,15 +39,14 @@ public class SesionEncuesta {
 
     /** Carga los catálogos y crea la encuesta. Devuelve null si algo falla. */
     public static SesionEncuesta iniciar(int idHogar) {
-        CatalogoDAO catalogoDAO = new CatalogoDAO();
-        List<ItemCatalogo> grupos = catalogoDAO.listarGrupos();
-        List<ItemCatalogo> frecuencias = catalogoDAO.listarFrecuencias();
+        List<ItemCatalogo> grupos = enph.Main.listarGrupos();
+        List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
         // Sin grupos o frecuencias no hay encuesta posible
         if (grupos.isEmpty() || frecuencias.isEmpty()) {
             return null;
         }
         // crearEncuesta devuelve -1 si falla el INSERT
-        int idEncuesta = new EncuestaDAO().crearEncuesta(idHogar);
+        int idEncuesta = enph.Main.crearEncuesta(idHogar);
         if (idEncuesta < 0) {
             return null;
         }
@@ -62,14 +58,13 @@ public class SesionEncuesta {
      */
 public static SesionEncuesta editar(int idHogar) {
     // obtenerIdEncuesta devuelve -1 si el hogar no tiene encuesta
-    int idEncuesta = new EncuestaDAO().obtenerIdEncuesta(idHogar);
+    int idEncuesta = enph.Main.obtenerIdEncuesta(idHogar);
     if (idEncuesta < 0) {
         return null;
     }
 
-    CatalogoDAO catalogoDAO = new CatalogoDAO();
-    List<ItemCatalogo> grupos = catalogoDAO.listarGrupos();
-    List<ItemCatalogo> frecuencias = catalogoDAO.listarFrecuencias();
+    List<ItemCatalogo> grupos = enph.Main.listarGrupos();
+    List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
 
     if (grupos.isEmpty() || frecuencias.isEmpty()) {
         return null;
@@ -86,21 +81,16 @@ public static SesionEncuesta editar(int idHogar) {
      * Si no falta ningún grupo, abre la encuesta completa para editarla.
      */
     public static SesionEncuesta completar(int idHogar) {
-        int idEncuesta = new EncuestaDAO().obtenerIdEncuesta(idHogar);
+        int idEncuesta = enph.Main.obtenerIdEncuesta(idHogar);
         if (idEncuesta < 0) {
             return null;
         }
-
-        CatalogoDAO catalogoDAO = new CatalogoDAO();
-        List<ItemCatalogo> todos = catalogoDAO.listarGrupos();
-        List<ItemCatalogo> frecuencias = catalogoDAO.listarFrecuencias();
-
+        List<ItemCatalogo> todos = enph.Main.listarGrupos();
+        List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
         if (todos.isEmpty() || frecuencias.isEmpty()) {
             return null;
         }
-
-        Set<Integer> respondidos =
-                new CaracterizacionDAO().listarGruposRespondidos(idEncuesta);
+        Set<Integer> respondidos = enph.Main.listarGruposRespondidos(idEncuesta);
         if (respondidos == null) {
             return null;
         }

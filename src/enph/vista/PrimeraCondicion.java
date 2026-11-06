@@ -35,8 +35,7 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         Lbl_Contador.setText((sesion.getGrupoActual() + 1) + "/" + sesion.getTotalGrupos());
         // Modo edición: rellena los campos con lo que ya estaba guardado
     if (sesion.isEdicion()) {
-            enph.modelo.RespuestaGrupo previa = new CaracterizacionDAO()
-                .obtener(sesion.getIdEncuesta(), sesion.getGrupo().getId());
+            enph.modelo.RespuestaGrupo previa = enph.Main.obtenerCaracterizacion(sesion.getIdEncuesta(), sesion.getGrupo().getId());
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {
              // El valor puede ser null si antes la frecuencia no lo pedía
@@ -335,7 +334,7 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         // El combo da la posición elegida: 0 = "Sí" se guarda como 1, "No" como 0
         Integer intencion = Cmb_VolverComprar.getSelectedIndex() == 0 ? 1 : 0; // 1 = Sí, 0 = No
         // guardar() actualiza la respuesta si el grupo ya existía (edición o retroceso) y la inserta si es nueva
-        boolean guardado = new CaracterizacionDAO().guardar(
+        boolean guardado = enph.Main.guardarCaracterizacion(
                 sesion.getIdEncuesta(),
                 sesion.getGrupo().getId(),
                 frecuencia.getId(),

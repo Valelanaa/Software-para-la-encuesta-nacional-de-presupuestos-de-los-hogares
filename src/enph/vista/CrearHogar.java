@@ -10,7 +10,6 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
 private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
-private final enph.modelo.BarrioDAO barrioDAO = new enph.modelo.BarrioDAO();
 private enph.modelo.Hogar hogar;
 
 public CrearHogar() {
@@ -75,7 +74,7 @@ public CrearHogar(enph.modelo.Hogar hogar) {
     String idCiudad = ciudades.get(indice).getId();
 
     try {
-        for (enph.modelo.Barrio barrio : barrioDAO.listarPorCiudad(idCiudad)) {
+        for (enph.modelo.Barrio barrio : enph.Main.listarBarriosPorCiudad(idCiudad)) {
             Cmb_Barrio.addItem(barrio);
         }
     } catch (java.sql.SQLException e) {
@@ -98,7 +97,7 @@ private void cargarCiudades() {
     Cmb_Ciudad.removeAllItems();
     Cmb_Barrio.removeAllItems();
 
-    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
+    ciudades.addAll(enph.Main.listarCiudades());
 
     for (enph.modelo.ItemCiudad ciudad : ciudades) {
         Cmb_Ciudad.addItem(ciudad.getNombre());

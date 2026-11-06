@@ -51,7 +51,7 @@ private void volver() {
 // Llena el combo de ciudades desde la base de datos
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
+    ciudades.addAll(enph.Main.listarCiudades());
     Cmb_Ciudad.removeAllItems();
     for (enph.modelo.ItemCiudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
@@ -426,10 +426,10 @@ private void cargarCiudades() {
         return;
     }
 
-    enph.modelo.UsuarioDAO dao = new enph.modelo.UsuarioDAO();
+    
 
     // No registrar una cédula que ya exista.
-    if (dao.existeDocumento(cedula)) {
+    if (enph.Main.usuarioExisteDocumento(cedula)) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
                 "Ya existe un usuario registrado con esa cédula.",
@@ -454,7 +454,7 @@ private void cargarCiudades() {
 }
 
     // Guardar el usuario nuevo en Oracle.
-    if (dao.insertarUsuario(nuevo)) {
+    if (enph.Main.guardarUsuario(nuevo)) {
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,

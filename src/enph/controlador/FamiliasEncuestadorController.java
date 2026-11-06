@@ -6,9 +6,7 @@
 package enph.controlador;
 
 import enph.modelo.Hogar;
-import enph.modelo.HogarDAO;
 import enph.vista.FamiliasEncuestador;
-
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -19,23 +17,19 @@ import javax.swing.JOptionPane;
 public class FamiliasEncuestadorController {
 
     private final FamiliasEncuestador vista;
-    private final HogarDAO hogarDAO;
 
-    public FamiliasEncuestadorController(
-            FamiliasEncuestador vista) {
+    public FamiliasEncuestadorController(FamiliasEncuestador vista) {
 
         this.vista = vista;
-        this.hogarDAO = new HogarDAO();
     }
 
-    /**
-     * Carga las familias asignadas al encuestador seleccionado.
-     */
+    
+    //Carga las familias asignadas al encuestador seleccionado.
+    
     public void cargarHogares(String idEncuestador) {
 
         try {
-            List<Hogar> hogares =
-                hogarDAO.listarHogaresPorEncuestador(idEncuestador);
+            List<Hogar> hogares = enph.Main.listarHogaresPorEncuestador(idEncuestador);
 
             vista.mostrarHogares(hogares);
 
@@ -55,10 +49,7 @@ public class FamiliasEncuestadorController {
         String idHogar) {
 
     try {
-        boolean desasignado = hogarDAO.desasignarHogar(
-            idEncuestador,
-            idHogar
-        );
+        boolean desasignado = enph.Main.desasignarHogar(idEncuestador, idHogar);
 
         if (desasignado) {
             javax.swing.JOptionPane.showMessageDialog(

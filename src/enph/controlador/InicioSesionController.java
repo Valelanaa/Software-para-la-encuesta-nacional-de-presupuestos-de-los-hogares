@@ -3,7 +3,6 @@ package enph.controlador;
 import enph.modelo.Conexion;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
-import enph.modelo.UsuarioDAO;
 import enph.vista.InicioSesion;
 import enph.vista.MenuAdmin;
 import enph.vista.MenuEncuestador;
@@ -12,11 +11,9 @@ import javax.swing.JOptionPane;
 public class InicioSesionController {
 
     private final InicioSesion vista;
-    private final UsuarioDAO usuarioDAO;
 
     public InicioSesionController(InicioSesion vista) {
         this.vista = vista;
-        this.usuarioDAO = new UsuarioDAO();
     }
 
     public void iniciarSesion() {
@@ -42,7 +39,7 @@ public class InicioSesionController {
         }
 
         // Consultar usuario en Oracle
-        Usuario usuario = usuarioDAO.autenticar(documento, password);
+        Usuario usuario = enph.Main.autenticarUsuario(documento, password);
 
         // Validar autenticación
         if (usuario == null) {

@@ -10,7 +10,6 @@ package enph.controlador;
  */
 
 import enph.modelo.ReporteBarrio;
-import enph.modelo.ReporteEncuestadorDAO;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
 import java.sql.SQLException;
@@ -18,8 +17,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class ReporteEncuestadorController {
-
-    private final ReporteEncuestadorDAO dao = new ReporteEncuestadorDAO();
 
     public List<ReporteBarrio> generarReporte(LocalDate desde, LocalDate hasta)
             throws SQLException {
@@ -35,6 +32,6 @@ public class ReporteEncuestadorController {
             throw new SQLException("El rango de fechas no es válido.");
         }
 
-        return dao.generarReporte(usuario.getIdEncuestador(), desde, hasta);
+        return enph.Main.generarReporteEncuestador(usuario.getIdEncuestador(), desde, hasta);
     }
 }

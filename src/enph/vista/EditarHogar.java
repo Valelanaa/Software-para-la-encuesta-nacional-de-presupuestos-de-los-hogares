@@ -23,7 +23,7 @@ private boolean esAdministrador;
 // true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
 private boolean editaSusDatos;
 private enph.modelo.Hogar hogarEditado;
-private final enph.modelo.BarrioDAO barrioDAO = new enph.modelo.BarrioDAO();
+
 
 
 public EditarHogar() {
@@ -64,7 +64,7 @@ private void cargarBarrios() {
     String idCiudad = ciudades.get(indice).getId();
 
     try {
-        for (enph.modelo.Barrio barrio : barrioDAO.listarPorCiudad(idCiudad)) {
+        for (enph.modelo.Barrio barrio : enph.Main.listarBarriosPorCiudad(idCiudad)) {
             Cmb_Barrio.addItem(barrio);
         }
     } catch (java.sql.SQLException e) {
@@ -79,7 +79,7 @@ private void cargarBarrios() {
 
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
+    ciudades.addAll(enph.Main.listarCiudades());
     Cmb_Ciudad.removeAllItems();
     for (enph.modelo.ItemCiudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
@@ -87,7 +87,7 @@ private void cargarCiudades() {
 }
 
 private void cargarHogar(String idHogar) {
-    hogarEditado = new enph.modelo.HogarDAO().buscarPorId(idHogar);
+    hogarEditado = enph.Main.buscarHogarPorId(idHogar);
 
     if (hogarEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(
@@ -463,7 +463,7 @@ private boolean hayCambiosSinGuardar() {
     hogarEditado.setIdBarrio(barrio.getIdBarrio());
     hogarEditado.setBarrio(barrio.getNombreBarrio());
 
-    if (new enph.modelo.HogarDAO().actualizarHogar(hogarEditado)) {
+    if (enph.Main.actualizarHogar(hogarEditado)) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
                 "Datos del hogar actualizados correctamente."

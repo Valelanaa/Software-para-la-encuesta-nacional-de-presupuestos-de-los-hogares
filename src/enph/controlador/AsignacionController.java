@@ -1,9 +1,7 @@
 package enph.controlador;
 
 import enph.modelo.Hogar;
-import enph.modelo.HogarDAO;
 import enph.vista.FamiliasAsignadas;
-
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -14,11 +12,9 @@ import javax.swing.JOptionPane;
 public class AsignacionController {
 
     private final FamiliasAsignadas vista;
-    private final HogarDAO hogarDAO;
 
     public AsignacionController(FamiliasAsignadas vista) {
         this.vista = vista;
-        this.hogarDAO = new HogarDAO();
     }
 
     /**
@@ -26,8 +22,7 @@ public class AsignacionController {
      */
     public void cargarHogares() {
         try {
-            List<Hogar> hogares =
-                    hogarDAO.listarHogaresSinEncuestador();
+            List<Hogar> hogares = enph.Main.listarHogaresSinEncuestador();
 
             vista.mostrarHogares(hogares);
 
@@ -72,10 +67,7 @@ public class AsignacionController {
 
         try {
             // Ejecutar la asignación en la base de datos.
-            hogarDAO.asignarHogaresAEncuestador(
-                idUsuario,
-                idsHogares
-            );
+            enph.Main.asignarHogaresAEncuestador(idUsuario, idsHogares);
 
             // El método DAO es void, por eso usamos el tamaño de la lista.
             int cantidad = idsHogares.size();

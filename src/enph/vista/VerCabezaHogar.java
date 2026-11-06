@@ -43,14 +43,7 @@ private void cargarCabezaHogar(String idHogar) {
     if (idHogar == null || idHogar.trim().isEmpty()) {
         return;
     }
-
-    // Consultar la cabeza de hogar asociada al hogar seleccionado.
-    enph.modelo.CabezaHogarDAO dao =
-            new enph.modelo.CabezaHogarDAO();
-
-    enph.modelo.CabezaHogar cabeza =
-            dao.buscarPorHogar(idHogar);
-
+    enph.modelo.CabezaHogar cabeza = enph.Main.buscarCabezaPorHogar(idHogar);
     // Si existe un registro, mostrar sus datos.
     if (cabeza != null) {
 

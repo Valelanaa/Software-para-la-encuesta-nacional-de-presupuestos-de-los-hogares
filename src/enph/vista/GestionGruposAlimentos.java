@@ -37,7 +37,7 @@ public GestionGruposAlimentos() {
 }
 // Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
 private void cargarGrupos() {
-    gruposEnTabla = new enph.modelo.CatalogoDAO().listarGrupos();
+    gruposEnTabla = enph.Main.listarGrupos();
  
     // Una sola columna: el nombre del grupo; las celdas no se pueden editar a mano
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
@@ -322,9 +322,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     }
     int indice = Tbl_Alimentos.convertRowIndexToModel(fila);
     enph.modelo.ItemCatalogo seleccionado = gruposEnTabla.get(indice);
-    enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
-    if (dao.grupoEnUso(seleccionado.getId())) {
+    if (enph.Main.grupoEnUso(seleccionado.getId())) {
         javax.swing.JOptionPane.showMessageDialog(this,
                 "El grupo \"" + seleccionado.getNombre() + "\" ya tiene respuestas registradas\n"
                 + "en encuestas, por eso no se puede eliminar.",
@@ -339,7 +338,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             javax.swing.JOptionPane.WARNING_MESSAGE);
     if (opcion != javax.swing.JOptionPane.YES_OPTION) return;
 
-    if (dao.eliminarGrupo(seleccionado.getId())) {
+    if (enph.Main.eliminarGrupo(seleccionado.getId())) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo eliminado correctamente.");
         cargarGrupos();
     } else {
@@ -362,7 +361,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 "Dato requerido", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
     }
-    if (new enph.modelo.CatalogoDAO().crearGrupo(nombre)) {
+    if (enph.Main.crearGrupo(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo creado correctamente.");
         cargarGrupos();
     } else {
@@ -395,7 +394,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 "Dato requerido", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
     }
-    if (new enph.modelo.CatalogoDAO().editarGrupo(seleccionado.getId(), nombre)) {
+    if (enph.Main.editarGrupo(seleccionado.getId(), nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo actualizado correctamente.");
         cargarGrupos();
     } else {

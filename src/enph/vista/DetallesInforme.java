@@ -48,8 +48,8 @@ public class DetallesInforme extends javax.swing.JFrame {
     private void cargarFamilias() {
         List<String[]> filas = new ArrayList<>();
         try {
-            filas = new enph.modelo.HogarDAO()
-                    .listarEstadoEncuestasPorEncuestador(idEncuestador);
+            filas = enph.Main.listarEstadoEncuestasPorEncuestador(idEncuestador);
+                    
         } catch (java.sql.SQLException ex) {
             javax.swing.JOptionPane.showMessageDialog(
                 this,

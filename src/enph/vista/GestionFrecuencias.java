@@ -38,7 +38,7 @@ public GestionFrecuencias() {
 // Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
 // Lee las frecuencias de compra desde la base de datos.
 private void cargarFrecuencias() {
-    frecuenciasEnTabla = new enph.modelo.CatalogoDAO().listarFrecuencias();
+    frecuenciasEnTabla = enph.Main.listarFrecuencias();
 
     javax.swing.table.DefaultTableModel modelo =
             new javax.swing.table.DefaultTableModel(
@@ -327,7 +327,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
     // No permitir eliminar frecuencias utilizadas en respuestas.
-    if (dao.frecuenciaEnUso(seleccionada.getId())) {
+    if (enph.Main.frecuenciaEnUso(seleccionada.getId())) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "No puedes eliminar esta frecuencia porque está siendo "
@@ -351,7 +351,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
         return;
     }
 
-    if (dao.eliminarFrecuencia(seleccionada.getId())) {
+    if (enph.Main.eliminarFrecuencia(seleccionada.getId())) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se eliminó correctamente.",
@@ -399,7 +399,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
 
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
-    if (dao.crearFrecuencia(nombre)) {
+    if (enph.Main.crearFrecuencia(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se creó correctamente.",
@@ -463,7 +463,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
 
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
-    if (dao.editarFrecuencia(seleccionada.getId(), nombre)) {
+    if (enph.Main.editarFrecuencia(seleccionada.getId(), nombre)) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se actualizó correctamente.",

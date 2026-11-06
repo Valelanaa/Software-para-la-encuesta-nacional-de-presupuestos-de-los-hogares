@@ -3,8 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.modelo.CaracterizacionDAO;
-import enph.modelo.EncuestaDAO;
 import enph.modelo.ItemCatalogo;
 import enph.controlador.SesionEncuesta;
 
@@ -35,8 +33,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                 new javax.swing.DefaultComboBoxModel<>(sesion.getNombresFrecuencias()));
         // Modo edición: selecciona en el combo la frecuencia que ya estaba guardada
             if (sesion.isEdicion()) {
-            enph.modelo.RespuestaGrupo previa = new CaracterizacionDAO()
-                .obtener(sesion.getIdEncuesta(), sesion.getGrupo().getId());
+                enph.modelo.RespuestaGrupo previa = enph.Main.obtenerCaracterizacion(sesion.getIdEncuesta(), sesion.getGrupo().getId());
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {
             for (int i = 0; i < sesion.getFrecuencias().size(); i++) {
@@ -63,9 +60,8 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
             actual.dispose();
         } else {
             // Era el último grupo: se registra la fecha de fin y se vuelve a la lista de familias
-            new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
-            new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
-            new EncuestaDAO().quitarMarcaIncompleta(sesion.getIdEncuesta());
+            enph.Main.finalizarEncuesta(sesion.getIdEncuesta());
+            enph.Main.quitarMarcaIncompleta(sesion.getIdEncuesta());
             javax.swing.JOptionPane.showMessageDialog(
                     actual,
                     "Se han completado los " + sesion.getTotalGrupos() + " grupos de alimentos."
@@ -286,7 +282,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         } else {
             // No necesita más datos: se guarda solo la frecuencia
             // (los dos null son el valor y la intención, que no aplican aquí)
-            boolean guardado = new CaracterizacionDAO().guardar(
+            boolean guardado = enph.Main.guardarCaracterizacion(
                     sesion.getIdEncuesta(),
                     sesion.getGrupo().getId(),
                     frecuencia.getId(),
@@ -325,7 +321,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         // Primer grupo: si la encuesta aún no tiene respuestas se borra, para no
         // dejar una encuesta vacía que bloquee a la familia. Si ya tiene respuestas
         // (por ejemplo, al editar), este método no borra nada.
-        new EncuestaDAO().eliminarEncuestaVacia(sesion.getIdEncuesta());
+        enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
         new FamiliasRegistradas().setVisible(true);
     }
     this.dispose();
@@ -339,8 +335,8 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         // TODO add your handling code here:
         // Registra la fecha de fin de la encuesta.
         // Si no hay ninguna respuesta guardada, la encuesta se elimina en lugar de finalizarse.
-        new EncuestaDAO().eliminarEncuestaVacia(sesion.getIdEncuesta());
-        new EncuestaDAO().finalizarEncuesta(sesion.getIdEncuesta());
+        enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
+        enph.Main.finalizarEncuesta(sesion.getIdEncuesta());
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,

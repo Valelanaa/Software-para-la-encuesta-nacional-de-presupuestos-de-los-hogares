@@ -3,8 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
+import enph.Main;
 import enph.controlador.SesionEncuesta;
-import enph.modelo.EncuestaDAO;
 public class CrearCabezaHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
@@ -22,53 +22,29 @@ public CrearCabezaHogar() {
 // Constructor para recibir el ID del usuario.
 public CrearCabezaHogar(String idUsuario) {
     initComponents();
-
     this.hogar = null;
-
     // Datos de quien inició sesión.
-    Lbl__Usuario1.setText(
-            enph.modelo.SesionUsuario.nombreParaMostrar()
-    );
-
-    Lbl_Rol1.setText(
-            enph.modelo.SesionUsuario.rolParaMostrar()
-    );
-
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
     setLocationRelativeTo(null);
 }
 
 // Constructor para recibir los datos del hogar desde CrearHogar.
 public CrearCabezaHogar(enph.modelo.Hogar hogar) {
     initComponents();
-
     this.hogar = hogar;
     this.sesion = null;
-
-    Lbl__Usuario1.setText(
-        enph.modelo.SesionUsuario.nombreParaMostrar()
-    );
-
-    Lbl_Rol1.setText(
-        enph.modelo.SesionUsuario.rolParaMostrar()
-    );
-
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
     setLocationRelativeTo(null);
 }
 
 public CrearCabezaHogar(SesionEncuesta sesion) {
     initComponents();
-
     this.sesion = sesion;
     this.hogar = null;
-
-    Lbl__Usuario1.setText(
-        enph.modelo.SesionUsuario.nombreParaMostrar()
-    );
-
-    Lbl_Rol1.setText(
-        enph.modelo.SesionUsuario.rolParaMostrar()
-    );
-
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
     setLocationRelativeTo(null);
 }
 
@@ -337,35 +313,31 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
     private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
         // TODO add your handling code here:
     if (sesion != null) {
-
-            // Si existe un grupo anterior, regresa a él.
-            if (sesion.hayAnterior()) {
-                sesion.retroceder();
-                new FrecuenciaGasto(sesion).setVisible(true);
-
-            } else {
-                // Si la encuesta está vacía, se elimina.
-                // Si tiene respuestas, no se elimina.
-                new EncuestaDAO().eliminarEncuestaVacia(
-                    sesion.getIdEncuesta()
-                );
-
-                new FamiliasRegistradas().setVisible(true);
-            }
+        // Si existe un grupo anterior, regresa a él.
+        if (sesion.hayAnterior()) {
+            sesion.retroceder();
+            new FrecuenciaGasto(sesion).setVisible(true);
 
         } else {
+            // Si la encuesta está vacía, se elimina.
+            // Si tiene respuestas, no se elimina.
+            Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
 
-            // Si se abrió desde CrearHogar,
-            // conserva el flujo actual.
-            new CrearHogar(hogar).setVisible(true);
+            new FamiliasRegistradas().setVisible(true);
         }
 
-        this.dispose();
+    } else {
+        // Si se abrió desde CrearHogar,
+        // conserva el flujo actual.
+        new CrearHogar(hogar).setVisible(true);
+    }
+
+    this.dispose();
     }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
-        // Solo aplica cuando se llegó desde CrearHogar con los datos del hogar.
+    // Solo aplica cuando se llegó desde CrearHogar con los datos del hogar.
         if (hogar == null) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "No hay datos del hogar. Vuelve a la pantalla anterior.",
@@ -387,7 +359,7 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
         }
 
         // "-1" no coincide con ningún ID: busca el documento en todas las cabezas.
-        if (new enph.modelo.CabezaHogarDAO().existeDocumento(documento, "-1")) {
+        if (enph.Main.cabezaExisteDocumento(documento, "-1")) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "Ya existe una cabeza de hogar con ese documento.",
                     "Documento duplicado", javax.swing.JOptionPane.WARNING_MESSAGE);
@@ -400,7 +372,7 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
         cabeza.setCorreo(correo);
         cabeza.setTelefono(telefono);
 
-        if (new enph.modelo.HogarDAO().insertarHogarConCabeza(hogar, cabeza)) {
+        if (enph.Main.insertarHogarConCabeza(hogar, cabeza)) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "El hogar y su cabeza de hogar se crearon correctamente.",
                     "Hogar creado", javax.swing.JOptionPane.INFORMATION_MESSAGE);
@@ -412,8 +384,6 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
                     + "Revisa la conexión y los mensajes de la consola.",
                     "Error al guardar", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        
-       
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     private void Txt_NombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Txt_NombreActionPerformed
