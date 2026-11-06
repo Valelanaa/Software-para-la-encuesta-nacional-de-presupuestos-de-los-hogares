@@ -10,47 +10,82 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
 private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
+private final enph.modelo.BarrioDAO barrioDAO = new enph.modelo.BarrioDAO();
+private enph.modelo.Hogar hogar;
 
-    public CrearHogar() {
-        initComponents();
-
-        // Mostrar el usuario y su rol en la interfaz.
-        Lbl__Usuario1.setText(
-                enph.modelo.SesionUsuario.nombreParaMostrar()
-        );
-
-        Lbl_Rol1.setText(
-                enph.modelo.SesionUsuario.rolParaMostrar()
-        );
-
-        // Cargar únicamente las ciudades del catálogo.
-        cargarCiudades();
-
-        // Centrar la ventana.
-        setLocationRelativeTo(null);
-    }
-    public CrearHogar(enph.modelo.Hogar hogar) {
+public CrearHogar() {
     initComponents();
 
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+
     cargarCiudades();
+    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
+
+    setLocationRelativeTo(null);
+}
+
+public CrearHogar(enph.modelo.Hogar hogar) {
+    initComponents();
+
+    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+
+    cargarCiudades();
+    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
 
     if (hogar != null) {
         Txt_Nombre.setText(hogar.getNombreFamilia());
         Txt_Direccion.setText(hogar.getDireccion());
-        Txt_Barrio.setText(hogar.getBarrio());
 
-        // Seleccionar la ciudad correspondiente.
-        if (hogar.getIdCiudad() != null) {
-            for (int i = 0; i < ciudades.size(); i++) {
-                if (ciudades.get(i).getId().equals(hogar.getIdCiudad())) {
-                    Cmb_Ciudad.setSelectedIndex(i);
-                    break;
-                }
+        // Seleccionar la ciudad.
+        for (int i = 0; i < ciudades.size(); i++) {
+            if (ciudades.get(i).getId().equals(hogar.getIdCiudad())) {
+                Cmb_Ciudad.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        // Cargar los barrios de la ciudad seleccionada.
+        cargarBarrios();
+
+        // Seleccionar el barrio guardado.
+        for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
+            enph.modelo.Barrio barrio = (enph.modelo.Barrio) Cmb_Barrio.getItemAt(i);
+
+            if (barrio.getIdBarrio().equals(hogar.getIdBarrio())) {
+                Cmb_Barrio.setSelectedIndex(i);
+                break;
             }
         }
     }
 
     setLocationRelativeTo(null);
+}
+    
+    private void cargarBarrios() {
+    Cmb_Barrio.removeAllItems();
+
+    int indice = Cmb_Ciudad.getSelectedIndex();
+
+    if (indice < 0 || indice >= ciudades.size()) {
+        return;
+    }
+
+    String idCiudad = ciudades.get(indice).getId();
+
+    try {
+        for (enph.modelo.Barrio barrio : barrioDAO.listarPorCiudad(idCiudad)) {
+            Cmb_Barrio.addItem(barrio);
+        }
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Error al cargar los barrios: " + e.getMessage(),
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
 }
 
     private void volver() {
@@ -60,10 +95,13 @@ private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.Ar
 
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
     Cmb_Ciudad.removeAllItems();
-    for (enph.modelo.ItemCiudad c : ciudades) {
-        Cmb_Ciudad.addItem(c.getNombre());
+    Cmb_Barrio.removeAllItems();
+
+    ciudades.addAll(new enph.modelo.UsuarioDAO().listarCiudades());
+
+    for (enph.modelo.ItemCiudad ciudad : ciudades) {
+        Cmb_Ciudad.addItem(ciudad.getNombre());
     }
 }
 
@@ -96,10 +134,10 @@ private void cargarCiudades() {
         Lbl_Direccion = new javax.swing.JLabel();
         Txt_Direccion = new javax.swing.JTextField();
         Lbl_Barrio = new javax.swing.JLabel();
-        Txt_Barrio = new javax.swing.JTextField();
         Lbl_Ciudad = new javax.swing.JLabel();
-        Cmb_Ciudad = new javax.swing.JComboBox<>();
+        Cmb_Barrio = new javax.swing.JComboBox<>();
         Btn_Siguiente = new javax.swing.JButton();
+        Cmb_Ciudad = new javax.swing.JComboBox<>();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -226,16 +264,16 @@ private void cargarCiudades() {
         Lbl_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         Lbl_Barrio.setText("Barrio:");
 
-        Txt_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-
         Lbl_Ciudad.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         Lbl_Ciudad.setText("Ciudad:");
 
-        Cmb_Ciudad.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Cmb_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
 
         Btn_Siguiente.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
         Btn_Siguiente.setText("Siguiente");
         Btn_Siguiente.addActionListener(this::Btn_SiguienteActionPerformed);
+
+        Cmb_Ciudad.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
 
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
@@ -259,19 +297,20 @@ private void cargarCiudades() {
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Pnl_CentralLayout.createSequentialGroup()
                                 .addComponent(Lbl_Ciudad)
-                                .addGap(18, 18, 18)
+                                .addGap(28, 28, 28)
                                 .addComponent(Cmb_Ciudad, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addGroup(Pnl_CentralLayout.createSequentialGroup()
                                 .addComponent(Lbl_Barrio)
-                                .addGap(18, 18, 18)
-                                .addComponent(Txt_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                                .addGap(33, 33, 33)
+                                .addComponent(Cmb_Barrio, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(4, 4, 4))
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Btn_Siguiente)
                         .addGap(26, 26, 26)
-                        .addComponent(Btn_Volver)))
-                .addGap(38, 38, 38))
+                        .addComponent(Btn_Volver)
+                        .addGap(14, 14, 14)))
+                .addGap(24, 24, 24))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -293,7 +332,7 @@ private void cargarCiudades() {
                         .addGap(28, 28, 28)
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(Lbl_Barrio)
-                            .addComponent(Txt_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(Cmb_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(144, 144, 144)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btn_Volver)
@@ -332,68 +371,50 @@ private void cargarCiudades() {
 
     private void Btn_SiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_SiguienteActionPerformed
         // TODO add your handling code here:
-        // 1. Obtener los datos ingresados.
-    String nombre = Txt_Nombre.getText().trim();
+ String nombre = Txt_Nombre.getText().trim();
     String direccion = Txt_Direccion.getText().trim();
-    String barrio = Txt_Barrio.getText().trim();
 
-    // 2. Obtener el índice de la ciudad seleccionada.
     int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+    enph.modelo.Barrio barrio =
+            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
 
-    // 3. Validar que todos los campos estén completos.
-    if (nombre.isEmpty()
-            || direccion.isEmpty()
-            || barrio.isEmpty()
-            || indiceCiudad < 0
-            || indiceCiudad >= ciudades.size()) {
+    if (nombre.isEmpty() || direccion.isEmpty()
+            || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
+            || barrio == null) {
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "Todos los campos son obligatorios y debe seleccionar una ciudad.",
+                "Todos los campos son obligatorios y debe seleccionar una ciudad y un barrio.",
                 "Campos incompletos",
                 javax.swing.JOptionPane.WARNING_MESSAGE
         );
-
         return;
     }
 
-    // 4. Validar la longitud de los campos.
-    if (nombre.length() > 100
-            || direccion.length() > 150
-            || barrio.length() > 100) {
-
+    if (nombre.length() > 100 || direccion.length() > 150) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "El nombre admite máximo 100 caracteres, "
-                + "la dirección 150 y el barrio 100.",
+                "El nombre admite máximo 100 caracteres y la dirección 150.",
                 "Datos demasiado largos",
                 javax.swing.JOptionPane.WARNING_MESSAGE
         );
-
         return;
     }
 
-    // 5. Obtener el ID de la ciudad seleccionada.
     String idCiudad = ciudades.get(indiceCiudad).getId();
 
-    // 6. Crear el objeto Hogar sin guardarlo en la base de datos.
     enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(
-            0,
             nombre,
             direccion,
-            barrio
+            barrio.getIdBarrio(),
+            barrio.getNombreBarrio(),
+            idCiudad
     );
 
-    nuevoHogar.setIdCiudad(idCiudad);
-
-    // 7. Abrir la pantalla CrearCabezaHogar y pasarle el hogar.
     CrearCabezaHogar pantalla = new CrearCabezaHogar(nuevoHogar);
-
     pantalla.setLocationRelativeTo(null);
     pantalla.setVisible(true);
-
-    // 8. Cerrar la pantalla actual.
-    this.dispose();
+    dispose();
     }//GEN-LAST:event_Btn_SiguienteActionPerformed
 
     /**
@@ -424,6 +445,7 @@ private void cargarCiudades() {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btn_Siguiente;
     private javax.swing.JButton Btn_Volver;
+    private javax.swing.JComboBox<enph.modelo.Barrio> Cmb_Barrio;
     private javax.swing.JComboBox<String> Cmb_Ciudad;
     private javax.swing.JLabel Lbl_Barrio;
     private javax.swing.JLabel Lbl_Ciudad;
@@ -438,7 +460,6 @@ private void cargarCiudades() {
     private javax.swing.JPanel Pnl_Banner;
     private javax.swing.JPanel Pnl_Central;
     private javax.swing.JPanel Pnl_Contenido;
-    private javax.swing.JTextField Txt_Barrio;
     private javax.swing.JTextField Txt_Direccion;
     private javax.swing.JTextField Txt_Nombre;
     private javax.swing.JButton jButton1;

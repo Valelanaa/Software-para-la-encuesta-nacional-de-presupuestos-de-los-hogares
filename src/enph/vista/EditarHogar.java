@@ -23,6 +23,8 @@ private boolean esAdministrador;
 // true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
 private boolean editaSusDatos;
 private enph.modelo.Hogar hogarEditado;
+private final enph.modelo.BarrioDAO barrioDAO = new enph.modelo.BarrioDAO();
+
 
 public EditarHogar() {
     this(null);
@@ -30,19 +32,49 @@ public EditarHogar() {
 
 public EditarHogar(String idHogar) {
     initComponents();
+
     Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
     Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
     cargarCiudades();
+
+    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
+
     if (idHogar != null) {
         cargarHogar(idHogar);
     }
+
     setLocationRelativeTo(null);
 }
 
 private void volver() {
     new GestionHogar().setVisible(true);
     dispose();
+}
+
+private void cargarBarrios() {
+    Cmb_Barrio.removeAllItems();
+
+    int indice = Cmb_Ciudad.getSelectedIndex();
+
+    if (indice < 0 || indice >= ciudades.size()) {
+        return;
+    }
+
+    String idCiudad = ciudades.get(indice).getId();
+
+    try {
+        for (enph.modelo.Barrio barrio : barrioDAO.listarPorCiudad(idCiudad)) {
+            Cmb_Barrio.addItem(barrio);
+        }
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Error al cargar los barrios: " + e.getMessage(),
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
 }
 
 private void cargarCiudades() {
@@ -56,18 +88,37 @@ private void cargarCiudades() {
 
 private void cargarHogar(String idHogar) {
     hogarEditado = new enph.modelo.HogarDAO().buscarPorId(idHogar);
+
     if (hogarEditado == null) {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "No se pudo cargar el hogar.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "No se pudo cargar el hogar.",
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
         return;
     }
+
     Txt_Nombre.setText(hogarEditado.getNombreFamilia());
     Txt_Direccion.setText(hogarEditado.getDireccion());
-    Txt_Barrio.setText(hogarEditado.getBarrio());
 
+    // Seleccionar la ciudad del hogar.
     for (int i = 0; i < ciudades.size(); i++) {
         if (ciudades.get(i).getId().equals(hogarEditado.getIdCiudad())) {
             Cmb_Ciudad.setSelectedIndex(i);
+            break;
+        }
+    }
+
+    // Cargar los barrios de esa ciudad.
+    cargarBarrios();
+
+    // Seleccionar el barrio que tiene guardado el hogar.
+    for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
+        enph.modelo.Barrio barrio = Cmb_Barrio.getItemAt(i);
+
+        if (barrio.getIdBarrio().equals(hogarEditado.getIdBarrio())) {
+            Cmb_Barrio.setSelectedIndex(i);
             break;
         }
     }
@@ -77,12 +128,21 @@ private boolean hayCambiosSinGuardar() {
     if (hogarEditado == null) {
         return false;
     }
+
     int indice = Cmb_Ciudad.getSelectedIndex();
-    String idCiudad = indice >= 0 ? ciudades.get(indice).getId() : "";
+
+    String idCiudad = indice >= 0 && indice < ciudades.size()
+            ? ciudades.get(indice).getId() : "";
+
+    enph.modelo.Barrio barrio =
+            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+
+    String idBarrio = barrio != null ? barrio.getIdBarrio() : "";
+
     return !Txt_Nombre.getText().trim().equals(hogarEditado.getNombreFamilia())
             || !Txt_Direccion.getText().trim().equals(hogarEditado.getDireccion())
-            || !Txt_Barrio.getText().trim().equals(hogarEditado.getBarrio())
-            || !idCiudad.equals(hogarEditado.getIdCiudad());
+            || !idCiudad.equals(hogarEditado.getIdCiudad())
+            || !idBarrio.equals(hogarEditado.getIdBarrio());
 }
 
     /**
@@ -114,11 +174,11 @@ private boolean hayCambiosSinGuardar() {
         Lbl_Direccion = new javax.swing.JLabel();
         Txt_Direccion = new javax.swing.JTextField();
         Lbl_Barrio = new javax.swing.JLabel();
-        Txt_Barrio = new javax.swing.JTextField();
         Lbl_Ciudad = new javax.swing.JLabel();
         Cmb_Ciudad = new javax.swing.JComboBox<>();
         Btn_Guardar = new javax.swing.JButton();
         Btn_CabezaHogar = new javax.swing.JButton();
+        Cmb_Barrio = new javax.swing.JComboBox<>();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -245,8 +305,6 @@ private boolean hayCambiosSinGuardar() {
         Lbl_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         Lbl_Barrio.setText("Barrio:");
 
-        Txt_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-
         Lbl_Ciudad.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
         Lbl_Ciudad.setText("Ciudad:");
 
@@ -260,6 +318,8 @@ private boolean hayCambiosSinGuardar() {
         Btn_CabezaHogar.setText("Editar información de la cabeza de hogar");
         Btn_CabezaHogar.addActionListener(this::Btn_CabezaHogarActionPerformed);
 
+        Cmb_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
@@ -269,31 +329,34 @@ private boolean hayCambiosSinGuardar() {
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, Pnl_CentralLayout.createSequentialGroup()
                         .addGap(33, 33, 33)
-                        .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                    .addComponent(Lbl_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(Txt_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                    .addGap(28, 28, 28)
-                                    .addComponent(Lbl_Barrio)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(Txt_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                .addComponent(Lbl_Direccion, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(Txt_Direccion, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(88, 88, 88)
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                                .addComponent(Lbl_Ciudad)
-                                .addGap(18, 18, 18)
-                                .addComponent(Cmb_Ciudad, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(Btn_CabezaHogar, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(16, 16, 16))))
+                                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                        .addComponent(Lbl_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(Txt_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                        .addComponent(Lbl_Direccion, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(Txt_Direccion, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(88, 88, 88)
+                                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                        .addComponent(Lbl_Ciudad)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(Cmb_Ciudad, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGap(6, 6, 6))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                                        .addGap(0, 0, Short.MAX_VALUE)
+                                        .addComponent(Btn_CabezaHogar, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(16, 16, 16))))
+                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                .addGap(28, 28, 28)
+                                .addComponent(Lbl_Barrio)
+                                .addGap(33, 33, 33)
+                                .addComponent(Cmb_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(Btn_Guardar)
@@ -319,7 +382,7 @@ private boolean hayCambiosSinGuardar() {
                 .addGap(26, 26, 26)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Lbl_Barrio)
-                    .addComponent(Txt_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Cmb_Barrio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(82, 82, 82)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(Btn_Volver)
@@ -358,43 +421,62 @@ private boolean hayCambiosSinGuardar() {
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
-            if (hogarEditado == null) {
+    if (hogarEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(this, "No hay un hogar cargado para guardar.");
         return;
     }
 
     String nombre = Txt_Nombre.getText().trim();
     String direccion = Txt_Direccion.getText().trim();
-    String barrio = Txt_Barrio.getText().trim();
-    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    String idCiudad = indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "";
 
-    if (nombre.isEmpty() || direccion.isEmpty() || barrio.isEmpty() || idCiudad.isEmpty()) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.",
-                "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
+    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+
+    enph.modelo.Barrio barrio =
+            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+
+    if (nombre.isEmpty() || direccion.isEmpty()
+            || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
+            || barrio == null) {
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Todos los campos son obligatorios.",
+                "Campos incompletos",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
         return;
     }
-    if (nombre.length() > 100 || direccion.length() > 150 || barrio.length() > 100) {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "Algún campo es demasiado largo (nombre máx. 100, dirección 150, barrio 100).",
-                "Dato demasiado largo", javax.swing.JOptionPane.WARNING_MESSAGE);
+
+    if (nombre.length() > 100 || direccion.length() > 150) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El nombre admite máximo 100 caracteres y la dirección 150.",
+                "Datos demasiado largos",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
         return;
     }
 
     hogarEditado.setNombreFamilia(nombre);
     hogarEditado.setDireccion(direccion);
-    hogarEditado.setBarrio(barrio);
-    hogarEditado.setIdCiudad(idCiudad);
+    hogarEditado.setIdCiudad(ciudades.get(indiceCiudad).getId());
+    hogarEditado.setIdBarrio(barrio.getIdBarrio());
+    hogarEditado.setBarrio(barrio.getNombreBarrio());
 
     if (new enph.modelo.HogarDAO().actualizarHogar(hogarEditado)) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Datos del hogar actualizados correctamente.");
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Datos del hogar actualizados correctamente."
+        );
         volver();
     } else {
-        javax.swing.JOptionPane.showMessageDialog(this,
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
                 "No se pudo actualizar. Revise la consola para ver el detalle.",
-                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
     }
-       
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     private void Btn_CabezaHogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CabezaHogarActionPerformed
@@ -444,6 +526,7 @@ private boolean hayCambiosSinGuardar() {
     private javax.swing.JButton Btn_CabezaHogar;
     private javax.swing.JButton Btn_Guardar;
     private javax.swing.JButton Btn_Volver;
+    private javax.swing.JComboBox<enph.modelo.Barrio> Cmb_Barrio;
     private javax.swing.JComboBox<String> Cmb_Ciudad;
     private javax.swing.JLabel Lbl_Barrio;
     private javax.swing.JLabel Lbl_Ciudad;
@@ -458,7 +541,6 @@ private boolean hayCambiosSinGuardar() {
     private javax.swing.JPanel Pnl_Banner;
     private javax.swing.JPanel Pnl_Central;
     private javax.swing.JPanel Pnl_Contenido;
-    private javax.swing.JTextField Txt_Barrio;
     private javax.swing.JTextField Txt_Direccion;
     private javax.swing.JTextField Txt_Nombre;
     private javax.swing.JButton jButton1;

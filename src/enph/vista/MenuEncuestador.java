@@ -69,6 +69,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Btn_Familias = new javax.swing.JButton();
         Lbl_TituloPantalla = new javax.swing.JLabel();
         Btn_CerrarSesion = new javax.swing.JButton();
+        Btn_Reporte = new javax.swing.JButton();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -185,6 +186,10 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         Btn_CerrarSesion.setText("Cerrar sesion");
         Btn_CerrarSesion.addActionListener(this::Btn_CerrarSesionActionPerformed);
 
+        Btn_Reporte.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Reporte.setText("Reporte de encuestas por barrio");
+        Btn_Reporte.addActionListener(this::Btn_ReporteActionPerformed);
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
@@ -204,7 +209,10 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                         .addGap(26, 26, 26))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                         .addComponent(Btn_Usuario)
-                        .addGap(326, 326, 326))))
+                        .addGap(326, 326, 326))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                        .addComponent(Btn_Reporte)
+                        .addGap(276, 276, 276))))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -214,9 +222,11 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 .addComponent(Lbl_TituloPantalla)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
                 .addComponent(Btn_Familias)
-                .addGap(53, 53, 53)
+                .addGap(31, 31, 31)
                 .addComponent(Btn_Usuario)
-                .addGap(89, 89, 89)
+                .addGap(34, 34, 34)
+                .addComponent(Btn_Reporte)
+                .addGap(40, 40, 40)
                 .addComponent(Btn_CerrarSesion)
                 .addGap(51, 51, 51))
         );
@@ -270,6 +280,12 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         dispose();                            // cierra esta ventana
     }//GEN-LAST:event_Btn_CerrarSesionActionPerformed
 
+    private void Btn_ReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_ReporteActionPerformed
+        // TODO add your handling code here:
+        new ReporteEncuestador().setVisible(true); // muestra la pantalla del reporte que le corresponde 
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_ReporteActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -298,6 +314,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btn_CerrarSesion;
     private javax.swing.JButton Btn_Familias;
+    private javax.swing.JButton Btn_Reporte;
     private javax.swing.JButton Btn_Usuario;
     private javax.swing.JLabel Lbl_Rol;
     private javax.swing.JLabel Lbl_Rol1;
