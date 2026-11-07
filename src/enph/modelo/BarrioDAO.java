@@ -8,7 +8,6 @@ package enph.modelo;
  *
  * @author Valeria
  */
-
 import java.sql.Connection;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -31,37 +30,39 @@ public class BarrioDAO {
 
     // ==================== LISTAR POR CIUDAD ====================
 
-    public List<Barrio> listarPorCiudad(String idCiudad) throws SQLException {
+    public List<Barrio> listarPorCiudad(String idCiudad)
+            throws SQLException {
+
         if (idCiudad == null || idCiudad.trim().isEmpty()) {
             throw new SQLException("Debe seleccionar una ciudad.");
         }
 
-        return listar("{call PR_LISTAR_BARRIOS_POR_CIUDAD(?,?)}", idCiudad.trim());
+        return listar(
+                "{call PR_LISTAR_BARRIOS_POR_CIUDAD(?,?)}",
+                idCiudad.trim()
+        );
     }
 
     // ==================== BUSCAR POR ID ====================
 
     public Barrio buscarPorId(String idBarrio) throws SQLException {
+
         if (idBarrio == null || idBarrio.trim().isEmpty()) {
-            throw new SQLException("Debe proporcionar el identificador del barrio.");
+            throw new SQLException("Debe proporcionar el ID del barrio.");
         }
 
         String llamada = "{call PR_BUSCAR_BARRIO(?,?)}";
 
-        try (Connection con = Conexion.init()) {
-            if (con == null) {
-                throw new SQLException("No fue posible conectar con Oracle.");
-            }
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
 
-            try (CallableStatement cs = con.prepareCall(llamada)) {
-                cs.setString(1, idBarrio.trim());
-                cs.registerOutParameter(2, Types.REF_CURSOR);
-                cs.execute();
+            cs.setString(1, idBarrio.trim());
+            cs.registerOutParameter(2, Types.REF_CURSOR);
+            cs.execute();
 
-                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
-                    if (rs != null && rs.next()) {
-                        return obtenerBarrio(rs);
-                    }
+            try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+                if (rs != null && rs.next()) {
+                    return obtenerBarrio(rs);
                 }
             }
         }
@@ -69,32 +70,113 @@ public class BarrioDAO {
         return null;
     }
 
+    // ==================== CREAR BARRIO ====================
+
+    public boolean crearBarrio(String nombre, String idCiudad)
+            throws SQLException {
+
+        if (nombre == null || nombre.trim().isEmpty()
+                || idCiudad == null || idCiudad.trim().isEmpty()) {
+            throw new SQLException("El nombre y la ciudad son obligatorios.");
+        }
+
+        String llamada = "{call PR_CREAR_BARRIO(?,?)}";
+
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
+
+            cs.setString(1, nombre.trim());
+            cs.setString(2, idCiudad.trim());
+
+            cs.execute();
+            return true;
+        }
+    }
+
+    // ==================== EDITAR BARRIO ====================
+
+    public boolean editarBarrio(String idBarrio, String nombre,
+                                String idCiudad) throws SQLException {
+
+        if (idBarrio == null || idBarrio.trim().isEmpty()
+                || nombre == null || nombre.trim().isEmpty()
+                || idCiudad == null || idCiudad.trim().isEmpty()) {
+            throw new SQLException("Todos los datos son obligatorios.");
+        }
+
+        String llamada = "{call PR_EDITAR_BARRIO(?,?,?)}";
+
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
+
+            cs.setString(1, idBarrio.trim());
+            cs.setString(2, nombre.trim());
+            cs.setString(3, idCiudad.trim());
+
+            cs.execute();
+            return true;
+        }
+    }
+
+    // ==================== COMPROBAR SI ESTÁ EN USO ====================
+
+    public boolean barrioEnUso(String idBarrio) throws SQLException {
+
+        String llamada = "{call PR_BARRIO_EN_USO(?,?)}";
+
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
+
+            cs.setString(1, idBarrio);
+            cs.registerOutParameter(2, Types.INTEGER);
+
+            cs.execute();
+
+            return cs.getInt(2) > 0;
+        }
+    }
+
+    // ==================== ELIMINAR BARRIO ====================
+
+    public boolean eliminarBarrio(String idBarrio) throws SQLException {
+
+        String llamada = "{call PR_ELIMINAR_BARRIO(?)}";
+
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
+
+            cs.setString(1, idBarrio);
+            cs.execute();
+
+            return true;
+        }
+    }
+
     // ==================== MÉTODO AUXILIAR ====================
 
-    private List<Barrio> listar(String llamada, String idCiudad) throws SQLException {
+    private List<Barrio> listar(String llamada, String idCiudad)
+            throws SQLException {
+
         List<Barrio> barrios = new ArrayList<>();
 
-        try (Connection con = Conexion.init()) {
-            if (con == null) {
-                throw new SQLException("No fue posible conectar con Oracle.");
+        try (Connection con = Conexion.init();
+             CallableStatement cs = con.prepareCall(llamada)) {
+
+            if (idCiudad == null) {
+                cs.registerOutParameter(1, Types.REF_CURSOR);
+            } else {
+                cs.setString(1, idCiudad);
+                cs.registerOutParameter(2, Types.REF_CURSOR);
             }
 
-            try (CallableStatement cs = con.prepareCall(llamada)) {
-                if (idCiudad == null) {
-                    cs.registerOutParameter(1, Types.REF_CURSOR);
-                } else {
-                    cs.setString(1, idCiudad);
-                    cs.registerOutParameter(2, Types.REF_CURSOR);
-                }
+            cs.execute();
 
-                cs.execute();
+            int indiceCursor = idCiudad == null ? 1 : 2;
 
-                int indiceCursor = idCiudad == null ? 1 : 2;
+            try (ResultSet rs = (ResultSet) cs.getObject(indiceCursor)) {
 
-                try (ResultSet rs = (ResultSet) cs.getObject(indiceCursor)) {
-                    while (rs != null && rs.next()) {
-                        barrios.add(obtenerBarrio(rs));
-                    }
+                while (rs != null && rs.next()) {
+                    barrios.add(obtenerBarrio(rs));
                 }
             }
         }
@@ -103,10 +185,12 @@ public class BarrioDAO {
     }
 
     private Barrio obtenerBarrio(ResultSet rs) throws SQLException {
+
         return new Barrio(
                 limpiar(rs.getString("ID_BARRIO")),
                 limpiar(rs.getString("NOMBRE_BARRIO")),
-                limpiar(rs.getString("ID_CIUDAD"))
+                limpiar(rs.getString("ID_CIUDAD")),
+                limpiar(rs.getString("CIUDAD_DEPARTAMENTO"))
         );
     }
 }
