@@ -20,6 +20,7 @@ public class Main {
     private static final CaracterizacionDAO CARACTERIZACION = new CaracterizacionDAO();
     private static final CatalogoDAO CATALOGOS = new CatalogoDAO();
     private static final ReporteEncuestadorDAO REPORTES = new ReporteEncuestadorDAO();
+    private static final ReporteEsencialesDAO REPORTE_ESENCIALES = new ReporteEsencialesDAO();
 
     private Main() { }
 
@@ -83,11 +84,38 @@ public class Main {
     }
 
     // ========================= BARRIOS =========================
-    public static List<Barrio> listarBarrios() throws SQLException { return BARRIOS.listarBarrios(); }
-    public static List<Barrio> listarBarriosPorCiudad(String idCiudad) throws SQLException {
+
+    public static List<Barrio> listarBarrios() throws SQLException {
+        return BARRIOS.listarBarrios();
+    }
+
+    public static List<Barrio> listarBarriosPorCiudad(String idCiudad)
+            throws SQLException {
         return BARRIOS.listarPorCiudad(idCiudad);
     }
-    public static Barrio buscarBarrioPorId(String id) throws SQLException { return BARRIOS.buscarPorId(id); }
+
+    public static Barrio buscarBarrioPorId(String id)
+            throws SQLException {
+        return BARRIOS.buscarPorId(id);
+    }
+
+    public static boolean crearBarrio(String nombre, String idCiudad)
+            throws SQLException {
+        return BARRIOS.crearBarrio(nombre, idCiudad);
+    }
+
+    public static boolean editarBarrio(String idBarrio, String nombre,
+                                       String idCiudad) throws SQLException {
+        return BARRIOS.editarBarrio(idBarrio, nombre, idCiudad);
+    }
+
+    public static boolean barrioEnUso(String idBarrio) throws SQLException {
+        return BARRIOS.barrioEnUso(idBarrio);
+    }
+
+    public static boolean eliminarBarrio(String idBarrio) throws SQLException {
+        return BARRIOS.eliminarBarrio(idBarrio);
+    }
 
     // ========================= CABEZA DE HOGAR =========================
     public static CabezaHogar buscarCabezaPorHogar(String idHogar) { return CABEZAS.buscarPorHogar(idHogar); }
@@ -137,5 +165,9 @@ public class Main {
     public static List<ReporteBarrio> generarReporteEncuestador(String id, LocalDate desde, LocalDate hasta)
             throws SQLException {
         return REPORTES.generarReporte(id, desde, hasta);
+    }
+    public static List<ReporteEsencial> generarReporteEsenciales(
+        String frecuencia) throws SQLException {
+    return REPORTE_ESENCIALES.generarReporte(frecuencia);
     }
 }
