@@ -320,8 +320,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     // Obtener el índice correcto de la fila seleccionada.
     int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
 
-    enph.modelo.Usuario encuestador =
-            encuestadoresEnTabla.get(indice);
+    enph.modelo.Usuario encuestador = encuestadoresEnTabla.get(indice);
 
     // Abrir la pantalla enviando el ID y el nombre del encuestador.
     FamiliasEncuestador pantalla = new FamiliasEncuestador(

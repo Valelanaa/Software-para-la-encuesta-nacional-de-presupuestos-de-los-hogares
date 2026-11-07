@@ -56,8 +56,8 @@ private void aplicarModoSegunRol() {
         // Sus propios datos: nombre, cédula, teléfono y contraseña
         Lbl_RolUsuario.setVisible(false);
         Cmb_Rol.setVisible(false);
-        Lbl_Ciudad.setVisible(false);
-        Cmb_Ciudad.setVisible(false);
+        Lbl_Ciudad.setVisible(esAdministrador);
+        Cmb_Ciudad.setVisible(esAdministrador);
         Lbl_TituloPantalla.setText("Mis datos");
     } else {
         // Un administrador editando a otro usuario: ve rol y ciudad, pero no la contraseña
@@ -420,15 +420,10 @@ private void cargarUsuario(String idUsuario) {
     String rol = editaSusDatos ? usuarioEditado.getRol()
                                : (String) Cmb_Rol.getSelectedItem();
     int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    String idCiudad = editaSusDatos
-            ? usuarioEditado.getIdCiudad()
-            : (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "");
-
-    boolean esEncuestador = "ENCUESTADOR".equalsIgnoreCase(rol);
+    String idCiudad = (editaSusDatos && !esAdministrador) ? usuarioEditado.getIdCiudad() : (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "");
 
     // Validaciones antes de tocar la base de datos
-    if (nombre.isEmpty() || cedula.isEmpty() || contrasenna.isEmpty()
-        || (esEncuestador && (telefono.isEmpty() || idCiudad.isEmpty()))) {
+    if (nombre.isEmpty() || cedula.isEmpty() || contrasenna.isEmpty() || telefono.isEmpty() || idCiudad == null || idCiudad.isEmpty()) {
         javax.swing.JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.",
                 "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
@@ -460,7 +455,9 @@ private void cargarUsuario(String idUsuario) {
     usuarioEditado.setRol(rol);
     usuarioEditado.setIdCiudad(idCiudad);
 
-    if (enph.Main.actualizarUsuario(usuarioEditado)) {
+    boolean guardado = esAdministrador ? enph.Main.actualizarUsuario(usuarioEditado) : enph.Main.actualizarMisDatos(usuarioEditado);
+
+    if (guardado) {
         // Si se editó el usuario de la sesión, se refresca su sesión (banner)
         enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
         if (sesion != null && usuarioEditado.getIdUsuario().equals(sesion.getIdUsuario())) {

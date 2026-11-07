@@ -617,4 +617,66 @@ public class UsuarioDAO {
             Conexion.close(con);
         }
     }
+        /**
+     * Actualiza los datos básicos del propio encuestador mediante
+     * PR_ACTUALIZAR_MIS_DATOS (nombre, cédula, teléfono y contraseña).
+     */
+    public boolean actualizarMisDatos(Usuario usuario) {
+
+        String llamada = "{call PR_ACTUALIZAR_MIS_DATOS(?, ?, ?, ?, ?, ?)}";
+
+        Connection con = Conexion.init();
+
+        if (con == null) {
+            System.err.println("No se pudo conectar a la base de datos.");
+            return false;
+        }
+
+        try {
+            con.setAutoCommit(false);
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, usuario.getIdUsuario());
+                cs.setString(2, usuario.getNombreCompleto());
+                cs.setString(3, usuario.getDocumentoIdentidad());
+                cs.setString(4, usuario.getContrasenna());
+                cs.setString(5, usuario.getTelefono());
+
+                cs.registerOutParameter(6, Types.NUMERIC);
+
+                cs.execute();
+
+                if (cs.getInt(6) == 1) {
+                    con.commit();
+                    return true;
+                } else {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+        } catch (SQLException e) {
+
+            try {
+                con.rollback();
+            } catch (SQLException ignorada) {
+                System.err.println("Error al deshacer la actualización.");
+            }
+
+            System.err.println("Error al actualizar mis datos: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+
+        } finally {
+
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException ignorada) {
+                System.err.println("Error al restaurar la transacción.");
+            }
+
+            Conexion.close(con);
+        }
+    }
 }

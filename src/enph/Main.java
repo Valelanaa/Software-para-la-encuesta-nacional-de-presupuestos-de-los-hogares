@@ -49,6 +49,7 @@ public class Main {
     }
     public static boolean guardarUsuario(Usuario usuario) { return USUARIOS.insertarUsuario(usuario); }
     public static boolean actualizarUsuario(Usuario usuario) { return USUARIOS.actualizarUsuario(usuario); }
+    public static boolean actualizarMisDatos(Usuario usuario) { return USUARIOS.actualizarMisDatos(usuario); }
     public static boolean eliminarUsuario(String id) { return USUARIOS.eliminarUsuario(id); }
 
     // ========================= HOGARES =========================
@@ -63,6 +64,9 @@ public class Main {
     }
     public static List<Hogar> listarHogaresSinEncuestador() throws SQLException {
         return HOGARES.listarHogaresSinEncuestador();
+    }
+    public static List<Hogar> listarHogaresDisponiblesParaEncuestador(String idEncuestador) throws SQLException {
+        return HOGARES.listarHogaresDisponiblesParaEncuestador(idEncuestador);
     }
     public static List<Hogar> listarHogaresPorEncuestador(String id) throws SQLException {
         return HOGARES.listarHogaresPorEncuestador(id);

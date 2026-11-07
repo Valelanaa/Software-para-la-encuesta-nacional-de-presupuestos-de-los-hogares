@@ -397,6 +397,34 @@ public class HogarDAO {
         return hogares;
     }
 
+    public List<Hogar> listarHogaresDisponiblesParaEncuestador(String idEncuestador) throws SQLException {
+    List<Hogar> hogares = new ArrayList<>();
+
+    if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+        throw new SQLException("No se ha seleccionado un encuestador.");
+    }
+
+    try (Connection con = Conexion.init()) {
+        if (con == null) {
+            throw new SQLException("No fue posible conectar con Oracle.");
+        }
+
+        try (CallableStatement cs = con.prepareCall("{call PR_HOGARES_DISPONIBLES_ENC(?, ?)}")) {
+            cs.setString(1, idEncuestador.trim());
+            cs.registerOutParameter(2, OracleTypes.CURSOR);
+            cs.execute();
+
+            try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+                while (rs != null && rs.next()) {
+                    hogares.add(crearHogar(rs));
+                }
+            }
+        }
+    }
+
+    return hogares;
+}
+    
     /**
      * Consulta los hogares asignados a un encuestador.
      */

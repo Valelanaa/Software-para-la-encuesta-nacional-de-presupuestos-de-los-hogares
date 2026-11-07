@@ -32,7 +32,7 @@ public class EncuestaDAO {
         Connection con = Conexion.init();
 
         if (con == null) {
-            return true;
+            return false;
         }
 
         try (CallableStatement cs = con.prepareCall(sql)) {
@@ -52,7 +52,7 @@ public class EncuestaDAO {
             );
 
             e.printStackTrace();
-            return true;
+            return false;
 
         } finally {
             Conexion.close(con);

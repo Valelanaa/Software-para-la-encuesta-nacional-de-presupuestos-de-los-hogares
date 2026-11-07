@@ -99,7 +99,7 @@ public FamiliasAsignadas(
         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
     );
 
-    controlador = new AsignacionController(this);
+    controlador = new AsignacionController(this, idEncuestadorSeleccionado);
     controlador.cargarHogares();
     
 }

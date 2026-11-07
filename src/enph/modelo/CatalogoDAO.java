@@ -89,17 +89,24 @@ public class CatalogoDAO {
         if (con == null) return false;
 
         try (CallableStatement cs = con.prepareCall(llamada)) {
+            con.setAutoCommit(false);
             cs.setString(1, nombre == null ? "" : nombre.trim());
             cs.registerOutParameter(2, Types.NUMERIC);
             cs.execute();
 
             boolean resultado = cs.getInt(2) == 1;
-            if (resultado) con.commit();
+            if (resultado) {
+                con.commit();
+            } else {
+                con.rollback();
+            }
             return resultado;
         } catch (SQLException e) {
             System.err.println("Error en la operación del catálogo: " + e.getMessage());
+            try { con.rollback(); } catch (SQLException ex) { }
             return false;
         } finally {
+            try { con.setAutoCommit(true); } catch (SQLException e) { }
             Conexion.close(con);
         }
     }
@@ -110,18 +117,25 @@ public class CatalogoDAO {
         if (con == null) return false;
 
         try (CallableStatement cs = con.prepareCall(llamada)) {
+            con.setAutoCommit(false);
             cs.setInt(1, id);
             cs.setString(2, nombre == null ? "" : nombre.trim());
             cs.registerOutParameter(3, Types.NUMERIC);
             cs.execute();
 
             boolean resultado = cs.getInt(3) == 1;
-            if (resultado) con.commit();
+            if (resultado) {
+                con.commit();
+            } else {
+                con.rollback();
+            }
             return resultado;
         } catch (SQLException e) {
             System.err.println("Error al modificar el catálogo: " + e.getMessage());
+            try { con.rollback(); } catch (SQLException ex) { }
             return false;
         } finally {
+            try { con.setAutoCommit(true); } catch (SQLException e) { }
             Conexion.close(con);
         }
     }
@@ -132,17 +146,24 @@ public class CatalogoDAO {
         if (con == null) return false;
 
         try (CallableStatement cs = con.prepareCall(llamada)) {
+            con.setAutoCommit(false);
             cs.setInt(1, id);
             cs.registerOutParameter(2, Types.NUMERIC);
             cs.execute();
 
             boolean resultado = cs.getInt(2) == 1;
-            if (resultado) con.commit();
+            if (resultado) {
+                con.commit();
+            } else {
+                con.rollback();
+            }
             return resultado;
         } catch (SQLException e) {
             System.err.println("Error al eliminar del catálogo: " + e.getMessage());
+            try { con.rollback(); } catch (SQLException ex) { }
             return false;
         } finally {
+            try { con.setAutoCommit(true); } catch (SQLException e) { }
             Conexion.close(con);
         }
     }

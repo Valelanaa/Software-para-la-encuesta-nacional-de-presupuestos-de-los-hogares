@@ -369,31 +369,35 @@ private void cargarDatosCabezaHogar() {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
-        // TODO add your handling code here:
-if (sesion != null) {
+    // TODO add your handling code here:
+        if (sesion != null) {
 
-        // Si existe un grupo anterior, regresar a él.
-        if (sesion.hayAnterior()) {
+            // Si existe un grupo anterior, regresar a él.
+            if (sesion.hayAnterior()) {
 
-            sesion.retroceder();
-            new FrecuenciaGasto(sesion).setVisible(true);
+                sesion.retroceder();
+                new FrecuenciaGasto(sesion).setVisible(true);
+
+            } else {
+                // Si la encuesta está vacía, se elimina.
+                // Si ya tiene respuestas, se conserva.
+                enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
+                new FamiliasRegistradas().setVisible(true);
+            }
 
         } else {
-            // Si la encuesta está vacía, se elimina.
-            // Si ya tiene respuestas, se conserva.
-            enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
-            new FamiliasRegistradas().setVisible(true);
+
+            // Si se abrió desde la gestión de hogares,
+            // regresar a EditarHogar conservando el hogar que se estaba editando.
+            if (idHogar != null) {
+                new EditarHogar(idHogar).setVisible(true);
+            } else {
+                new GestionHogar().setVisible(true);
+            }
         }
 
-    } else {
-
-        // Si se abrió desde la gestión de hogares,
-        // regresar a EditarHogar.
-        new EditarHogar().setVisible(true);
-    }
-
-    // Cerrar la ventana actual.
-    this.dispose();
+        // Cerrar la ventana actual.
+        this.dispose();
     }//GEN-LAST:event_Btn_VolverActionPerformed
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed

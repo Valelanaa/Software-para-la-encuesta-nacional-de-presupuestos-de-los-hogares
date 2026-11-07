@@ -12,17 +12,21 @@ import javax.swing.JOptionPane;
 public class AsignacionController {
 
     private final FamiliasAsignadas vista;
+    private final String idEncuestador;
 
-    public AsignacionController(FamiliasAsignadas vista) {
+    public AsignacionController(FamiliasAsignadas vista, String idEncuestador) {
         this.vista = vista;
+        this.idEncuestador = idEncuestador;
     }
 
     /**
-     * Carga únicamente los hogares que no tienen encuestador asignado.
+     * Carga los hogares sin encuestador que pertenecen a la misma
+     * ciudad del encuestador seleccionado.
      */
     public void cargarHogares() {
         try {
-            List<Hogar> hogares = enph.Main.listarHogaresSinEncuestador();
+            List<Hogar> hogares =
+                enph.Main.listarHogaresDisponiblesParaEncuestador(idEncuestador);
 
             vista.mostrarHogares(hogares);
 

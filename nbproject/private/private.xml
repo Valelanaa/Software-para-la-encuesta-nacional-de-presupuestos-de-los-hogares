@@ -3,16 +3,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/UsuarioDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/HogarDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/EncuestaDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CatalogoDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CaracterizacionDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CabezaHogarDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/DetallesInforme.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/AsignarFamilias.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearCabezaHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/Main.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdmin.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdminReportes.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionBarrios.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEsenciales.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteEsencialesDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteEsencial.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearUsuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/EditarUsuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/UsuarioDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FamiliasRegistradas.java</file>
         </group>
     </open-files>
 </project-private>

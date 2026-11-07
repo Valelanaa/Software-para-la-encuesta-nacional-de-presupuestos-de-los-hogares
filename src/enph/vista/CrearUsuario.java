@@ -378,16 +378,8 @@ private void cargarCiudades() {
     String rol = (String) Cmb_Rol.getSelectedItem();
 
     int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    boolean esEncuestador = "ENCUESTADOR".equalsIgnoreCase(rol);
     // Verificar que todos los campos estén completos.
-    if (nombre.isEmpty()
-        || cedula.isEmpty()
-        || contrasenna.isEmpty()
-        || rol == null
-        || (esEncuestador
-            && (telefono.isEmpty()
-                || indiceCiudad < 0
-                || indiceCiudad >= ciudades.size()))) {
+    if (nombre.isEmpty() || cedula.isEmpty() || contrasenna.isEmpty() || rol == null || telefono.isEmpty() || indiceCiudad < 0 || indiceCiudad >= ciudades.size()) {
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,
@@ -449,9 +441,7 @@ private void cargarCiudades() {
     nuevo.setRol(rol);
 
     // Obtener el ID de la ciudad seleccionada.
-   if (esEncuestador) {
-    nuevo.setIdCiudad(ciudades.get(indiceCiudad).getId());
-}
+   nuevo.setIdCiudad(ciudades.get(indiceCiudad).getId());
 
     // Guardar el usuario nuevo en Oracle.
     if (enph.Main.guardarUsuario(nuevo)) {
