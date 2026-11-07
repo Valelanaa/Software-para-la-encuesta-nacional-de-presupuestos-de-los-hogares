@@ -1,0 +1,620 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package enph.vista;
+import java.util.List;
+import java.util.ArrayList;
+import enph.Main;
+import enph.modelo.Barrio;
+import enph.modelo.ItemCiudad;
+import enph.modelo.SesionUsuario;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.GridLayout;
+
+public class GestionBarrios extends javax.swing.JFrame {
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionBarrios.class.getName());
+
+
+private List<Barrio> barriosEnTabla = new ArrayList<>();
+
+public GestionBarrios() {
+
+    initComponents();
+
+    Lbl__Usuario1.setText(SesionUsuario.nombreParaMostrar());
+    Lbl_Rol1.setText(SesionUsuario.rolParaMostrar());
+
+    Tbl_Barrios.setRowHeight(32);
+
+    Tbl_Barrios.getTableHeader().setFont(new java.awt.Font("Bahnschrift", 1, 18));
+
+    Tbl_Barrios.setFont(new java.awt.Font("Bahnschrift", 0, 18));
+
+    Tbl_Barrios.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+    Tbl_Barrios.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+
+    cargarBarrios();
+
+    setLocationRelativeTo(null);
+}
+private void cargarBarrios() {
+
+    try {
+
+        barriosEnTabla = Main.listarBarrios();
+
+        DefaultTableModel modelo = new DefaultTableModel(
+                new Object[]{"Barrio", "Ciudad"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        for (Barrio barrio : barriosEnTabla) {
+
+            modelo.addRow(new Object[]{
+                barrio.getNombreBarrio(),
+                barrio.getNombreCiudad()
+            });
+        }
+
+        Tbl_Barrios.setModel(modelo);
+
+        ajustarColumnas(Tbl_Barrios);
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Error al cargar los barrios:\n" + e.getMessage(),
+                "Error de consulta",
+                JOptionPane.ERROR_MESSAGE
+        );
+
+        e.printStackTrace();
+    }
+}
+
+// Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
+private void ajustarColumnas(javax.swing.JTable tabla) {
+    for (int col = 0; col < tabla.getColumnCount(); col++) {
+        javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
+
+        // Ancho del título
+        java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
+                .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
+        int ancho = comp.getPreferredSize().width;
+
+        // Ancho del dato más largo
+        for (int fila = 0; fila < tabla.getRowCount(); fila++) {
+            comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
+            ancho = Math.max(ancho, comp.getPreferredSize().width);
+        }
+
+        columna.setPreferredWidth(ancho + 20); // 20 px de margen
+    }
+}
+
+private void mostrarDialogoBarrio(Barrio barrio) {
+
+    boolean editar = barrio != null;
+
+    // Obtener ciudades registradas
+    List<ItemCiudad> ciudades = Main.listarCiudades();
+
+    if (ciudades == null || ciudades.isEmpty()) {
+
+        JOptionPane.showMessageDialog(this, "No hay ciudades registradas para seleccionar.", "Ciudades no disponibles", JOptionPane.WARNING_MESSAGE);
+
+        return;
+    }
+
+    // Campo para el nombre del barrio
+    JTextField txtNombre = new JTextField(20);
+
+    // Combo para seleccionar la ciudad
+    JComboBox<ItemCiudad> cmbCiudad =
+            new JComboBox<>(ciudades.toArray(new ItemCiudad[0]));
+
+    // Si estamos editando, cargar los datos actuales
+    if (editar) {
+
+        txtNombre.setText(barrio.getNombreBarrio());
+
+        for (int i = 0; i < cmbCiudad.getItemCount(); i++) {
+
+            ItemCiudad ciudad = cmbCiudad.getItemAt(i);
+
+            if (ciudad.getId().equals(barrio.getIdCiudad())) {
+
+                cmbCiudad.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    // Construir el panel
+    JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+
+    panel.add(new JLabel("Nombre del barrio:"));
+    panel.add(txtNombre);
+
+    panel.add(new JLabel("Ciudad:"));
+    panel.add(cmbCiudad);
+
+    // Mostrar ventana emergente
+    int opcion = JOptionPane.showConfirmDialog(this,panel,editar ? "Editar barrio" : "Crear barrio",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+
+    if (opcion != JOptionPane.OK_OPTION) {
+        return;
+    }
+
+    // Validar nombre
+    String nombre = txtNombre.getText().trim();
+
+    if (nombre.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Debe ingresar el nombre del barrio.", "Dato requerido", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    ItemCiudad ciudadSeleccionada =
+            (ItemCiudad) cmbCiudad.getSelectedItem();
+
+    if (ciudadSeleccionada == null) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Debe seleccionar una ciudad.",
+                "Dato requerido",
+                JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    try {
+
+        boolean resultado;
+
+        if (editar) {
+
+            resultado = Main.editarBarrio(
+                    barrio.getIdBarrio(),
+                    nombre,
+                    ciudadSeleccionada.getId()
+            );
+
+        } else {
+
+            resultado = Main.crearBarrio(
+                    nombre,
+                    ciudadSeleccionada.getId()
+            );
+        }
+
+        if (resultado) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    editar
+                    ? "Barrio actualizado correctamente."
+                    : "Barrio creado correctamente.",
+                    "Operación exitosa",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarBarrios();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo realizar la operación.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Error al guardar el barrio:\n" + e.getMessage(),
+                "Error de base de datos",
+                JOptionPane.ERROR_MESSAGE
+        );
+
+        e.printStackTrace();
+    }
+}
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        Pnl_Contenido = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        Lbl_Rol = new javax.swing.JLabel();
+        Lbl__Usuario = new javax.swing.JLabel();
+        Pnl_Central = new javax.swing.JPanel();
+        Pnl_Banner = new javax.swing.JPanel();
+        Lbl_Titulo = new javax.swing.JLabel();
+        Lbl_Rol1 = new javax.swing.JLabel();
+        Lbl__Usuario1 = new javax.swing.JLabel();
+        Lbl_TituloPantalla = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Tbl_Barrios = new javax.swing.JTable();
+        Btn_Editar = new javax.swing.JButton();
+        Btn_Crear = new javax.swing.JButton();
+        Btn_Eliminar = new javax.swing.JButton();
+        Btn_Volver = new javax.swing.JButton();
+
+        jButton1.setBackground(new java.awt.Color(182, 215, 168));
+        jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(0, 158, 15));
+        jButton1.setText("Ingresar");
+        jButton1.addActionListener(this::jButton1ActionPerformed);
+
+        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jTextField1.addActionListener(this::jTextField1ActionPerformed);
+
+        jLabel4.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jLabel4.setText("Usuario:");
+
+        jLabel3.setFont(new java.awt.Font("Bahnschrift", 1, 40)); // NOI18N
+        jLabel3.setText("Ingresar usuario y contraseña");
+
+        jLabel5.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        jLabel5.setText("Contraseña:");
+
+        javax.swing.GroupLayout Pnl_ContenidoLayout = new javax.swing.GroupLayout(Pnl_Contenido);
+        Pnl_Contenido.setLayout(Pnl_ContenidoLayout);
+        Pnl_ContenidoLayout.setHorizontalGroup(
+            Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                        .addGap(118, 118, 118)
+                        .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                        .addGap(189, 189, 189)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3))
+                .addContainerGap())
+        );
+        Pnl_ContenidoLayout.setVerticalGroup(
+            Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addGap(37, 37, 37)
+                .addGroup(Pnl_ContenidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(66, 66, 66)
+                .addComponent(jButton1)
+                .addContainerGap())
+        );
+
+        Lbl_Rol.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl_Rol.setText("Encuestador");
+
+        Lbl__Usuario.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl__Usuario.setText("Carlos Pérez Bayona");
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        Pnl_Banner.setBackground(new java.awt.Color(159, 197, 248));
+        Pnl_Banner.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        Lbl_Titulo.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
+        Lbl_Titulo.setText("Encuesta Nacional de Presupuestos de los Hogares (ENPH)");
+
+        Lbl_Rol1.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl_Rol1.setText("Admin (Rol)");
+
+        Lbl__Usuario1.setFont(new java.awt.Font("Bahnschrift", 1, 18)); // NOI18N
+        Lbl__Usuario1.setText("Nombre del usuario");
+
+        Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
+        Lbl_TituloPantalla.setText("Gestión de Barrios");
+
+        javax.swing.GroupLayout Pnl_BannerLayout = new javax.swing.GroupLayout(Pnl_Banner);
+        Pnl_Banner.setLayout(Pnl_BannerLayout);
+        Pnl_BannerLayout.setHorizontalGroup(
+            Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_BannerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Lbl_Titulo, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Lbl_TituloPantalla))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
+                .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Lbl__Usuario1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(Lbl_Rol1, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(25, 25, 25))
+        );
+        Pnl_BannerLayout.setVerticalGroup(
+            Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_BannerLayout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(Pnl_BannerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Pnl_BannerLayout.createSequentialGroup()
+                        .addComponent(Lbl__Usuario1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Lbl_Rol1))
+                    .addGroup(Pnl_BannerLayout.createSequentialGroup()
+                        .addComponent(Lbl_Titulo, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Lbl_TituloPantalla)))
+                .addContainerGap(17, Short.MAX_VALUE))
+        );
+
+        Tbl_Barrios.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Tbl_Barrios.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Barrios", "Ciudad"
+            }
+        ));
+        jScrollPane1.setViewportView(Tbl_Barrios);
+
+        Btn_Editar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Editar.setText("Editar ");
+        Btn_Editar.addActionListener(this::Btn_EditarActionPerformed);
+
+        Btn_Crear.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Crear.setText("Crear");
+        Btn_Crear.addActionListener(this::Btn_CrearActionPerformed);
+
+        Btn_Eliminar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Eliminar.setText("Eliminar");
+        Btn_Eliminar.addActionListener(this::Btn_EliminarActionPerformed);
+
+        Btn_Volver.setFont(new java.awt.Font("Bahnschrift", 0, 18)); // NOI18N
+        Btn_Volver.setText("Volver al menú");
+        Btn_Volver.addActionListener(this::Btn_VolverActionPerformed);
+
+        javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
+        Pnl_Central.setLayout(Pnl_CentralLayout);
+        Pnl_CentralLayout.setHorizontalGroup(
+            Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Pnl_Banner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                        .addGap(59, 59, 59)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 847, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                        .addGap(296, 296, 296)
+                        .addComponent(Btn_Crear)
+                        .addGap(38, 38, 38)
+                        .addComponent(Btn_Editar)
+                        .addGap(40, 40, 40)
+                        .addComponent(Btn_Eliminar)))
+                .addContainerGap(76, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(Btn_Volver)
+                .addGap(17, 17, 17))
+        );
+        Pnl_CentralLayout.setVerticalGroup(
+            Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addComponent(Pnl_Banner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(47, 47, 47)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Crear)
+                    .addComponent(Btn_Editar)
+                    .addComponent(Btn_Eliminar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addComponent(Btn_Volver)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Pnl_Central, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void Btn_VolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_VolverActionPerformed
+        // TODO add your handling code here:
+        new MenuAdmin().setVisible(true); // vuelve al menú del administrador
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_VolverActionPerformed
+
+    private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
+        // TODO add your handling code here:
+        int fila = Tbl_Barrios.getSelectedRow();
+
+    if (fila < 0) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Seleccione un barrio de la tabla para eliminarlo.",
+                "Sin selección",
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        return;
+    }
+
+    int indice = Tbl_Barrios.convertRowIndexToModel(fila);
+
+    Barrio seleccionado = barriosEnTabla.get(indice);
+
+    try {
+
+        // Verificar si existen hogares asociados
+        if (Main.barrioEnUso(seleccionado.getIdBarrio())) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se puede eliminar el barrio \""
+                    + seleccionado.getNombreBarrio()
+                    + "\" porque tiene hogares asociados.",
+                    "Acción no permitida",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        // Confirmar eliminación
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro de eliminar el barrio \""
+                + seleccionado.getNombreBarrio() + "\"?\n"
+                + "Esta acción no se puede deshacer.",
+                "Eliminar barrio",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (opcion != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        if (Main.eliminarBarrio(seleccionado.getIdBarrio())) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Barrio eliminado correctamente.",
+                    "Operación exitosa",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            cargarBarrios();
+
+        }
+
+    } catch (SQLException e) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "No se pudo eliminar el barrio:\n" + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+
+        e.printStackTrace();
+    }
+    }//GEN-LAST:event_Btn_EliminarActionPerformed
+
+    private void Btn_CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CrearActionPerformed
+        // TODO add your handling code here:
+        mostrarDialogoBarrio(null);
+    }//GEN-LAST:event_Btn_CrearActionPerformed
+
+    private void Btn_EditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EditarActionPerformed
+        // TODO add your handling code here:
+   int fila = Tbl_Barrios.getSelectedRow();
+
+    if (fila < 0) {
+        JOptionPane.showMessageDialog(this,"Seleccione un barrio de la tabla para editarlo.","Sin selección",JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    int indice = Tbl_Barrios.convertRowIndexToModel(fila);
+
+    Barrio seleccionado = barriosEnTabla.get(indice);
+
+    mostrarDialogoBarrio(seleccionado);
+    }//GEN-LAST:event_Btn_EditarActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new GestionBarrios().setVisible(true));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Crear;
+    private javax.swing.JButton Btn_Editar;
+    private javax.swing.JButton Btn_Eliminar;
+    private javax.swing.JButton Btn_Volver;
+    private javax.swing.JLabel Lbl_Rol;
+    private javax.swing.JLabel Lbl_Rol1;
+    private javax.swing.JLabel Lbl_Titulo;
+    private javax.swing.JLabel Lbl_TituloPantalla;
+    private javax.swing.JLabel Lbl__Usuario;
+    private javax.swing.JLabel Lbl__Usuario1;
+    private javax.swing.JPanel Pnl_Banner;
+    private javax.swing.JPanel Pnl_Central;
+    private javax.swing.JPanel Pnl_Contenido;
+    private javax.swing.JTable Tbl_Barrios;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
+    // End of variables declaration//GEN-END:variables
+}
