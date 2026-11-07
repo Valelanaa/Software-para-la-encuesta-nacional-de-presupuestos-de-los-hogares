@@ -21,6 +21,7 @@ public class Main {
     private static final CatalogoDAO CATALOGOS = new CatalogoDAO();
     private static final ReporteEncuestadorDAO REPORTES = new ReporteEncuestadorDAO();
     private static final ReporteEsencialesDAO REPORTE_ESENCIALES = new ReporteEsencialesDAO();
+    private static final ReporteRendimientoEncuestadorDAO REPORTE_RENDIMIENTO = new ReporteRendimientoEncuestadorDAO();
 
     private Main() { }
 
@@ -166,12 +167,16 @@ public class Main {
     public static boolean eliminarFrecuencia(int id) { return CATALOGOS.eliminarFrecuencia(id); }
 
     // ========================= REPORTES =========================
-    public static List<ReporteBarrio> generarReporteEncuestador(String id, LocalDate desde, LocalDate hasta)
-            throws SQLException {
+    public static List<ReporteBarrio> generarReporteEncuestador(String id, LocalDate desde, LocalDate hasta) throws SQLException {
         return REPORTES.generarReporte(id, desde, hasta);
     }
-    public static List<ReporteEsencial> generarReporteEsenciales(
-        String frecuencia) throws SQLException {
-    return REPORTE_ESENCIALES.generarReporte(frecuencia);
+    public static List<ReporteEsencial> generarReporteEsenciales(String frecuencia) throws SQLException {
+        return REPORTE_ESENCIALES.generarReporte(frecuencia);
+    }
+    public static List<ReporteEsencial> generarReporteNoEsenciales(String frecuencia) throws SQLException {
+        return REPORTE_ESENCIALES.generarReporteNoEsenciales(frecuencia);
+    }
+    public static List<ReporteRendimientoEncuestador> generarReporteRendimiento(int mes, int anio) throws SQLException {
+        return REPORTE_RENDIMIENTO.generarReporte(mes, anio);
     }
 }

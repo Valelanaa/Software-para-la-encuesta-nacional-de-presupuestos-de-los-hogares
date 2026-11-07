@@ -258,7 +258,7 @@ public class MenuAdminReportes extends javax.swing.JFrame {
 
     private void Btn_AlimentosPorFrecuenciasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_AlimentosPorFrecuenciasActionPerformed
         // TODO add your handling code here:
-        new GestionHogar().setVisible(true); // Muestra la pantalla de gestion de hogares
+        new ReporteTodasFrecuencias().setVisible(true); // Muestra la pantalla de gestion de usuarios
         dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_AlimentosPorFrecuenciasActionPerformed
 
@@ -270,13 +270,13 @@ public class MenuAdminReportes extends javax.swing.JFrame {
 
     private void Btn_alimentosNoEsencialesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_alimentosNoEsencialesActionPerformed
         // TODO add your handling code here:
-        new GestionGruposAlimentos().setVisible(true); // Muestra la pantalla de gestion de grupos de alimentos
-        dispose(); // cierra esta ventana
+        new ReporteNoEsenciales().setVisible(true);
+        dispose();
     }//GEN-LAST:event_Btn_alimentosNoEsencialesActionPerformed
 
     private void Btn_EncuestasPorMesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EncuestasPorMesActionPerformed
         // TODO add your handling code here:
-        new GestionFrecuencias().setVisible(true); // Muestra la pantalla de gestion de frecuencias
+        new ReporteEncuestasMes().setVisible(true); 
         dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_EncuestasPorMesActionPerformed
 
