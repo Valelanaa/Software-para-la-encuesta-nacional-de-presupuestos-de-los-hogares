@@ -48,6 +48,8 @@ public class MenuAdmin extends javax.swing.JFrame {
         Btn_encuestas = new javax.swing.JButton();
         Lbl_TituloPantalla = new javax.swing.JLabel();
         Btn_CerrarSesion = new javax.swing.JButton();
+        Btn_Barrio = new javax.swing.JButton();
+        Btn_Reportes = new javax.swing.JButton();
 
         jButton1.setBackground(new java.awt.Color(182, 215, 168));
         jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
@@ -174,6 +176,14 @@ public class MenuAdmin extends javax.swing.JFrame {
         Btn_CerrarSesion.setText("Cerrar sesion");
         Btn_CerrarSesion.addActionListener(this::Btn_CerrarSesionActionPerformed);
 
+        Btn_Barrio.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Barrio.setText("Gestion de barrios");
+        Btn_Barrio.addActionListener(this::Btn_BarrioActionPerformed);
+
+        Btn_Reportes.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Reportes.setText("Reportes");
+        Btn_Reportes.addActionListener(this::Btn_ReportesActionPerformed);
+
         javax.swing.GroupLayout Pnl_CentralLayout = new javax.swing.GroupLayout(Pnl_Central);
         Pnl_Central.setLayout(Pnl_CentralLayout);
         Pnl_CentralLayout.setHorizontalGroup(
@@ -185,53 +195,62 @@ public class MenuAdmin extends javax.swing.JFrame {
                     .addGroup(Pnl_CentralLayout.createSequentialGroup()
                         .addGap(15, 15, 15)
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Btn_asignar)
-                            .addComponent(Btn_Hogar)))
-                    .addComponent(Btn_Usuarios))
+                            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                .addComponent(Btn_Hogar)
+                                .addGap(13, 13, 13))
+                            .addComponent(Btn_Barrio, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addComponent(Btn_Usuarios)
+                    .addComponent(Btn_encuestas))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addGap(45, 45, 45)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                         .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Btn_frecuencias)
+                            .addComponent(Btn_alimentos, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                                .addComponent(Btn_encuestas)
-                                .addGap(10, 10, 10))))
-                    .addComponent(Btn_alimentos))
-                .addGap(56, 56, 56))
+                                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(Btn_frecuencias)
+                                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                                        .addGap(72, 72, 72)
+                                        .addComponent(Btn_Reportes)))
+                                .addGap(33, 33, 33)))
+                        .addGap(112, 112, 112))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
+                        .addComponent(Btn_asignar)
+                        .addGap(175, 175, 175))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                        .addComponent(Lbl_TituloPantalla)
-                        .addGap(441, 441, 441))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Pnl_CentralLayout.createSequentialGroup()
-                        .addComponent(Btn_CerrarSesion)
-                        .addGap(29, 29, 29))))
+                .addComponent(Btn_CerrarSesion)
+                .addGap(26, 26, 26))
+            .addGroup(Pnl_CentralLayout.createSequentialGroup()
+                .addGap(420, 420, 420)
+                .addComponent(Lbl_TituloPantalla)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         Pnl_CentralLayout.setVerticalGroup(
             Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Pnl_CentralLayout.createSequentialGroup()
                 .addComponent(Pnl_Banner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                 .addComponent(Lbl_TituloPantalla)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addComponent(Btn_Usuarios)
-                        .addGap(37, 37, 37)
-                        .addComponent(Btn_Hogar)
-                        .addGap(49, 49, 49)
-                        .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(Btn_asignar)
-                            .addComponent(Btn_encuestas)))
-                    .addGroup(Pnl_CentralLayout.createSequentialGroup()
-                        .addComponent(Btn_alimentos)
-                        .addGap(37, 37, 37)
-                        .addComponent(Btn_frecuencias)))
-                .addGap(87, 87, 87)
+                .addGap(18, 18, 18)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Usuarios)
+                    .addComponent(Btn_alimentos))
+                .addGap(37, 37, 37)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Hogar)
+                    .addComponent(Btn_frecuencias))
+                .addGap(49, 49, 49)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Barrio)
+                    .addComponent(Btn_asignar))
+                .addGap(47, 47, 47)
+                .addGroup(Pnl_CentralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Btn_Reportes)
+                    .addComponent(Btn_encuestas))
+                .addGap(52, 52, 52)
                 .addComponent(Btn_CerrarSesion)
-                .addGap(81, 81, 81))
+                .addGap(32, 32, 32))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -242,9 +261,7 @@ public class MenuAdmin extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(Pnl_Central, javax.swing.GroupLayout.PREFERRED_SIZE, 526, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(Pnl_Central, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -301,6 +318,18 @@ public class MenuAdmin extends javax.swing.JFrame {
         dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_CerrarSesionActionPerformed
 
+    private void Btn_BarrioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_BarrioActionPerformed
+        // TODO add your handling code here:
+        new GestionBarrios().setVisible(true); // Muestra la pantalla del CRUD de barrio 
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_BarrioActionPerformed
+
+    private void Btn_ReportesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_ReportesActionPerformed
+        // TODO add your handling code here:
+        new MenuAdminReportes().setVisible(true); // Muestra el menú de todos los reportes
+        dispose(); // cierra esta ventana
+    }//GEN-LAST:event_Btn_ReportesActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -327,8 +356,10 @@ public class MenuAdmin extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Barrio;
     private javax.swing.JButton Btn_CerrarSesion;
     private javax.swing.JButton Btn_Hogar;
+    private javax.swing.JButton Btn_Reportes;
     private javax.swing.JButton Btn_Usuarios;
     private javax.swing.JButton Btn_alimentos;
     private javax.swing.JButton Btn_asignar;
