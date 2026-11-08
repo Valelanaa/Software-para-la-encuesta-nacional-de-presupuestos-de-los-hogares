@@ -294,7 +294,8 @@ public class MenuAdminReportes extends javax.swing.JFrame {
 
     private void Btn_EncuestasCiudadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EncuestasCiudadActionPerformed
         // TODO add your handling code here:
-        
+        new ReporteEncuestasPorCiudad().setVisible(true); 
+        dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_EncuestasCiudadActionPerformed
 
     /**

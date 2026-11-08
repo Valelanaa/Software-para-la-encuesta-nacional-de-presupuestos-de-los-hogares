@@ -22,6 +22,7 @@ public class Main {
     private static final ReporteEncuestadorDAO REPORTES = new ReporteEncuestadorDAO();
     private static final ReporteEsencialesDAO REPORTE_ESENCIALES = new ReporteEsencialesDAO();
     private static final ReporteRendimientoEncuestadorDAO REPORTE_RENDIMIENTO = new ReporteRendimientoEncuestadorDAO();
+    private static final ReporteCiudadDAO REPORTE_CIUDAD = new ReporteCiudadDAO();
 
     private Main() { }
 
@@ -178,5 +179,11 @@ public class Main {
     }
     public static List<ReporteRendimientoEncuestador> generarReporteRendimiento(int mes, int anio) throws SQLException {
         return REPORTE_RENDIMIENTO.generarReporte(mes, anio);
+    }
+    public static List<ReporteCiudadBarrio> generarReporteCiudad(String idCiudad) throws SQLException {
+        return REPORTE_CIUDAD.generarReporte(idCiudad);
+    }
+    public static List<ReporteBarrioDetalle> generarDetalleBarrio(String idBarrio) throws SQLException {
+        return REPORTE_CIUDAD.generarDetalleBarrio(idBarrio);
     }
 }
