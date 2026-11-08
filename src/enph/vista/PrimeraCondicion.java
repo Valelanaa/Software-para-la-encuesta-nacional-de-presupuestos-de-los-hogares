@@ -319,21 +319,64 @@ public class PrimeraCondicion extends javax.swing.JFrame {
     private void Btt_ContinuarActionPerformed(java.awt.event.ActionEvent evt) {                                              
         // Deja solo los dígitos: quita puntos, comas, espacios y signos de pesos
         // (acepta "15.000" o "15,000")
-        String texto = Txt_ValorDato.getText().replaceAll("[^0-9]", "");
-        // Si no quedó ningún número, no se guarda y se avisa
+        // Obtener el valor ingresado sin espacios al inicio ni al final.
+        String texto = Txt_ValorDato.getText().trim();
+
+        // Validar que el campo no esté vacío.
         if (texto.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(
                     this,
-                    "Ingrese el valor de la última compra (solo números).",
-                    "Campo incompleto",
-                    javax.swing.JOptionPane.WARNING_MESSAGE);
+                    "Ingrese el valor de la última compra.",
+                    "Campo obligatorio",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_ValorDato.requestFocus();
             return;
         }
 
-        BigDecimal valor = new BigDecimal(texto);
-        // El combo da la posición elegida: 0 = "Sí" se guarda como 1, "No" como 0
-        Integer intencion = Cmb_VolverComprar.getSelectedIndex() == 0 ? 1 : 0; // 1 = Sí, 0 = No
-        // guardar() actualiza la respuesta si el grupo ya existía (edición o retroceso) y la inserta si es nueva
+        // Validar que solamente contenga números enteros positivos.
+        if (!texto.matches("[0-9]+")) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El valor de la última compra debe contener solamente números enteros positivos.",
+                    "Valor no válido",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_ValorDato.requestFocus();
+            return;
+        }
+
+        BigDecimal valor;
+
+        try {
+            valor = new BigDecimal(texto);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El valor ingresado no es válido.",
+                    "Error",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_ValorDato.requestFocus();
+            return;
+        }
+
+        // Validar que el valor sea igual o superior a 1000.
+        if (valor.compareTo(new BigDecimal("1000")) < 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El valor de la última compra debe ser mayor o igual a $1.000.",
+                    "Valor insuficiente",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_ValorDato.requestFocus();
+            return;
+        }
+
+        // 0 = "Sí" se guarda como 1; "No" se guarda como 0.
+        Integer intencion = Cmb_VolverComprar.getSelectedIndex() == 0 ? 1 : 0;
+
+        // Guardar la caracterización.
         boolean guardado = enph.Main.guardarCaracterizacion(
                 sesion.getIdEncuesta(),
                 sesion.getGrupo().getId(),
@@ -343,13 +386,16 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         );
 
         if (!guardado) {
-            // No avanza: el encuestador puede reintentar
             javax.swing.JOptionPane.showMessageDialog(
-                    this, "No se pudo guardar la respuesta.", "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                    this,
+                    "No se pudo guardar la respuesta.",
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
             return;
         }
-        // Avanza al siguiente grupo o, si era el último, cierra la encuesta
+
+        // Avanzar al siguiente grupo.
         FrecuenciaGasto.irAlSiguienteGrupo(sesion, this);
     }                                             
 
