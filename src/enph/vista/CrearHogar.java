@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.Validador;
 public class CrearHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearHogar.class.getName());
@@ -370,50 +370,84 @@ private void cargarCiudades() {
 
     private void Btn_SiguienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_SiguienteActionPerformed
         // TODO add your handling code here:
- String nombre = Txt_Nombre.getText().trim();
-    String direccion = Txt_Direccion.getText().trim();
+        String nombre = Txt_Nombre.getText().trim();
+        String direccion = Txt_Direccion.getText().trim();
 
-    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    enph.modelo.Barrio barrio =
-            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+        int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
 
-    if (nombre.isEmpty() || direccion.isEmpty()
-            || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
-            || barrio == null) {
+        enph.modelo.Barrio barrio =
+                (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
 
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Todos los campos son obligatorios y debe seleccionar una ciudad y un barrio.",
-                "Campos incompletos",
-                javax.swing.JOptionPane.WARNING_MESSAGE
+        // 1. Validar campos obligatorios y selecciones
+        if (nombre.isEmpty() || direccion.isEmpty()
+                || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
+                || barrio == null) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Todos los campos son obligatorios. "
+                    + "Seleccione una ciudad y un barrio.",
+                    "Campos incompletos",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // 2. Validar nombre del hogar
+        if (!Validador.nombreHogarValido(nombre)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El nombre del hogar debe tener mínimo 3 caracteres "
+                    + "y contener solamente letras y espacios.",
+                    "Nombre no válido",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_Nombre.requestFocus();
+            return;
+        }
+
+        // 3. Validar dirección
+        if (!Validador.direccionValida(direccion)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "La dirección debe tener mínimo 11 caracteres, "
+                    + "contener al menos un número y utilizar únicamente "
+                    + "letras sin tildes, números y los caracteres # . , / -.",
+                    "Dirección no válida",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            Txt_Direccion.requestFocus();
+            return;
+        }
+
+        // 4. Validar longitudes máximas de Oracle
+        if (nombre.length() > 100 || direccion.length() > 150) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El nombre admite máximo 100 caracteres "
+                    + "y la dirección 150.",
+                    "Datos demasiado largos",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // 5. Obtener el ID de la ciudad seleccionada
+        String idCiudad = ciudades.get(indiceCiudad).getId();
+
+        // 6. Construir el hogar y abrir la pantalla de cabeza de hogar
+        enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(
+                nombre,
+                direccion,
+                barrio.getIdBarrio(),
+                barrio.getNombreBarrio(),
+                idCiudad
         );
-        return;
-    }
 
-    if (nombre.length() > 100 || direccion.length() > 150) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "El nombre admite máximo 100 caracteres y la dirección 150.",
-                "Datos demasiado largos",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
-
-    String idCiudad = ciudades.get(indiceCiudad).getId();
-
-    enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(
-            nombre,
-            direccion,
-            barrio.getIdBarrio(),
-            barrio.getNombreBarrio(),
-            idCiudad
-    );
-
-    CrearCabezaHogar pantalla = new CrearCabezaHogar(nuevoHogar);
-    pantalla.setLocationRelativeTo(null);
-    pantalla.setVisible(true);
-    dispose();
+        CrearCabezaHogar pantalla = new CrearCabezaHogar(nuevoHogar);
+        pantalla.setLocationRelativeTo(null);
+        pantalla.setVisible(true);
+        dispose();
     }//GEN-LAST:event_Btn_SiguienteActionPerformed
 
     /**

@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.Validador;
 public class EditarUsuario extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
@@ -428,9 +428,39 @@ private void cargarUsuario(String idUsuario) {
                 "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
     }
-    if (!cedula.matches("\\d+")) {
-        javax.swing.JOptionPane.showMessageDialog(this, "La cédula solo debe tener números.",
-                "Cédula no válida", javax.swing.JOptionPane.WARNING_MESSAGE);
+    // Validar nombre completo.
+    if (!Validador.nombreValido(nombre)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El nombre debe contener solamente letras, "
+                + "tildes y ñ, con un espacio entre palabras. "
+                + "Mínimo 3 caracteres.",
+                "Nombre no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar documento de identidad.
+    if (!Validador.documentoValido(cedula)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "La cédula debe contener entre 6 y 10 dígitos.",
+                "Documento no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar teléfono.
+    if (!Validador.telefonoValido(telefono)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El teléfono debe contener 7 dígitos (fijo) "
+                + "o 10 dígitos (celular).",
+                "Teléfono no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
         return;
     }
     // Largos máximos de las columnas de la tabla USUARIO

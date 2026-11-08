@@ -9,7 +9,7 @@ import enph.Main;
 import enph.modelo.Barrio;
 import enph.modelo.ItemCiudad;
 import enph.modelo.SesionUsuario;
-
+import enph.Validador;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
@@ -159,11 +159,29 @@ private void mostrarDialogoBarrio(Barrio barrio) {
         return;
     }
 
-    // Validar nombre
+   // Obtener y validar nombre del barrio
     String nombre = txtNombre.getText().trim();
 
     if (nombre.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Debe ingresar el nombre del barrio.", "Dato requerido", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                "Debe ingresar el nombre del barrio.",
+                "Dato requerido",
+                JOptionPane.WARNING_MESSAGE
+        );
+        txtNombre.requestFocus();
+        return;
+    }
+
+    if (!Validador.nombreValido(nombre)) {
+        JOptionPane.showMessageDialog(
+                this,
+                "El nombre del barrio debe tener mínimo 3 caracteres "
+                + "y contener solamente letras y espacios.",
+                "Nombre no válido",
+                JOptionPane.WARNING_MESSAGE
+        );
+        txtNombre.requestFocus();
         return;
     }
 

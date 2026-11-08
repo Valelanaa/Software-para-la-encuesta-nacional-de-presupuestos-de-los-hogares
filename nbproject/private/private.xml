@@ -5,16 +5,17 @@
         <group>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/Main.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdminReportes.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteEsencialesDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteNoEsenciales.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTodasFrecuencias.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasMes.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteRendimientoEncuestador.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteRendimientoEncuestadorDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestador.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionHogar.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEsenciales.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTiempo.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTiempoDetalles.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteTiempoDetalleDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteTiempoDetalleController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteTiempoDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEsenciales.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasPorCiudad.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteCiudadBarrio.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteCiudadDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasDetalles.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/ReporteBarrioDetalle.java</file>
         </group>
     </open-files>
 </project-private>

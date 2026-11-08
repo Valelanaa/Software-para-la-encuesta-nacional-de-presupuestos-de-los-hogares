@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
+import enph.Validador;
 import enph.controlador.SesionEncuesta;
 import enph.modelo.CabezaHogar;
 import javax.swing.JOptionPane;
@@ -429,6 +430,52 @@ private void cargarDatosCabezaHogar() {
         return;
     }
 
+    // Validar nombre completo.
+    if (!Validador.nombreValido(nombre)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El nombre debe contener solamente letras, "
+                + "tildes y ñ, con un espacio entre palabras.",
+                "Nombre no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar documento.
+    if (!Validador.documentoValido(documento)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El documento debe contener entre 6 y 10 dígitos.",
+                "Documento no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar correo electrónico.
+    if (!Validador.correoValido(correo)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Ingresa un correo electrónico válido. "
+                + "Ejemplo: usuario@correo.com",
+                "Correo no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar teléfono.
+    if (!Validador.telefonoValido(telefono)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El teléfono debe contener 7 o 10 dígitos.",
+                "Teléfono no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+    
     if (enph.Main.cabezaExisteDocumento(documento, idCabezaHogar)) {
         JOptionPane.showMessageDialog(
             this,

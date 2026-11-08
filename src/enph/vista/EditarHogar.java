@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.Validador;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
  * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
@@ -421,62 +421,102 @@ private boolean hayCambiosSinGuardar() {
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
-    if (hogarEditado == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No hay un hogar cargado para guardar.");
-        return;
-    }
+        if (hogarEditado == null) {
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "No hay un hogar cargado para guardar."
+           );
+           return;
+       }
 
-    String nombre = Txt_Nombre.getText().trim();
-    String direccion = Txt_Direccion.getText().trim();
+       String nombre = Txt_Nombre.getText().trim();
+       String direccion = Txt_Direccion.getText().trim();
 
-    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+       int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
 
-    enph.modelo.Barrio barrio =
-            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+       enph.modelo.Barrio barrio =
+               (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
 
-    if (nombre.isEmpty() || direccion.isEmpty()
-            || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
-            || barrio == null) {
+       // 1. Campos obligatorios
+       if (nombre.isEmpty() || direccion.isEmpty()
+               || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
+               || barrio == null) {
 
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Todos los campos son obligatorios.",
-                "Campos incompletos",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "Todos los campos son obligatorios. "
+                   + "Seleccione una ciudad y un barrio.",
+                   "Campos incompletos",
+                   javax.swing.JOptionPane.WARNING_MESSAGE
+           );
+           return;
+       }
 
-    if (nombre.length() > 100 || direccion.length() > 150) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "El nombre admite máximo 100 caracteres y la dirección 150.",
-                "Datos demasiado largos",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
+       // 2. Nombre del hogar
+       if (!Validador.nombreHogarValido(nombre)) {
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "El nombre del hogar debe tener mínimo 3 caracteres "
+                   + "y contener solamente letras y espacios.",
+                   "Nombre no válido",
+                   javax.swing.JOptionPane.WARNING_MESSAGE
+           );
+           Txt_Nombre.requestFocus();
+           return;
+       }
 
-    hogarEditado.setNombreFamilia(nombre);
-    hogarEditado.setDireccion(direccion);
-    hogarEditado.setIdCiudad(ciudades.get(indiceCiudad).getId());
-    hogarEditado.setIdBarrio(barrio.getIdBarrio());
-    hogarEditado.setBarrio(barrio.getNombreBarrio());
+       // 3. Dirección
+       if (!Validador.direccionValida(direccion)) {
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "La dirección debe tener mínimo 11 caracteres, "
+                   + "contener al menos un número y utilizar únicamente "
+                   + "letras sin tildes, números y los caracteres # . , / -.",
+                   "Dirección no válida",
+                   javax.swing.JOptionPane.WARNING_MESSAGE
+           );
+           Txt_Direccion.requestFocus();
+           return;
+       }
 
-    if (enph.Main.actualizarHogar(hogarEditado)) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Datos del hogar actualizados correctamente."
-        );
-        volver();
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "No se pudo actualizar. Revise la consola para ver el detalle.",
-                "Error",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-    }
+       // 4. Longitudes máximas
+       if (nombre.length() > 100 || direccion.length() > 150) {
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "El nombre admite máximo 100 caracteres "
+                   + "y la dirección 150.",
+                   "Datos demasiado largos",
+                   javax.swing.JOptionPane.WARNING_MESSAGE
+           );
+           return;
+       }
+
+       // 5. Actualizar el objeto hogar
+       hogarEditado.setNombreFamilia(nombre);
+       hogarEditado.setDireccion(direccion);
+       hogarEditado.setIdCiudad(ciudades.get(indiceCiudad).getId());
+       hogarEditado.setIdBarrio(barrio.getIdBarrio());
+       hogarEditado.setBarrio(barrio.getNombreBarrio());
+
+       // 6. Guardar cambios
+       if (enph.Main.actualizarHogar(hogarEditado)) {
+
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "Datos del hogar actualizados correctamente."
+           );
+
+           volver();
+
+       } else {
+
+           javax.swing.JOptionPane.showMessageDialog(
+                   this,
+                   "No se pudo actualizar. Revise la consola para ver el detalle.",
+                   "Error",
+                   javax.swing.JOptionPane.ERROR_MESSAGE
+           );
+       }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     private void Btn_CabezaHogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CabezaHogarActionPerformed

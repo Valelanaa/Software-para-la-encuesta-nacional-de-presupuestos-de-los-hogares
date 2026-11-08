@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.Validador;
 public class CrearUsuario extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearUsuario.class.getName());
@@ -390,80 +390,105 @@ private void cargarCiudades() {
         return;
     }
 
-    // Validar que la cédula contenga solamente números.
-    if (!cedula.matches("\\d+")) {
+    // Validar nombre completo.
+    if (!Validador.nombreValido(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "La cédula solo debe contener números.",
-                "Cédula no válida",
+                "El nombre debe contener solamente letras, "
+                + "tildes y ñ, con un espacio entre palabras. "
+                + "Mínimo 3 caracteres.",
+                "Nombre no válido",
                 javax.swing.JOptionPane.WARNING_MESSAGE
         );
         return;
     }
 
-    // Validar las longitudes máximas de los campos.
-    if (nombre.length() > 150
-            || cedula.length() > 20
-            || telefono.length() > 20
-            || contrasenna.length() > 50) {
-
+    // Validar documento de identidad.
+    if (!Validador.documentoValido(cedula)) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "Algún campo supera su longitud máxima: "
-                + "nombre 150, cédula 20, teléfono 20 "
-                + "y contraseña 50 caracteres.",
-                "Dato demasiado largo",
+                "La cédula debe contener entre 6 y 10 dígitos.",
+                "Documento no válido",
                 javax.swing.JOptionPane.WARNING_MESSAGE
         );
         return;
     }
 
-    
-
-    // No registrar una cédula que ya exista.
-    if (enph.Main.usuarioExisteDocumento(cedula)) {
+    // Validar teléfono.
+    if (!Validador.telefonoValido(telefono)) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "Ya existe un usuario registrado con esa cédula.",
-                "Cédula duplicada",
+                "El teléfono debe contener 7 dígitos (fijo) "
+                + "o 10 dígitos (celular).",
+                "Teléfono no válido",
                 javax.swing.JOptionPane.WARNING_MESSAGE
         );
         return;
     }
 
-    // Crear un objeto nuevo; no se carga ni modifica un usuario anterior.
-    enph.modelo.Usuario nuevo = new enph.modelo.Usuario();
+        // Validar las longitudes máximas de los campos.
+        if (nombre.length() > 150
+                || cedula.length() > 20
+                || telefono.length() > 20
+                || contrasenna.length() > 50) {
 
-    nuevo.setNombreCompleto(nombre);
-    nuevo.setDocumentoIdentidad(cedula);
-    nuevo.setTelefono(telefono);
-    nuevo.setContrasenna(contrasenna);
-    nuevo.setRol(rol);
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Algún campo supera su longitud máxima: "
+                    + "nombre 150, cédula 20, teléfono 20 "
+                    + "y contraseña 50 caracteres.",
+                    "Dato demasiado largo",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
-    // Obtener el ID de la ciudad seleccionada.
-   nuevo.setIdCiudad(ciudades.get(indiceCiudad).getId());
 
-    // Guardar el usuario nuevo en Oracle.
-    if (enph.Main.guardarUsuario(nuevo)) {
 
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "El usuario se creó correctamente.",
-                "Registro exitoso",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-        );
+        // No registrar una cédula que ya exista.
+        if (enph.Main.usuarioExisteDocumento(cedula)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Ya existe un usuario registrado con esa cédula.",
+                    "Cédula duplicada",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
-        volver();
+        // Crear un objeto nuevo; no se carga ni modifica un usuario anterior.
+        enph.modelo.Usuario nuevo = new enph.modelo.Usuario();
 
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "No se pudo crear el usuario. "
-                + "Revise la consola y la conexión con Oracle.",
-                "Error al guardar",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-    }
+        nuevo.setNombreCompleto(nombre);
+        nuevo.setDocumentoIdentidad(cedula);
+        nuevo.setTelefono(telefono);
+        nuevo.setContrasenna(contrasenna);
+        nuevo.setRol(rol);
+
+        // Obtener el ID de la ciudad seleccionada.
+       nuevo.setIdCiudad(ciudades.get(indiceCiudad).getId());
+
+        // Guardar el usuario nuevo en Oracle.
+        if (enph.Main.guardarUsuario(nuevo)) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "El usuario se creó correctamente.",
+                    "Registro exitoso",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
+
+            volver();
+
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo crear el usuario. "
+                    + "Revise la consola y la conexión con Oracle.",
+                    "Error al guardar",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     /**

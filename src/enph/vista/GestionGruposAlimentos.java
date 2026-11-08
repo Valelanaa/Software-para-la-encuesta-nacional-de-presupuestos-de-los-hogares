@@ -5,6 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.Validador;
 
 public class GestionGruposAlimentos extends javax.swing.JFrame {
     
@@ -361,6 +362,16 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 "Dato requerido", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
     }
+    if (!Validador.nombreValido(nombre)) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "El nombre del grupo debe tener mínimo 3 caracteres "
+        + "y contener solamente letras y espacios.",
+        "Nombre no válido",
+        javax.swing.JOptionPane.WARNING_MESSAGE
+    );
+    return;
+    }
     if (enph.Main.crearGrupo(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo creado correctamente.");
         cargarGrupos();
@@ -393,6 +404,16 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
                 "El nombre no puede estar vacío.",
                 "Dato requerido", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
+    }
+    if (!Validador.nombreValido(nombre)) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "El nombre del grupo debe tener mínimo 3 caracteres "
+        + "y contener solamente letras y espacios.",
+        "Nombre no válido",
+        javax.swing.JOptionPane.WARNING_MESSAGE
+    );
+    return;
     }
     if (enph.Main.editarGrupo(seleccionado.getId(), nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo actualizado correctamente.");

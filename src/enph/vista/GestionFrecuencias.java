@@ -5,6 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.Validador;
 
 public class GestionFrecuencias extends javax.swing.JFrame {
     
@@ -396,6 +397,16 @@ int fila = Tbl_Frecuencias.getSelectedRow();
         );
         return;
     }
+    if (!Validador.nombreValido(nombre)) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "El nombre de la frecuencia debe tener mínimo 3 caracteres "
+        + "y contener solamente letras y espacios.",
+        "Nombre no válido",
+        javax.swing.JOptionPane.WARNING_MESSAGE
+    );
+    return;
+    }
 
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
@@ -459,6 +470,17 @@ int fila = Tbl_Frecuencias.getSelectedRow();
             javax.swing.JOptionPane.WARNING_MESSAGE
         );
         return;
+    }
+    
+    if (!Validador.nombreValido(nombre)) {
+    javax.swing.JOptionPane.showMessageDialog(
+        this,
+        "El nombre de la frecuencia debe tener mínimo 3 caracteres "
+        + "y contener solamente letras y espacios.",
+        "Nombre no válido",
+        javax.swing.JOptionPane.WARNING_MESSAGE
+    );
+    return;
     }
 
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();

@@ -5,6 +5,7 @@
 package enph.vista;
 import enph.Main;
 import enph.controlador.SesionEncuesta;
+import enph.Validador;
 public class CrearCabezaHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
@@ -357,6 +358,51 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
                     "Campos obligatorios", javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
+        // Validar nombre completo.
+    if (!Validador.nombreValido(nombre)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El nombre debe contener solamente letras, "
+                + "tildes y ñ, con un espacio entre palabras.",
+                "Nombre no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar documento.
+    if (!Validador.documentoValido(documento)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El documento debe contener entre 6 y 10 dígitos.",
+                "Documento no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar correo electrónico.
+    if (!Validador.correoValido(correo)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Ingresa un correo electrónico válido. "
+                + "Ejemplo: usuario@correo.com",
+                "Correo no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    // Validar teléfono.
+    if (!Validador.telefonoValido(telefono)) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El teléfono debe contener 7 o 10 dígitos.",
+                "Teléfono no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
 
         // "-1" no coincide con ningún ID: busca el documento en todas las cabezas.
         if (enph.Main.cabezaExisteDocumento(documento, "-1")) {
