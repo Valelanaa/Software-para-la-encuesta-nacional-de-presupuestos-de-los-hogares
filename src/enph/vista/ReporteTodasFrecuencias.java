@@ -84,7 +84,7 @@ private void cargarReporte() {
     try {
 
         // Consultar los resultados mediante Main
-        List<ReporteEsencial> resultados = Main.generarReporteNoEsenciales(frecuencia);
+        List<ReporteEsencial> resultados = Main.generarReporteTodasFrecuencias(frecuencia);
 
         // Crear el modelo de la tabla
         DefaultTableModel modelo = new DefaultTableModel(

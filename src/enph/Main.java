@@ -177,6 +177,9 @@ public class Main {
     public static List<ReporteEsencial> generarReporteNoEsenciales(String frecuencia) throws SQLException {
         return REPORTE_ESENCIALES.generarReporteNoEsenciales(frecuencia);
     }
+    public static List<ReporteEsencial> generarReporteTodasFrecuencias(String frecuencia) throws SQLException {
+    return REPORTE_ESENCIALES.generarReporteTodasFrecuencias(frecuencia);
+    }
     public static List<ReporteRendimientoEncuestador> generarReporteRendimiento(int mes, int anio) throws SQLException {
         return REPORTE_RENDIMIENTO.generarReporte(mes, anio);
     }

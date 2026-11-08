@@ -8,7 +8,6 @@ package enph.modelo;
  *
  * @author Valeria
  */
-
 import java.sql.Connection;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -27,6 +26,12 @@ public class ReporteEsencialesDAO {
     public List<ReporteEsencial> generarReporteNoEsenciales(String frecuencia)
             throws SQLException {
         return ejecutar("{call PR_REPORTE_NO_ESENCIALES(?, ?)}", frecuencia);
+    }
+
+    // Todas las frecuencias del catálogo (pantalla ReporteTodasFrecuencias)
+    public List<ReporteEsencial> generarReporteTodasFrecuencias(String frecuencia)
+            throws SQLException {
+        return ejecutar("{call PR_REPORTE_TODAS_FRECUENCIAS(?, ?)}", frecuencia);
     }
 
     private List<ReporteEsencial> ejecutar(String sql, String frecuencia)
