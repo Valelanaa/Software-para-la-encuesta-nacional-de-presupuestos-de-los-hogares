@@ -282,7 +282,7 @@ public class MenuAdminReportes extends javax.swing.JFrame {
 
     private void Btn_TiempoEncuestasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_TiempoEncuestasActionPerformed
         // TODO add your handling code here:
-        new AsignarFamilias().setVisible(true); // Muestra el menú de asignar familias
+        new ReporteTiempo().setVisible(true); 
         dispose(); // cierra esta ventana
     }//GEN-LAST:event_Btn_TiempoEncuestasActionPerformed
 
