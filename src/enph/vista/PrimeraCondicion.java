@@ -1,7 +1,7 @@
 package enph.vista;
 
 import enph.modelo.CaracterizacionDAO;
-import enph.modelo.ItemCatalogo;
+import enph.modelo.FrecuenciaCompra;
 import enph.controlador.SesionEncuesta;
 import java.math.BigDecimal;
 
@@ -17,9 +17,9 @@ public class PrimeraCondicion extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PrimeraCondicion.class.getName());
 
     private SesionEncuesta sesion; // estado de la encuesta (hogar, encuesta, grupo actual)
-    private ItemCatalogo frecuencia; // frecuencia elegida en la pantalla anterior
+    private FrecuenciaCompra frecuencia; // frecuencia elegida en la pantalla anterior
 
-    public PrimeraCondicion(SesionEncuesta sesion, ItemCatalogo frecuencia) {
+    public PrimeraCondicion(SesionEncuesta sesion, FrecuenciaCompra frecuencia) {
         initComponents();
         this.sesion = sesion;
         this.frecuencia = frecuencia;

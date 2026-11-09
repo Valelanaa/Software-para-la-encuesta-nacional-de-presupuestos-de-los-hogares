@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.modelo.ItemCatalogo;
+import enph.modelo.FrecuenciaCompra;  
 import enph.controlador.SesionEncuesta;
 
 /**
@@ -272,7 +272,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
     // en lugar de que el botón "no haga nada"
     try {
         // La posición elegida en el combo es la misma que en la lista de frecuencias
-        ItemCatalogo frecuencia = sesion.getFrecuencias().get(Cmb_Frecuencia.getSelectedIndex());
+        FrecuenciaCompra frecuencia = sesion.getFrecuencias().get(Cmb_Frecuencia.getSelectedIndex());
         System.out.println("Frecuencia elegida: " + frecuencia.getNombre());
 
         if (requiereValor(frecuencia.getNombre())) {

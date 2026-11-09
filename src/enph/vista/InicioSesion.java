@@ -244,5 +244,18 @@ public class InicioSesion extends javax.swing.JFrame {
     public javax.swing.JPasswordField getTxtPassword() {
         return jPasswordField1;
     }
+    
+    public void mostrarMensaje(String mensaje, String titulo, int tipo) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                mensaje,
+                titulo,
+                tipo
+        );
+    }
+
+    public void limpiarContrasena() {
+        jPasswordField1.setText("");
+    }
 
 }

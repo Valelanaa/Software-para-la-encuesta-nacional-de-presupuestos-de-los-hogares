@@ -13,6 +13,8 @@ import enph.vista.InicioSesion;
 public class Main {
 
     private static final UsuarioDAO USUARIOS = new UsuarioDAO();
+    private static final CiudadDAO CIUDADES = new CiudadDAO();
+    private static final AsignacionDAO ASIGNACIONES = new AsignacionDAO();
     private static final HogarDAO HOGARES = new HogarDAO();
     private static final BarrioDAO BARRIOS = new BarrioDAO();
     private static final CabezaHogarDAO CABEZAS = new CabezaHogarDAO();
@@ -35,16 +37,19 @@ public class Main {
     }
 
     // ========================= USUARIOS =========================
-    public static Usuario autenticarUsuario(String documento, String contrasena) {
-        return USUARIOS.autenticar(documento, contrasena);
-    }
     public static boolean validarUsuario(Usuario usuario) { return USUARIOS.validarUsuario(usuario); }
     public static boolean validarCredenciales(String documento, String contrasena) {
         return USUARIOS.validarUsuario(documento, contrasena);
     }
     public static List<Usuario> listarUsuarios() { return USUARIOS.listarUsuarios(); }
     public static Usuario buscarUsuarioPorId(String id) { return USUARIOS.buscarPorId(id); }
-    public static List<ItemCiudad> listarCiudades() { return USUARIOS.listarCiudades(); }
+    public static List<Ciudad> listarCiudades() { return CIUDADES.listarCiudades(); }
+    public static List<Departamento> listarDepartamentos() { return CIUDADES.listarDepartamentos(); }
+    public static Ciudad buscarCiudadPorId(String id) { return CIUDADES.buscarPorId(id); }
+    public static Encuesta buscarEncuesta(int id) { return ENCUESTAS.buscarPorId(id); }
+    public static Encuesta buscarEncuestaPorHogar(int id) { return ENCUESTAS.buscarPorHogar(id); }
+    public static Asignacion buscarAsignacionPorHogar(int id) { return ASIGNACIONES.buscarPorHogar(id); }
+    public static List<Asignacion> listarAsignacionesPorEncuestador(String id) { return ASIGNACIONES.listarPorEncuestador(id); }
     public static boolean usuarioExisteDocumento(String documento) { return USUARIOS.existeDocumento(documento); }
     public static boolean usuarioExisteDocumento(String documento, String idExcluido) {
         return USUARIOS.existeDocumento(documento, idExcluido);
@@ -59,7 +64,7 @@ public class Main {
     public static List<Hogar> listarHogaresConDetalle() { return HOGARES.listarHogaresConDetalle(); }
     public static Hogar buscarHogarPorId(String id) { return HOGARES.buscarPorId(id); }
     public static boolean insertarHogar(Hogar hogar) { return HOGARES.insertarHogar(hogar); }
-    public static boolean actualizarHogar(Hogar hogar) { return HOGARES.actualizarHogar(hogar); }
+    public static boolean actualizarHogar(enph.modelo.Hogar h) throws java.sql.SQLException {return new enph.modelo.HogarDAO().actualizarHogar(h);}
     public static boolean eliminarHogar(String id) { return HOGARES.eliminarHogar(id); }
     public static void asignarHogaresAEncuestador(String idEncuestador, List<String> ids) throws SQLException {
         HOGARES.asignarHogaresAEncuestador(idEncuestador, ids);
@@ -156,8 +161,8 @@ public class Main {
     }
 
     // ========================= CATÁLOGOS =========================
-    public static List<ItemCatalogo> listarGrupos() { return CATALOGOS.listarGrupos(); }
-    public static List<ItemCatalogo> listarFrecuencias() { return CATALOGOS.listarFrecuencias(); }
+    public static List<GrupoAlimento> listarGrupos() { return CATALOGOS.listarGrupos(); }
+    public static List<FrecuenciaCompra> listarFrecuencias() { return CATALOGOS.listarFrecuencias(); }
     public static boolean crearGrupo(String nombre) { return CATALOGOS.crearGrupo(nombre); }
     public static boolean editarGrupo(int id, String nombre) { return CATALOGOS.editarGrupo(id, nombre); }
     public static boolean grupoEnUso(int id) { return CATALOGOS.grupoEnUso(id); }

@@ -14,7 +14,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BarrioDAO {
 
@@ -62,7 +64,9 @@ public class BarrioDAO {
 
             try (ResultSet rs = (ResultSet) cs.getObject(2)) {
                 if (rs != null && rs.next()) {
-                    return obtenerBarrio(rs);
+                    return obtenerBarrio(rs,
+                            new CiudadDAO().buscarPorId(
+                                    limpiar(rs.getString("ID_CIUDAD"))));
                 }
             }
         }
@@ -159,6 +163,12 @@ public class BarrioDAO {
 
         List<Barrio> barrios = new ArrayList<>();
 
+        // Las ciudades (con su departamento) se cargan una sola vez por lista.
+        Map<String, Ciudad> ciudades = new HashMap<>();
+        for (Ciudad c : new CiudadDAO().listarCiudades()) {
+            ciudades.put(c.getId(), c);
+        }
+
         try (Connection con = Conexion.init();
              CallableStatement cs = con.prepareCall(llamada)) {
 
@@ -176,7 +186,8 @@ public class BarrioDAO {
             try (ResultSet rs = (ResultSet) cs.getObject(indiceCursor)) {
 
                 while (rs != null && rs.next()) {
-                    barrios.add(obtenerBarrio(rs));
+                    barrios.add(obtenerBarrio(rs,
+                            ciudades.get(limpiar(rs.getString("ID_CIUDAD")))));
                 }
             }
         }
@@ -184,13 +195,12 @@ public class BarrioDAO {
         return barrios;
     }
 
-    private Barrio obtenerBarrio(ResultSet rs) throws SQLException {
+    private Barrio obtenerBarrio(ResultSet rs, Ciudad ciudad) throws SQLException {
 
         return new Barrio(
                 limpiar(rs.getString("ID_BARRIO")),
                 limpiar(rs.getString("NOMBRE_BARRIO")),
-                limpiar(rs.getString("ID_CIUDAD")),
-                limpiar(rs.getString("CIUDAD_DEPARTAMENTO"))
+                ciudad
         );
     }
 }

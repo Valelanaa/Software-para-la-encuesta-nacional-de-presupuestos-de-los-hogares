@@ -5,7 +5,7 @@
 package enph.vista;
 
 import enph.Main;
-import enph.modelo.ItemCiudad;
+import enph.modelo.Ciudad;
 import enph.modelo.ReporteCiudadBarrio;
 import enph.modelo.SesionUsuario;
 import java.sql.SQLException;
@@ -19,7 +19,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteEncuestasPorCiudad.class.getName());
 
     // Ciudades en el mismo orden en que aparecen en el combo (para obtener el ID de la seleccionada).
-    private final List<ItemCiudad> ciudades = new ArrayList<>();
+    private final List<Ciudad> ciudades = new ArrayList<>();
 
     // Barrios de la tabla, en el mismo orden de las filas (para obtener el ID del barrio seleccionado).
     private List<ReporteCiudadBarrio> listaBarrios = new ArrayList<>();
@@ -86,7 +86,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
         ciudades.addAll(Main.listarCiudades());
 
         Cmb_Ciudades.removeAllItems();
-        for (ItemCiudad c : ciudades) {
+        for (Ciudad c : ciudades) {
             Cmb_Ciudades.addItem(c.getNombre());
         }
     }
@@ -115,7 +115,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
             return;
         }
 
-        ItemCiudad ciudad = ciudades.get(indice);
+        Ciudad ciudad = ciudades.get(indice);
 
         try {
 

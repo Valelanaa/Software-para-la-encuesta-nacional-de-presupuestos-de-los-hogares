@@ -9,7 +9,7 @@ public class EditarUsuario extends javax.swing.JFrame {
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
+private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
 // Usuario que se está editando (con los datos que tiene en la base)
 private enph.modelo.Usuario usuarioEditado;
 // true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
@@ -80,9 +80,11 @@ private void volver() {
 private void cargarCiudades() {
     ciudades.clear();
     ciudades.addAll(enph.Main.listarCiudades());
+
     Cmb_Ciudad.removeAllItems();
-    for (enph.modelo.ItemCiudad c : ciudades) {
-        Cmb_Ciudad.addItem(c.getNombre());
+
+    for (enph.modelo.Ciudad ciudad : ciudades) {
+        Cmb_Ciudad.addItem(ciudad.getNombre());
     }
 }
 
@@ -483,7 +485,16 @@ private void cargarUsuario(String idUsuario) {
     usuarioEditado.setTelefono(telefono);
     usuarioEditado.setContrasenna(contrasenna);
     usuarioEditado.setRol(rol);
-    usuarioEditado.setIdCiudad(idCiudad);
+    enph.modelo.Ciudad ciudadSeleccionada = null;
+
+    for (enph.modelo.Ciudad ciudad : ciudades) {
+        if (ciudad.getId().equals(idCiudad)) {
+            ciudadSeleccionada = ciudad;
+            break;
+        }
+    }
+
+    usuarioEditado.setCiudad(ciudadSeleccionada);
 
     boolean guardado = esAdministrador ? enph.Main.actualizarUsuario(usuarioEditado) : enph.Main.actualizarMisDatos(usuarioEditado);
 

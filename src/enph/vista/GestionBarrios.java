@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import enph.Main;
 import enph.modelo.Barrio;
-import enph.modelo.ItemCiudad;
+import enph.modelo.Ciudad;
 import enph.modelo.SesionUsuario;
 import enph.Validador;
 import java.sql.SQLException;
@@ -110,7 +110,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
     boolean editar = barrio != null;
 
     // Obtener ciudades registradas
-    List<ItemCiudad> ciudades = Main.listarCiudades();
+    List<Ciudad> ciudades = Main.listarCiudades();
 
     if (ciudades == null || ciudades.isEmpty()) {
 
@@ -123,8 +123,8 @@ private void mostrarDialogoBarrio(Barrio barrio) {
     JTextField txtNombre = new JTextField(20);
 
     // Combo para seleccionar la ciudad
-    JComboBox<ItemCiudad> cmbCiudad =
-            new JComboBox<>(ciudades.toArray(new ItemCiudad[0]));
+    JComboBox<Ciudad> cmbCiudad =
+            new JComboBox<>(ciudades.toArray(new Ciudad[0]));
 
     // Si estamos editando, cargar los datos actuales
     if (editar) {
@@ -133,7 +133,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
 
         for (int i = 0; i < cmbCiudad.getItemCount(); i++) {
 
-            ItemCiudad ciudad = cmbCiudad.getItemAt(i);
+            Ciudad ciudad = cmbCiudad.getItemAt(i);
 
             if (ciudad.getId().equals(barrio.getIdCiudad())) {
 
@@ -185,8 +185,8 @@ private void mostrarDialogoBarrio(Barrio barrio) {
         return;
     }
 
-    ItemCiudad ciudadSeleccionada =
-            (ItemCiudad) cmbCiudad.getSelectedItem();
+    Ciudad ciudadSeleccionada =
+            (Ciudad) cmbCiudad.getSelectedItem();
 
     if (ciudadSeleccionada == null) {
         JOptionPane.showMessageDialog(

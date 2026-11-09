@@ -13,17 +13,25 @@ public class CatalogoDAO {
 
     // ==================== LISTAR CATÁLOGOS ====================
 
-    public List<ItemCatalogo> listarGrupos() {
-        return listar("{call PR_LISTAR_GRUPOS(?)}");
+    public List<GrupoAlimento> listarGrupos() {
+        List<GrupoAlimento> grupos = new ArrayList<>();
+        for (Object[] fila : listar("{call PR_LISTAR_GRUPOS(?)}")) {
+            grupos.add(new GrupoAlimento((Integer) fila[0], (String) fila[1]));
+        }
+        return grupos;
     }
 
-    public List<ItemCatalogo> listarFrecuencias() {
-        return listar("{call PR_LISTAR_FRECUENCIAS(?)}");
+    public List<FrecuenciaCompra> listarFrecuencias() {
+        List<FrecuenciaCompra> frecuencias = new ArrayList<>();
+        for (Object[] fila : listar("{call PR_LISTAR_FRECUENCIAS(?)}")) {
+            frecuencias.add(new FrecuenciaCompra((Integer) fila[0], (String) fila[1]));
+        }
+        return frecuencias;
     }
 
-    // Método común para leer los dos catálogos.
-    private List<ItemCatalogo> listar(String llamada) {
-        List<ItemCatalogo> lista = new ArrayList<>();
+    // Método común para leer los dos catálogos: cada fila es {id, nombre}.
+    private List<Object[]> listar(String llamada) {
+        List<Object[]> lista = new ArrayList<>();
         Connection con = Conexion.init();
         if (con == null) return lista;
 
@@ -34,7 +42,7 @@ public class CatalogoDAO {
             try (ResultSet rs = (ResultSet) cs.getObject(1)) {
                 while (rs.next()) {
                     String nombre = rs.getString(2);
-                    lista.add(new ItemCatalogo(rs.getInt(1), nombre == null ? "" : nombre.trim()));
+                    lista.add(new Object[]{rs.getInt(1), nombre == null ? "" : nombre.trim()});
                 }
             }
         } catch (SQLException e) {

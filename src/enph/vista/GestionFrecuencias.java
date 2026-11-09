@@ -12,7 +12,7 @@ public class GestionFrecuencias extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionFrecuencias.class.getName());
 
 
-private List<enph.modelo.ItemCatalogo> frecuenciasEnTabla = new ArrayList<>();
+private List<enph.modelo.FrecuenciaCompra> frecuenciasEnTabla = new ArrayList<>();
 
 public GestionFrecuencias() {
 
@@ -51,7 +51,7 @@ private void cargarFrecuencias() {
         }
     };
 
-    for (enph.modelo.ItemCatalogo frecuencia : frecuenciasEnTabla) {
+    for (enph.modelo.FrecuenciaCompra frecuencia : frecuenciasEnTabla) {
         modelo.addRow(new Object[]{frecuencia.getNombre()});
     }
 
@@ -322,8 +322,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
 
     int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
 
-    enph.modelo.ItemCatalogo seleccionada =
-        frecuenciasEnTabla.get(indice);
+    enph.modelo.FrecuenciaCompra seleccionada = frecuenciasEnTabla.get(indice);
 
     enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
 
@@ -446,8 +445,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
     // Convertir el índice por si la tabla utiliza ordenamiento.
     int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
 
-    enph.modelo.ItemCatalogo seleccionada =
-        frecuenciasEnTabla.get(indice);
+    enph.modelo.FrecuenciaCompra seleccionada = frecuenciasEnTabla.get(indice);
 
     String nombre = javax.swing.JOptionPane.showInputDialog(
         this,

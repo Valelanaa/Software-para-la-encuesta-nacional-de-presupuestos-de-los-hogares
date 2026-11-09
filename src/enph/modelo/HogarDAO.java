@@ -32,24 +32,44 @@ public class HogarDAO {
     }
 
     /**
+     * Carga los barrios (cada uno con su ciudad y departamento) en un mapa
+     * por ID_BARRIO. Se hace una vez por listado para no consultar fila por fila.
+     */
+    private Map<String, Barrio> cargarBarrios() {
+        Map<String, Barrio> barrios = new HashMap<>();
+
+        try {
+            for (Barrio b : new BarrioDAO().listarBarrios()) {
+                barrios.put(b.getIdBarrio(), b);
+            }
+        } catch (SQLException | RuntimeException e) {
+            System.err.println("No se pudieron cargar los barrios: " + e.getMessage());
+        }
+
+        return barrios;
+    }
+
+    /**
      * Construye un hogar a partir de un ResultSet.
      * Requiere ID_HOGAR, NOMBRE_HOGAR, DIR_NUMERO,
-     * DIR_BARRIO e ID_BARRIO.
+     * DIR_BARRIO e ID_BARRIO. Si el barrio no está en el mapa se crea
+     * solo con su nombre (sin ciudad).
      */
-    private Hogar crearHogar(ResultSet rs) throws SQLException {
+    private Hogar crearHogar(ResultSet rs, Map<String, Barrio> barrios) throws SQLException {
         String id = limpiar(rs.getString("ID_HOGAR"));
+        String idBarrio = limpiar(rs.getString("ID_BARRIO"));
 
-        Hogar hogar = new Hogar(
+        Barrio barrio = barrios.get(idBarrio);
+        if (barrio == null) {
+            barrio = new Barrio(idBarrio, limpiar(rs.getString("DIR_BARRIO")), null);
+        }
+
+        return new Hogar(
                 idNumerico(id),
                 limpiar(rs.getString("NOMBRE_HOGAR")),
                 limpiar(rs.getString("DIR_NUMERO")),
-                limpiar(rs.getString("DIR_BARRIO"))
+                barrio
         );
-
-        hogar.setIdTexto(id);
-        hogar.setIdBarrio(limpiar(rs.getString("ID_BARRIO")));
-
-        return hogar;
     }
 
     /**
@@ -57,6 +77,7 @@ public class HogarDAO {
      */
     public List<Hogar> listarHogares() throws SQLException {
         List<Hogar> hogares = new ArrayList<>();
+        Map<String, Barrio> barrios = cargarBarrios();
 
         try (Connection con = Conexion.init()) {
             if (con == null) {
@@ -69,7 +90,7 @@ public class HogarDAO {
 
                 try (ResultSet rs = (ResultSet) cs.getObject(1)) {
                     while (rs != null && rs.next()) {
-                        Hogar hogar = crearHogar(rs);
+                        Hogar hogar = crearHogar(rs, barrios);
                         hogar.setIncompleta(rs.getInt("INCOMPLETA") == 1);
                         hogares.add(hogar);
                     }
@@ -85,6 +106,7 @@ public class HogarDAO {
      */
     public List<Hogar> listarHogaresConDetalle() {
         List<Hogar> hogares = new ArrayList<>();
+        Map<String, Barrio> barrios = cargarBarrios();
 
         try (Connection con = Conexion.init()) {
             if (con == null) {
@@ -98,10 +120,14 @@ public class HogarDAO {
 
                 try (ResultSet rs = (ResultSet) cs.getObject(1)) {
                     while (rs != null && rs.next()) {
-                        Hogar hogar = crearHogar(rs);
-                        hogar.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
-                        hogar.setCiudad(limpiar(rs.getString("CIUDAD")));
-                        hogar.setNombreCabeza(limpiar(rs.getString("NOMBRE_CABEZA")));
+                        Hogar hogar = crearHogar(rs, barrios);
+                        String nombreCabeza = limpiar(rs.getString("NOMBRE_CABEZA"));
+                        if (!nombreCabeza.isEmpty()) {
+                            CabezaHogar cabeza = new CabezaHogar();
+                            cabeza.setIdHogar(hogar.getIdTexto());
+                            cabeza.setNombreCompleto(nombreCabeza);
+                            hogar.setCabeza(cabeza);
+                        }
                         hogares.add(hogar);
                     }
                 }
@@ -131,8 +157,30 @@ public class HogarDAO {
 
                 try (ResultSet rs = (ResultSet) cs.getObject(2)) {
                     if (rs != null && rs.next()) {
-                        Hogar hogar = crearHogar(rs);
-                        hogar.setIdCiudad(limpiar(rs.getString("ID_CIUDAD")));
+                        // Barrio con su ciudad y departamento
+                        String idBarrio = limpiar(rs.getString("ID_BARRIO"));
+                        Map<String, Barrio> barrios = new HashMap<>();
+                        if (!idBarrio.isEmpty()) {
+                            try {
+                                Barrio b = new BarrioDAO().buscarPorId(idBarrio);
+                                if (b != null) {
+                                    barrios.put(idBarrio, b);
+                                }
+                            } catch (SQLException | RuntimeException e) {
+                                System.err.println("No se pudo cargar el barrio: " + e.getMessage());
+                            }
+                        }
+
+                        Hogar hogar = crearHogar(rs, barrios);
+
+                        // Asignación vigente (null si no tiene encuestador)
+                        Asignacion asignacion =
+                                new AsignacionDAO().buscarPorHogar(hogar.getIdHogar());
+                        if (asignacion != null) {
+                            asignacion.setHogar(hogar);
+                            hogar.setAsignacion(asignacion);
+                        }
+
                         return hogar;
                     }
                 }
@@ -199,58 +247,55 @@ public class HogarDAO {
     }
 
     /**
-     * Actualiza ciudad, nombre, dirección y barrio.
-     */
-    public boolean actualizarHogar(Hogar h) {
-        String llamada = "{call PR_ACTUALIZAR_HOGAR(?, ?, ?, ?, ?, ?)}";
-        Connection con = Conexion.init();
+    * Actualiza nombre, dirección y barrio (la ciudad se deriva del barrio).
+    * Lanza SQLException para que la pantalla muestre el error real.
+    */
+   public boolean actualizarHogar(Hogar h) throws SQLException {
+       String llamada = "{call PR_ACTUALIZAR_HOGAR(?, ?, ?, ?, ?, ?)}";
+       Connection con = Conexion.init();
 
-        if (con == null) {
-            System.err.println("No se pudo conectar a la base de datos.");
-            return false;
-        }
+       if (con == null) {
+           throw new SQLException("No fue posible conectar con Oracle.");
+       }
 
-        try {
-            con.setAutoCommit(false);
+       try {
+           con.setAutoCommit(false);
 
-            try (CallableStatement cs = con.prepareCall(llamada)) {
-                cs.setString(1, h.getIdTexto());
-                cs.setString(2, h.getIdCiudad());
-                cs.setString(3, h.getNombreFamilia());
-                cs.setString(4, h.getDireccion());
-                cs.setString(5, h.getIdBarrio());
-                cs.registerOutParameter(6, Types.NUMERIC);
-                cs.execute();
+           try (CallableStatement cs = con.prepareCall(llamada)) {
+               cs.setString(1, h.getIdTexto());
+               cs.setString(2, h.getIdCiudad());
+               cs.setString(3, h.getNombreFamilia());
+               cs.setString(4, h.getDireccion());
+               cs.setString(5, h.getIdBarrio());
+               cs.registerOutParameter(6, Types.NUMERIC);
+               cs.execute();
 
-                boolean resultado = cs.getInt(6) == 1;
+               boolean resultado = cs.getInt(6) == 1;
 
-                if (resultado) {
-                    con.commit();
-                } else {
-                    con.rollback();
-                }
+               if (resultado) {
+                   con.commit();
+               } else {
+                   con.rollback();
+               }
 
-                return resultado;
-            }
-        } catch (SQLException e) {
-            try {
-                con.rollback();
-            } catch (SQLException errorRollback) {
-                e.addSuppressed(errorRollback);
-            }
-
-            System.err.println("Error al actualizar hogar: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                con.setAutoCommit(true);
-            } catch (SQLException e) {
-                System.err.println("Error al restaurar la transacción.");
-            }
-            Conexion.close(con);
-        }
-    }
+               return resultado;
+           }
+       } catch (SQLException e) {
+           try {
+               con.rollback();
+           } catch (SQLException errorRollback) {
+               e.addSuppressed(errorRollback);
+           }
+           throw e;   // antes: imprimía y devolvía false
+       } finally {
+           try {
+               con.setAutoCommit(true);
+           } catch (SQLException e) {
+               System.err.println("Error al restaurar la transacción.");
+           }
+           Conexion.close(con);
+       }
+   }
 
     /**
      * Elimina un hogar y sus registros relacionados.
@@ -376,6 +421,7 @@ public class HogarDAO {
      */
     public List<Hogar> listarHogaresSinEncuestador() throws SQLException {
         List<Hogar> hogares = new ArrayList<>();
+        Map<String, Barrio> barrios = cargarBarrios();
 
         try (Connection con = Conexion.init()) {
             if (con == null) {
@@ -388,7 +434,7 @@ public class HogarDAO {
 
                 try (ResultSet rs = (ResultSet) cs.getObject(1)) {
                     while (rs != null && rs.next()) {
-                        hogares.add(crearHogar(rs));
+                        hogares.add(crearHogar(rs, barrios));
                     }
                 }
             }
@@ -399,6 +445,7 @@ public class HogarDAO {
 
     public List<Hogar> listarHogaresDisponiblesParaEncuestador(String idEncuestador) throws SQLException {
     List<Hogar> hogares = new ArrayList<>();
+        Map<String, Barrio> barrios = cargarBarrios();
 
     if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
         throw new SQLException("No se ha seleccionado un encuestador.");
@@ -416,7 +463,7 @@ public class HogarDAO {
 
             try (ResultSet rs = (ResultSet) cs.getObject(2)) {
                 while (rs != null && rs.next()) {
-                    hogares.add(crearHogar(rs));
+                    hogares.add(crearHogar(rs, barrios));
                 }
             }
         }
@@ -430,6 +477,7 @@ public class HogarDAO {
      */
     public List<Hogar> listarHogaresPorEncuestador(String idEncuestador) throws SQLException {
         List<Hogar> hogares = new ArrayList<>();
+        Map<String, Barrio> barrios = cargarBarrios();
 
         if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
             throw new SQLException("No se ha seleccionado un encuestador.");
@@ -447,7 +495,7 @@ public class HogarDAO {
 
                 try (ResultSet rs = (ResultSet) cs.getObject(2)) {
                     while (rs != null && rs.next()) {
-                        hogares.add(crearHogar(rs));
+                        hogares.add(crearHogar(rs, barrios));
                     }
                 }
             }
@@ -622,7 +670,7 @@ public class HogarDAO {
 
                 if (resultado) {
                     con.commit();
-                    h.setIdTexto(limpiar(idHogar));
+                    h.setIdHogar(idNumerico(idHogar));
                     c.setIdHogar(limpiar(idHogar));
                     c.setIdCabezaHogar(limpiar(idCabeza));
                 } else {

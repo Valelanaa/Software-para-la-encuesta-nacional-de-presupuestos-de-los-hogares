@@ -5,27 +5,21 @@
 package enph.modelo;
 
 /**
+ * Barrio. Dominio: Barrio (idBarrio, nombre) que pertenece a una Ciudad
+ * (Barrio 0..* - 1 Ciudad). Tabla: BARRIO.
  *
  * @author Valeria
  */
-
 public class Barrio {
 
     private String idBarrio;
     private String nombreBarrio;
-    private String idCiudad;
-    private String nombreCiudad;
+    private Ciudad ciudad;   // ciudad con su departamento (puede ser null si no se pudo cargar)
 
-    public Barrio(String idBarrio, String nombreBarrio, String idCiudad) {
-        this(idBarrio, nombreBarrio, idCiudad, "");
-    }
-
-    public Barrio(String idBarrio, String nombreBarrio,
-                  String idCiudad, String nombreCiudad) {
+    public Barrio(String idBarrio, String nombreBarrio, Ciudad ciudad) {
         this.idBarrio = idBarrio;
         this.nombreBarrio = nombreBarrio;
-        this.idCiudad = idCiudad;
-        this.nombreCiudad = nombreCiudad;
+        this.ciudad = ciudad;
     }
 
     public String getIdBarrio() {
@@ -36,12 +30,18 @@ public class Barrio {
         return nombreBarrio;
     }
 
-    public String getIdCiudad() {
-        return idCiudad;
+    public Ciudad getCiudad() {
+        return ciudad;
     }
 
+    /** ID de la ciudad como texto; "" si el barrio no tiene ciudad cargada. */
+    public String getIdCiudad() {
+        return ciudad == null ? "" : ciudad.getId();
+    }
+
+    /** Texto "Ciudad - Departamento"; "" si el barrio no tiene ciudad cargada. */
     public String getNombreCiudad() {
-        return nombreCiudad;
+        return ciudad == null ? "" : ciudad.toString();
     }
 
     public void setIdBarrio(String idBarrio) {
@@ -52,12 +52,8 @@ public class Barrio {
         this.nombreBarrio = nombreBarrio;
     }
 
-    public void setIdCiudad(String idCiudad) {
-        this.idCiudad = idCiudad;
-    }
-
-    public void setNombreCiudad(String nombreCiudad) {
-        this.nombreCiudad = nombreCiudad;
+    public void setCiudad(Ciudad ciudad) {
+        this.ciudad = ciudad;
     }
 
     @Override

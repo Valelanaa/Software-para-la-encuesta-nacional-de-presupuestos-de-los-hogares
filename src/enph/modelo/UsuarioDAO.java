@@ -137,13 +137,14 @@ public class UsuarioDAO {
                                 limpiarONull(rs.getString("ID_ENCUESTADOR"))
                         );
 
-                        usuario.setCiudad(
-                                limpiarONull(rs.getString("NOMBRE_CIUDAD"))
-                        );
-
-                        usuario.setDepartamento(
-                                limpiarONull(rs.getString("NOMBRE_DEPARTAMENTO"))
-                        );
+                        // Solo el encuestador tiene ciudad al iniciar sesión:
+                        // se carga completa (con departamento) desde su registro.
+                        if (usuario.getIdEncuestador() != null) {
+                            Usuario detalle = buscarPorId(usuario.getIdUsuario());
+                            if (detalle != null) {
+                                usuario.setCiudad(detalle.getCiudad());
+                            }
+                        }
 
                         return usuario;
                     }
@@ -270,8 +271,9 @@ public class UsuarioDAO {
                                 limpiarONull(rs.getString("ID_ENCUESTADOR"))
                         );
 
-                        usuario.setIdCiudad(
-                                limpiar(rs.getString("ID_CIUDAD"))
+                        usuario.setCiudad(
+                                new CiudadDAO().buscarPorId(
+                                        limpiar(rs.getString("ID_CIUDAD")))
                         );
 
                         usuario.setTelefono(
@@ -289,53 +291,6 @@ public class UsuarioDAO {
         }
 
         return null;
-    }
-
-    /**
-     * Lista las ciudades mediante PR_LISTAR_CIUDADES.
-     *
-     * Cada ItemCiudad almacena el ID de la ciudad y el texto
-     * que se muestra en el combo.
-     */
-    public List<ItemCiudad> listarCiudades() {
-
-        String llamada = "{call PR_LISTAR_CIUDADES(?)}";
-
-        List<ItemCiudad> ciudades = new ArrayList<>();
-
-        try (Connection con = Conexion.init()) {
-
-            if (con == null) {
-                System.err.println("No se pudo conectar a la base de datos.");
-                return ciudades;
-            }
-
-            try (CallableStatement cs = con.prepareCall(llamada)) {
-
-                cs.registerOutParameter(1, OracleTypes.CURSOR);
-
-                cs.execute();
-
-                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
-
-                    while (rs != null && rs.next()) {
-
-                        ciudades.add(
-                                new ItemCiudad(
-                                        limpiar(rs.getString("ID_CIUDAD")),
-                                        limpiar(rs.getString("CIUDAD_DEPARTAMENTO"))
-                                )
-                        );
-                    }
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error al listar ciudades: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return ciudades;
     }
 
     /**

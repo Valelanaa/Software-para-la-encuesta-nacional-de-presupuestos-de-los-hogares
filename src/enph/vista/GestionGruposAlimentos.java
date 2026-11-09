@@ -12,7 +12,7 @@ public class GestionGruposAlimentos extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionGruposAlimentos.class.getName());
 
 
-private List<enph.modelo.ItemCatalogo> gruposEnTabla = new ArrayList<>();
+private List<enph.modelo.GrupoAlimento> gruposEnTabla = new ArrayList<>();
 
 public GestionGruposAlimentos() {
 
@@ -49,7 +49,7 @@ private void cargarGrupos() {
         }
     };
  
-    for (enph.modelo.ItemCatalogo g : gruposEnTabla) {
+    for (enph.modelo.GrupoAlimento g : gruposEnTabla) {
         modelo.addRow(new Object[]{ g.getNombre() });
     }
  
@@ -322,7 +322,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         return;
     }
     int indice = Tbl_Alimentos.convertRowIndexToModel(fila);
-    enph.modelo.ItemCatalogo seleccionado = gruposEnTabla.get(indice);
+    enph.modelo.GrupoAlimento seleccionado = gruposEnTabla.get(indice);
 
     if (enph.Main.grupoEnUso(seleccionado.getId())) {
         javax.swing.JOptionPane.showMessageDialog(this,
@@ -392,7 +392,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         return;
     }
     int indice = Tbl_Alimentos.convertRowIndexToModel(fila);
-    enph.modelo.ItemCatalogo seleccionado = gruposEnTabla.get(indice);
+    enph.modelo.GrupoAlimento seleccionado = gruposEnTabla.get(indice);
 
     String nombre = (String) javax.swing.JOptionPane.showInputDialog(this,
             "Nuevo nombre del grupo:", "Editar grupo",

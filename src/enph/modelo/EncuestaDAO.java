@@ -456,4 +456,69 @@ public class EncuestaDAO {
             Conexion.close(con);
         }
     }
+    // ==================== BUSCAR (devuelven Encuesta) ====================
+ 
+    /** Busca una encuesta por su ID. Invoca PR_BUSCAR_ENCUESTA. Devuelve null si no existe. */
+    public Encuesta buscarPorId(int idEncuesta) {
+        return buscarEncuesta("{call PR_BUSCAR_ENCUESTA(?,?)}", idEncuesta);
+    }
+ 
+    /** Busca la encuesta más reciente de un hogar. Invoca PR_BUSCAR_ENCUESTA_HOGAR. Devuelve null si no existe. */
+    public Encuesta buscarPorHogar(int idHogar) {
+        return buscarEncuesta("{call PR_BUSCAR_ENCUESTA_HOGAR(?,?)}", idHogar);
+    }
+ 
+    private Encuesta buscarEncuesta(String llamada, int id) {
+ 
+        Connection con = Conexion.init();
+ 
+        if (con == null) {
+            return null;
+        }
+ 
+        try (CallableStatement cs = con.prepareCall(llamada)) {
+ 
+            cs.setString(1, String.valueOf(id));
+            cs.registerOutParameter(2, Types.REF_CURSOR);
+            cs.execute();
+ 
+            try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+                if (rs != null && rs.next()) {
+                    return obtenerEncuesta(rs);
+                }
+            }
+ 
+        } catch (SQLException e) {
+ 
+            System.err.println(
+                "Error al buscar la encuesta: " + e.getMessage()
+            );
+ 
+            e.printStackTrace();
+ 
+        } finally {
+            Conexion.close(con);
+        }
+ 
+        return null;
+    }
+ 
+    /** Convierte una fila de ENCUESTA en un objeto Encuesta (estado true = completa). */
+    private Encuesta obtenerEncuesta(ResultSet rs) throws SQLException {
+ 
+        Hogar hogar = new Hogar(
+            Integer.parseInt(rs.getString("ID_HOGAR").trim()),
+            null, null, null
+        );
+ 
+        String estado = rs.getString("ESTADO");
+ 
+        return new Encuesta(
+            Integer.parseInt(rs.getString("ID_ENCUESTA").trim()),
+            rs.getTimestamp("FECHA_INICIO"),
+            rs.getTimestamp("FECHA_FIN"),
+            estado != null && ESTADO_COMPLETA.equals(estado.trim()),
+            hogar
+        );
+    }
 }

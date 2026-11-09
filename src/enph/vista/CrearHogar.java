@@ -9,7 +9,7 @@ public class CrearHogar extends javax.swing.JFrame {
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearHogar.class.getName());
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
+private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
 private enph.modelo.Hogar hogar;
 
 public CrearHogar() {
@@ -99,7 +99,7 @@ private void cargarCiudades() {
 
     ciudades.addAll(enph.Main.listarCiudades());
 
-    for (enph.modelo.ItemCiudad ciudad : ciudades) {
+    for (enph.modelo.Ciudad ciudad : ciudades) {
         Cmb_Ciudad.addItem(ciudad.getNombre());
     }
 }
@@ -432,16 +432,10 @@ private void cargarCiudades() {
             return;
         }
 
-        // 5. Obtener el ID de la ciudad seleccionada
-        String idCiudad = ciudades.get(indiceCiudad).getId();
-
-        // 6. Construir el hogar y abrir la pantalla de cabeza de hogar
         enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(
-                nombre,
-                direccion,
-                barrio.getIdBarrio(),
-                barrio.getNombreBarrio(),
-                idCiudad
+            nombre,
+            direccion,
+            barrio
         );
 
         CrearCabezaHogar pantalla = new CrearCabezaHogar(nuevoHogar);

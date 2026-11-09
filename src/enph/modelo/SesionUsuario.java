@@ -38,9 +38,9 @@ public class SesionUsuario {
     }
     // Texto "Ciudad - Departamento" listo para una etiqueta
     public static String ubicacionParaMostrar() {
-        if (actual == null || actual.getCiudad() == null || actual.getDepartamento() == null) {
+        if (actual == null || actual.getCiudad() == null) {
             return "";
         }
-        return actual.getCiudad() + " - " + actual.getDepartamento();
+        return actual.getCiudad().toString();
     }
 }

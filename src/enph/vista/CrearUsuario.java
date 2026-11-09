@@ -9,7 +9,7 @@ public class CrearUsuario extends javax.swing.JFrame {
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearUsuario.class.getName());
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
+private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
 
 public CrearUsuario() {
     initComponents();
@@ -53,7 +53,7 @@ private void cargarCiudades() {
     ciudades.clear();
     ciudades.addAll(enph.Main.listarCiudades());
     Cmb_Ciudad.removeAllItems();
-    for (enph.modelo.ItemCiudad c : ciudades) {
+    for (enph.modelo.Ciudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
     }
 }
@@ -466,7 +466,7 @@ private void cargarCiudades() {
         nuevo.setRol(rol);
 
         // Obtener el ID de la ciudad seleccionada.
-       nuevo.setIdCiudad(ciudades.get(indiceCiudad).getId());
+       nuevo.setCiudad(ciudades.get(indiceCiudad));
 
         // Guardar el usuario nuevo en Oracle.
         if (enph.Main.guardarUsuario(nuevo)) {

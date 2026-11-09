@@ -4,17 +4,20 @@
  */
 package enph.modelo;
 
-/** Una ciudad para el combo: el id se guarda en la base, el nombre se ve en pantalla. */
-public class ItemCiudad {
-    private final String id;      // ID_CIUDAD
-    private final String nombre;  // "Ciudad - Departamento"
+/**
+ *
+ * @author Valeria
+ */
+public class GrupoAlimento {
+    private final int id;
+    private final String nombre;
 
-    public ItemCiudad(String id, String nombre) {
+    public GrupoAlimento(int id, String nombre) {
         this.id = id;
         this.nombre = nombre;
     }
 
-    public String getId() { return id; }
+    public int getId() { return id; }
     public String getNombre() { return nombre; }
 
     @Override

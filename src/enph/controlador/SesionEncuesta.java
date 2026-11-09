@@ -4,7 +4,8 @@
  */
 package enph.controlador;
 
-import enph.modelo.ItemCatalogo;
+import enph.modelo.FrecuenciaCompra;
+import enph.modelo.GrupoAlimento;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -20,8 +21,8 @@ public class SesionEncuesta {
 
     private final int idHogar;                    // hogar (familia) que se está encuestando
     private final int idEncuesta;                 // encuesta en la que se guardan las respuestas
-    private final List<ItemCatalogo> grupos;      // los 25 grupos de alimentos, en orden
-    private final List<ItemCatalogo> frecuencias; // opciones de frecuencia de compra
+    private final List<GrupoAlimento> grupos;      // los 25 grupos de alimentos, en orden
+    private final List<FrecuenciaCompra> frecuencias; // opciones de frecuencia de compra
     private int grupoActual = 0;                  // posición del grupo en pantalla (0 = el primero)
     private boolean edicion = false;              // true si se está editando una encuesta existente
     
@@ -30,7 +31,7 @@ public class SesionEncuesta {
      * que antes cargan y validan los datos necesarios.
      */
     private SesionEncuesta(int idHogar, int idEncuesta,
-                           List<ItemCatalogo> grupos, List<ItemCatalogo> frecuencias) {
+                           List<GrupoAlimento> grupos, List<FrecuenciaCompra> frecuencias) {
         this.idHogar = idHogar;
         this.idEncuesta = idEncuesta;
         this.grupos = grupos;
@@ -39,8 +40,8 @@ public class SesionEncuesta {
 
     /** Carga los catálogos y crea la encuesta. Devuelve null si algo falla. */
     public static SesionEncuesta iniciar(int idHogar) {
-        List<ItemCatalogo> grupos = enph.Main.listarGrupos();
-        List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
+        List<GrupoAlimento> grupos = enph.Main.listarGrupos();
+        List<FrecuenciaCompra> frecuencias = enph.Main.listarFrecuencias();
         // Sin grupos o frecuencias no hay encuesta posible
         if (grupos.isEmpty() || frecuencias.isEmpty()) {
             return null;
@@ -63,8 +64,8 @@ public static SesionEncuesta editar(int idHogar) {
         return null;
     }
 
-    List<ItemCatalogo> grupos = enph.Main.listarGrupos();
-    List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
+    List<GrupoAlimento> grupos = enph.Main.listarGrupos();
+    List<FrecuenciaCompra> frecuencias = enph.Main.listarFrecuencias();
 
     if (grupos.isEmpty() || frecuencias.isEmpty()) {
         return null;
@@ -85,8 +86,8 @@ public static SesionEncuesta editar(int idHogar) {
         if (idEncuesta < 0) {
             return null;
         }
-        List<ItemCatalogo> todos = enph.Main.listarGrupos();
-        List<ItemCatalogo> frecuencias = enph.Main.listarFrecuencias();
+        List<GrupoAlimento> todos = enph.Main.listarGrupos();
+        List<FrecuenciaCompra> frecuencias = enph.Main.listarFrecuencias();
         if (todos.isEmpty() || frecuencias.isEmpty()) {
             return null;
         }
@@ -95,8 +96,8 @@ public static SesionEncuesta editar(int idHogar) {
             return null;
         }
 
-        List<ItemCatalogo> faltantes = new ArrayList<>();
-        for (ItemCatalogo grupo : todos) {
+        List<GrupoAlimento> faltantes = new ArrayList<>();
+        for (GrupoAlimento grupo : todos) {
             if (!respondidos.contains(grupo.getId())) {
                 faltantes.add(grupo);
             }
@@ -113,12 +114,12 @@ public static SesionEncuesta editar(int idHogar) {
     //Datos de la encuesta
     public int getIdHogar() { return idHogar; }
     public int getIdEncuesta() { return idEncuesta; }
-    public List<ItemCatalogo> getFrecuencias() { return frecuencias; }
+    public List<FrecuenciaCompra> getFrecuencias() { return frecuencias; }
     public boolean isEdicion() { return edicion; }
     //Navegación entre los grupos de alimentos
     public int getGrupoActual() { return grupoActual; }
     public int getTotalGrupos() { return grupos.size(); }
-    public ItemCatalogo getGrupo() { return grupos.get(grupoActual); } //Grupo de alimentos que se muestra en pantalla ahora.
+    public GrupoAlimento getGrupo() { return grupos.get(grupoActual); } //Grupo de alimentos que se muestra en pantalla ahora.
     public boolean hayMasGrupos() { return grupoActual < grupos.size() - 1; } //true si todavía queda algún grupo después del actual
     public void avanzar() { grupoActual++; } //Pasa al siguiente grupo. Llamar solo si hayMasGrupos() es true
     /**

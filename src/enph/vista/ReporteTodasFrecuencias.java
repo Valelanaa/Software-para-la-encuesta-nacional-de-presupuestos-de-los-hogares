@@ -6,7 +6,7 @@ package enph.vista;
 
 import enph.Main;
 import enph.modelo.CatalogoDAO;
-import enph.modelo.ItemCatalogo;
+import enph.modelo.FrecuenciaCompra;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.SesionUsuario;
 
@@ -140,9 +140,9 @@ private void cargarFrecuencias() {
 
         CatalogoDAO dao = new CatalogoDAO();
 
-        List<ItemCatalogo> frecuencias = dao.listarFrecuencias();
+        List<FrecuenciaCompra> frecuencias = dao.listarFrecuencias();
 
-        for (ItemCatalogo frecuencia : frecuencias) {
+        for (FrecuenciaCompra frecuencia : frecuencias) {
             Cmb_Frecuencias.addItem(frecuencia.getNombre());
         }
 

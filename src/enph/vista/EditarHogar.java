@@ -15,7 +15,7 @@ public class EditarHogar extends javax.swing.JFrame {
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarHogar.class.getName());
 
 /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.ItemCiudad> ciudades = new java.util.ArrayList<>();
+private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
 // Usuario que se está editando (con los datos que tiene en la base)
 private enph.modelo.Usuario usuarioEditado;
 // true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
@@ -81,7 +81,7 @@ private void cargarCiudades() {
     ciudades.clear();
     ciudades.addAll(enph.Main.listarCiudades());
     Cmb_Ciudad.removeAllItems();
-    for (enph.modelo.ItemCiudad c : ciudades) {
+    for (enph.modelo.Ciudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
     }
 }
@@ -422,101 +422,114 @@ private boolean hayCambiosSinGuardar() {
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
         if (hogarEditado == null) {
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "No hay un hogar cargado para guardar."
-           );
-           return;
-       }
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 "No hay un hogar cargado para guardar."
+         );
+         return;
+     }
 
-       String nombre = Txt_Nombre.getText().trim();
-       String direccion = Txt_Direccion.getText().trim();
+     String nombre = Txt_Nombre.getText().trim();
+     String direccion = Txt_Direccion.getText().trim();
 
-       int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+     int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
 
-       enph.modelo.Barrio barrio =
-               (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+     enph.modelo.Barrio barrio =
+             (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
 
-       // 1. Campos obligatorios
-       if (nombre.isEmpty() || direccion.isEmpty()
-               || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
-               || barrio == null) {
+     // 1. Campos obligatorios
+     if (nombre.isEmpty() || direccion.isEmpty()
+             || indiceCiudad < 0 || indiceCiudad >= ciudades.size()
+             || barrio == null) {
 
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "Todos los campos son obligatorios. "
-                   + "Seleccione una ciudad y un barrio.",
-                   "Campos incompletos",
-                   javax.swing.JOptionPane.WARNING_MESSAGE
-           );
-           return;
-       }
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 "Todos los campos son obligatorios. "
+                 + "Seleccione una ciudad y un barrio.",
+                 "Campos incompletos",
+                 javax.swing.JOptionPane.WARNING_MESSAGE
+         );
+         return;
+     }
 
-       // 2. Nombre del hogar
-       if (!Validador.nombreHogarValido(nombre)) {
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "El nombre del hogar debe tener mínimo 3 caracteres "
-                   + "y contener solamente letras y espacios.",
-                   "Nombre no válido",
-                   javax.swing.JOptionPane.WARNING_MESSAGE
-           );
-           Txt_Nombre.requestFocus();
-           return;
-       }
+     // 2. Nombre del hogar
+     if (!Validador.nombreHogarValido(nombre)) {
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 "El nombre del hogar debe tener mínimo 3 caracteres "
+                 + "y contener solamente letras y espacios.",
+                 "Nombre no válido",
+                 javax.swing.JOptionPane.WARNING_MESSAGE
+         );
+         Txt_Nombre.requestFocus();
+         return;
+     }
 
-       // 3. Dirección
-       if (!Validador.direccionValida(direccion)) {
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "La dirección debe tener mínimo 11 caracteres, "
-                   + "contener al menos un número y utilizar únicamente "
-                   + "letras sin tildes, números y los caracteres # . , / -.",
-                   "Dirección no válida",
-                   javax.swing.JOptionPane.WARNING_MESSAGE
-           );
-           Txt_Direccion.requestFocus();
-           return;
-       }
+     // 3. Dirección
+     if (!Validador.direccionValida(direccion)) {
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 "La dirección debe tener mínimo 11 caracteres, "
+                 + "contener al menos un número y utilizar únicamente "
+                 + "letras sin tildes, números y los caracteres # . , / -.",
+                 "Dirección no válida",
+                 javax.swing.JOptionPane.WARNING_MESSAGE
+         );
+         Txt_Direccion.requestFocus();
+         return;
+     }
 
-       // 4. Longitudes máximas
-       if (nombre.length() > 100 || direccion.length() > 150) {
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "El nombre admite máximo 100 caracteres "
-                   + "y la dirección 150.",
-                   "Datos demasiado largos",
-                   javax.swing.JOptionPane.WARNING_MESSAGE
-           );
-           return;
-       }
+     // 4. Longitudes máximas
+     if (nombre.length() > 100 || direccion.length() > 150) {
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 "El nombre admite máximo 100 caracteres "
+                 + "y la dirección 150.",
+                 "Datos demasiado largos",
+                 javax.swing.JOptionPane.WARNING_MESSAGE
+         );
+         return;
+     }
 
-       // 5. Actualizar el objeto hogar
-       hogarEditado.setNombreFamilia(nombre);
-       hogarEditado.setDireccion(direccion);
-       hogarEditado.setIdCiudad(ciudades.get(indiceCiudad).getId());
-       hogarEditado.setIdBarrio(barrio.getIdBarrio());
-       hogarEditado.setBarrio(barrio.getNombreBarrio());
+     // 5. Actualizar el objeto hogar
+    hogarEditado.setNombreFamilia(nombre);
+    hogarEditado.setDireccion(direccion);
+    hogarEditado.setBarrio(barrio);
 
-       // 6. Guardar cambios
-       if (enph.Main.actualizarHogar(hogarEditado)) {
+     // 6. Guardar cambios
+     try {
+         if (enph.Main.actualizarHogar(hogarEditado)) {
+             javax.swing.JOptionPane.showMessageDialog(
+                     this,
+                     "Datos del hogar actualizados correctamente."
+             );
+             volver();
+         } else {
+             javax.swing.JOptionPane.showMessageDialog(
+                     this,
+                     "No se pudo actualizar el hogar.",
+                     "Error",
+                     javax.swing.JOptionPane.ERROR_MESSAGE
+             );
+         }
+     } catch (java.sql.SQLException e) {
+         String msg = e.getMessage();
 
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "Datos del hogar actualizados correctamente."
-           );
+         // Errores propios (ORA-20030, ORA-20033...): mostrar solo el texto del mensaje
+         if (msg != null && msg.contains("ORA-2003")) {
+             msg = msg.split("\n")[0].replaceFirst("^ORA-\\d+:\\s*", "");
+         } else {
+             msg = "Error de base de datos. Revise la consola.";
+             e.printStackTrace();
+         }
 
-           volver();
-
-       } else {
-
-           javax.swing.JOptionPane.showMessageDialog(
-                   this,
-                   "No se pudo actualizar. Revise la consola para ver el detalle.",
-                   "Error",
-                   javax.swing.JOptionPane.ERROR_MESSAGE
-           );
-       }
+         javax.swing.JOptionPane.showMessageDialog(
+                 this,
+                 msg,
+                 "No se pudo actualizar",
+                 javax.swing.JOptionPane.ERROR_MESSAGE
+         );
+     }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     private void Btn_CabezaHogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CabezaHogarActionPerformed
