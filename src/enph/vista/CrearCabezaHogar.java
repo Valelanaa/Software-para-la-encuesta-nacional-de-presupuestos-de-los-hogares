@@ -6,14 +6,16 @@ package enph.vista;
 import enph.Main;
 import enph.controlador.SesionEncuesta;
 import enph.Validador;
+import enph.controlador.HogarController;
+
 public class CrearCabezaHogar extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
+    private final HogarController controlador = new HogarController();
 
-
-// Almacena los datos del hogar mientras se completa el formulario.
-private enph.modelo.Hogar hogar;
-private SesionEncuesta sesion;
+    // Almacena los datos del hogar mientras se completa el formulario.
+    private enph.modelo.Hogar hogar;
+    private SesionEncuesta sesion;
 
 // Constructor para abrir la ventana desde el diseñador de NetBeans.
 public CrearCabezaHogar() {
@@ -405,7 +407,7 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
     }
 
         // "-1" no coincide con ningún ID: busca el documento en todas las cabezas.
-        if (enph.Main.cabezaExisteDocumento(documento, "-1")) {
+        if (controlador.existeDocumentoCabeza(documento, "-1")) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "Ya existe una cabeza de hogar con ese documento.",
                     "Documento duplicado", javax.swing.JOptionPane.WARNING_MESSAGE);
@@ -418,7 +420,7 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
         cabeza.setCorreo(correo);
         cabeza.setTelefono(telefono);
 
-        if (enph.Main.insertarHogarConCabeza(hogar, cabeza)) {
+        if (controlador.crearHogarConCabeza(hogar, cabeza)) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "El hogar y su cabeza de hogar se crearon correctamente.",
                     "Hogar creado", javax.swing.JOptionPane.INFORMATION_MESSAGE);

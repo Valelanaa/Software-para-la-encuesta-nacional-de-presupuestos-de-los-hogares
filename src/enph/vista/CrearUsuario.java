@@ -4,12 +4,16 @@
  */
 package enph.vista;
 import enph.Validador;
+import enph.controlador.UsuarioController;
+import enph.modelo.Ciudad;
+import enph.modelo.Usuario;
+
 public class CrearUsuario extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearUsuario.class.getName());
-
-/// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearUsuario.class.getName());
+    /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
+    private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
+    private final UsuarioController controlador = new UsuarioController();
 
 public CrearUsuario() {
     initComponents();
@@ -51,7 +55,7 @@ private void volver() {
 // Llena el combo de ciudades desde la base de datos
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(enph.Main.listarCiudades());
+    ciudades.addAll(controlador.listarCiudades());
     Cmb_Ciudad.removeAllItems();
     for (enph.modelo.Ciudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
@@ -446,7 +450,7 @@ private void cargarCiudades() {
 
 
         // No registrar una cédula que ya exista.
-        if (enph.Main.usuarioExisteDocumento(cedula)) {
+        if (controlador.existeDocumento(cedula)) {
             javax.swing.JOptionPane.showMessageDialog(
                     this,
                     "Ya existe un usuario registrado con esa cédula.",
@@ -469,7 +473,7 @@ private void cargarCiudades() {
        nuevo.setCiudad(ciudades.get(indiceCiudad));
 
         // Guardar el usuario nuevo en Oracle.
-        if (enph.Main.guardarUsuario(nuevo)) {
+        if (controlador.crearUsuario(nuevo)) {
 
             javax.swing.JOptionPane.showMessageDialog(
                     this,

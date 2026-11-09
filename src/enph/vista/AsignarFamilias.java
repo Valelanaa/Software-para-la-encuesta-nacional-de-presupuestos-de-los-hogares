@@ -3,75 +3,77 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.Main;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.UsuarioController;
+import enph.modelo.Usuario;
 
 public class AsignarFamilias extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(AsignarFamilias.class.getName());
+    private final UsuarioController controladorUsuario = new UsuarioController();
+    private List<Usuario> encuestadoresEnTabla = new ArrayList<>();
 
 
-private List<enph.modelo.Usuario> encuestadoresEnTabla = new ArrayList<>();
 
-public AsignarFamilias() {
+    public AsignarFamilias() {
 
-    initComponents();
+        initComponents();
 
-    // Datos de quien inició sesión (banner de la ventana)
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    // Ajustes de apariencia
-    Tbl_Frecuencias.setRowHeight(32);
-    Tbl_Frecuencias.getTableHeader().setFont(
-        new java.awt.Font("Bahnschrift", 1, 18)
-    );
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        // Ajustes de apariencia
+        Tbl_Frecuencias.setRowHeight(32);
+        Tbl_Frecuencias.getTableHeader().setFont(
+            new java.awt.Font("Bahnschrift", 1, 18)
+        );
 
-    Tbl_Frecuencias.setAutoResizeMode(
-         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-    );
+        Tbl_Frecuencias.setAutoResizeMode(
+             javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        );
 
-    cargarEncuestadores();
-    
+        cargarEncuestadores();
 
-    setLocationRelativeTo(null);// centra la ventana en la pantalla
-}
-private void cargarEncuestadores() {
-    // Consultar los usuarios registrados.
-    List<enph.modelo.Usuario> usuarios =
-            Main.listarUsuarios();
 
-    encuestadoresEnTabla = new ArrayList<>();
+        setLocationRelativeTo(null);// centra la ventana en la pantalla
+    }
+    private void cargarEncuestadores() {
 
-    // Conservar únicamente los usuarios con rol ENCUESTADOR.
-    for (enph.modelo.Usuario usuario : usuarios) {
-        if (usuario.getRol() != null
-        && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
-        && usuario.getIdEncuestador() != null) {
-            encuestadoresEnTabla.add(usuario);
+        List<Usuario> usuarios = controladorUsuario.listarUsuarios();
+
+        encuestadoresEnTabla = new ArrayList<>();
+
+        for (Usuario usuario : usuarios) {
+
+            if (usuario.getRol() != null
+                    && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
+                    && usuario.getIdEncuestador() != null) {
+
+                encuestadoresEnTabla.add(usuario);
+            }
         }
+
+        javax.swing.table.DefaultTableModel modelo =
+                new javax.swing.table.DefaultTableModel(
+                        new Object[]{"Nombre del encuestador", "Documento"}, 0
+                ) {
+                    @Override
+                    public boolean isCellEditable(int fila, int columna) {
+                        return false;
+                    }
+                };
+
+        for (Usuario usuario : encuestadoresEnTabla) {
+            modelo.addRow(new Object[]{
+                usuario.getNombreCompleto(),
+                usuario.getDocumentoIdentidad()
+            });
+        }
+
+        Tbl_Frecuencias.setModel(modelo);
+        ajustarColumnas(Tbl_Frecuencias);
     }
-
-    javax.swing.table.DefaultTableModel modelo =
-            new javax.swing.table.DefaultTableModel(
-                    new Object[]{"Nombre del encuestador", "Documento"}, 0
-            ) {
-                @Override
-                public boolean isCellEditable(int fila, int columna) {
-                    return false;
-                }
-            };
-
-    for (enph.modelo.Usuario usuario : encuestadoresEnTabla) {
-        modelo.addRow(new Object[]{
-            usuario.getNombreCompleto(),
-            usuario.getDocumentoIdentidad()
-        });
-    }
-
-    Tbl_Frecuencias.setModel(modelo);
-    ajustarColumnas(Tbl_Frecuencias);
-}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {

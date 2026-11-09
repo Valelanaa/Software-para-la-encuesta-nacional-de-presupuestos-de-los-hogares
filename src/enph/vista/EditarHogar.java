@@ -4,6 +4,7 @@
  */
 package enph.vista;
 import enph.Validador;
+import enph.controlador.HogarController;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
  * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
@@ -23,6 +24,7 @@ private boolean esAdministrador;
 // true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
 private boolean editaSusDatos;
 private enph.modelo.Hogar hogarEditado;
+private final HogarController controlador = new HogarController();
 
 
 
@@ -64,7 +66,7 @@ private void cargarBarrios() {
     String idCiudad = ciudades.get(indice).getId();
 
     try {
-        for (enph.modelo.Barrio barrio : enph.Main.listarBarriosPorCiudad(idCiudad)) {
+        for (enph.modelo.Barrio barrio : controlador.listarBarriosPorCiudad(idCiudad) ) {
             Cmb_Barrio.addItem(barrio);
         }
     } catch (java.sql.SQLException e) {
@@ -79,7 +81,7 @@ private void cargarBarrios() {
 
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(enph.Main.listarCiudades());
+    ciudades.addAll(controlador.listarCiudades());
     Cmb_Ciudad.removeAllItems();
     for (enph.modelo.Ciudad c : ciudades) {
         Cmb_Ciudad.addItem(c.getNombre());
@@ -87,7 +89,7 @@ private void cargarCiudades() {
 }
 
 private void cargarHogar(String idHogar) {
-    hogarEditado = enph.Main.buscarHogarPorId(idHogar);
+    hogarEditado = controlador.buscarHogar(idHogar);
 
     if (hogarEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(
@@ -498,7 +500,7 @@ private boolean hayCambiosSinGuardar() {
 
      // 6. Guardar cambios
      try {
-         if (enph.Main.actualizarHogar(hogarEditado)) {
+         if (controlador.actualizarHogar(hogarEditado)) {
              javax.swing.JOptionPane.showMessageDialog(
                      this,
                      "Datos del hogar actualizados correctamente."

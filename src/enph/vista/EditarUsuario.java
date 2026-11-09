@@ -4,18 +4,22 @@
  */
 package enph.vista;
 import enph.Validador;
+import enph.controlador.UsuarioController;
+import enph.modelo.Usuario;
+import enph.modelo.Ciudad;
+
 public class EditarUsuario extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
-
-/// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
-// Usuario que se está editando (con los datos que tiene en la base)
-private enph.modelo.Usuario usuarioEditado;
-// true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
-private boolean esAdministrador;
-// true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
-private boolean editaSusDatos;
+    private final UsuarioController controlador = new UsuarioController();
+    /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
+    private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
+    // Usuario que se está editando (con los datos que tiene en la base)
+    private enph.modelo.Usuario usuarioEditado;
+    // true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
+    private boolean esAdministrador;
+    // true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
+    private boolean editaSusDatos;
 
 public EditarUsuario() {
     this(null);   // para poder abrir la ventana sola desde el diseñador
@@ -79,7 +83,7 @@ private void volver() {
 // Llena el combo de ciudades desde la base de datos
 private void cargarCiudades() {
     ciudades.clear();
-    ciudades.addAll(enph.Main.listarCiudades());
+    ciudades.addAll(controlador.listarCiudades());
 
     Cmb_Ciudad.removeAllItems();
 
@@ -90,7 +94,7 @@ private void cargarCiudades() {
 
 // Lee el usuario de la base y muestra sus datos en los campos
 private void cargarUsuario(String idUsuario) {
-    usuarioEditado = enph.Main.buscarUsuarioPorId(idUsuario);
+    usuarioEditado = controlador.buscarUsuario(idUsuario);
     if (usuarioEditado == null) {
         javax.swing.JOptionPane.showMessageDialog(this,
                 "No se pudo cargar el usuario.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -473,7 +477,7 @@ private void cargarUsuario(String idUsuario) {
         return;
     }
 
-    if (enph.Main.usuarioExisteDocumento(cedula, usuarioEditado.getIdUsuario())) {
+    if (controlador.existeDocumento(cedula, usuarioEditado.getIdUsuario())) {
         javax.swing.JOptionPane.showMessageDialog(this, "Ya existe otro usuario con esa cédula.",
                 "Cédula repetida", javax.swing.JOptionPane.WARNING_MESSAGE);
         return;
@@ -496,8 +500,7 @@ private void cargarUsuario(String idUsuario) {
 
     usuarioEditado.setCiudad(ciudadSeleccionada);
 
-    boolean guardado = esAdministrador ? enph.Main.actualizarUsuario(usuarioEditado) : enph.Main.actualizarMisDatos(usuarioEditado);
-
+    boolean guardado = controlador.actualizarUsuario(usuarioEditado, esAdministrador);
     if (guardado) {
         // Si se editó el usuario de la sesión, se refresca su sesión (banner)
         enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();

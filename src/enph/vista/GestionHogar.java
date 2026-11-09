@@ -5,13 +5,15 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.HogarController;
 
 public class GestionHogar extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionHogar.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionHogar.class.getName());
 
-// Hogares mostrados en la tabla, en el mismo orden que sus filas
-private List<enph.modelo.Hogar> hogaresEnTabla = new ArrayList<>();
+    // Hogares mostrados en la tabla, en el mismo orden que sus filas
+    private List<enph.modelo.Hogar> hogaresEnTabla = new ArrayList<>();
+    private final HogarController controlador = new HogarController();
 
 public GestionHogar() {
 
@@ -36,7 +38,7 @@ public GestionHogar() {
 }
 
 private void cargarHogares() {
-    hogaresEnTabla = enph.Main.listarHogaresConDetalle();
+    hogaresEnTabla = controlador.listarHogares();
 
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
             new Object[]{"Hogar", "Dirección", "Barrio", "Ciudad", "Cabeza de hogar"}, 0) {
@@ -336,7 +338,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         enph.modelo.Hogar seleccionado = hogaresEnTabla.get(indice);
 
         // Un hogar con encuesta no se elimina: se perdería información histórica
-        if (enph.Main.hogarTieneEncuesta(seleccionado.getIdHogar())) {
+        if (controlador.hogarTieneEncuesta(seleccionado.getIdHogar())) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "El hogar \"" + seleccionado.getNombreFamilia() + "\" ya tiene una encuesta registrada,\n"
                     + "por eso no se puede eliminar.",
@@ -355,7 +357,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (enph.Main.eliminarHogar(seleccionado.getIdTexto())) {
+        if (controlador.eliminarHogar(seleccionado.getIdTexto())) {
             javax.swing.JOptionPane.showMessageDialog(this, "Hogar eliminado correctamente.");
             cargarHogares(); // actualiza la tabla sin el hogar borrado
         } else {

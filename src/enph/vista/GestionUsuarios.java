@@ -5,13 +5,17 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.UsuarioController;
+import enph.modelo.Usuario;
+import java.util.List;
+import java.util.ArrayList;
 
 public class GestionUsuarios extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionUsuarios.class.getName());
-
-
-private List<enph.modelo.Usuario> usuariosEnTabla = new ArrayList<>();
+    private final UsuarioController controlador =new UsuarioController();
+    
+    private List<Usuario> usuariosEnTabla = new ArrayList<>();
 
 public GestionUsuarios() {
 
@@ -38,7 +42,7 @@ public GestionUsuarios() {
 
 // Lee los usuarios de la base de datos y los muestra en la tabla
 private void cargarUsuarios() {
-    usuariosEnTabla = enph.Main.listarUsuarios();
+    usuariosEnTabla = controlador.listarUsuarios();
 
     // Modelo con las mismas columnas del diseño; las celdas no se pueden editar a mano
     javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
@@ -348,7 +352,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (enph.Main.eliminarUsuario(seleccionado.getIdUsuario())) {
+        if (controlador.eliminarUsuario(seleccionado.getIdUsuario())) {
             javax.swing.JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
             cargarUsuarios(); // actualiza la tabla sin el usuario borrado
         } else {

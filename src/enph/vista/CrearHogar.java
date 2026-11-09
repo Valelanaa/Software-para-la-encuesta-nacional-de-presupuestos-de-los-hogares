@@ -4,13 +4,16 @@
  */
 package enph.vista;
 import enph.Validador;
+import enph.controlador.HogarController;
+
 public class CrearHogar extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearHogar.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearHogar.class.getName());
 
-/// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
-private enph.modelo.Hogar hogar;
+    /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
+    private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
+    private enph.modelo.Hogar hogar;
+    private final HogarController controlador = new HogarController();
 
 public CrearHogar() {
     initComponents();
@@ -74,9 +77,9 @@ public CrearHogar(enph.modelo.Hogar hogar) {
     String idCiudad = ciudades.get(indice).getId();
 
     try {
-        for (enph.modelo.Barrio barrio : enph.Main.listarBarriosPorCiudad(idCiudad)) {
-            Cmb_Barrio.addItem(barrio);
-        }
+        for (enph.modelo.Barrio barrio : controlador.listarBarriosPorCiudad(idCiudad)) {
+        Cmb_Barrio.addItem(barrio);
+    }
     } catch (java.sql.SQLException e) {
         javax.swing.JOptionPane.showMessageDialog(
                 this,
@@ -97,7 +100,7 @@ private void cargarCiudades() {
     Cmb_Ciudad.removeAllItems();
     Cmb_Barrio.removeAllItems();
 
-    ciudades.addAll(enph.Main.listarCiudades());
+    ciudades.addAll(controlador.listarCiudades());
 
     for (enph.modelo.Ciudad ciudad : ciudades) {
         Cmb_Ciudad.addItem(ciudad.getNombre());
@@ -432,11 +435,7 @@ private void cargarCiudades() {
             return;
         }
 
-        enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(
-            nombre,
-            direccion,
-            barrio
-        );
+        enph.modelo.Hogar nuevoHogar = new enph.modelo.Hogar(nombre, direccion, barrio);
 
         CrearCabezaHogar pantalla = new CrearCabezaHogar(nuevoHogar);
         pantalla.setLocationRelativeTo(null);

@@ -6,83 +6,80 @@
 package enph.controlador;
 
 import enph.modelo.Hogar;
+import enph.modelo.HogarDAO;
 import enph.vista.FamiliasEncuestador;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 
-/**
- * Controlador de la pantalla de consulta de familias del encuestador.
- */
 public class FamiliasEncuestadorController {
 
     private final FamiliasEncuestador vista;
+    private final HogarDAO hogarDAO;
 
     public FamiliasEncuestadorController(FamiliasEncuestador vista) {
-
         this.vista = vista;
+        this.hogarDAO = new HogarDAO();
     }
 
-    
-    //Carga las familias asignadas al encuestador seleccionado.
-    
+    // Consultar los hogares asignados al encuestador.
     public void cargarHogares(String idEncuestador) {
 
         try {
-            List<Hogar> hogares = enph.Main.listarHogaresPorEncuestador(idEncuestador);
+            List<Hogar> hogares =
+                    hogarDAO.listarHogaresPorEncuestador(idEncuestador);
 
             vista.mostrarHogares(hogares);
 
         } catch (SQLException e) {
-
             JOptionPane.showMessageDialog(
-                vista,
-                "Error al consultar las familias del encuestador:\n"
+                    vista,
+                    "Error al consultar las familias del encuestador:\n"
                     + e.getMessage(),
-                "Error de base de datos",
-                JOptionPane.ERROR_MESSAGE
+                    "Error de base de datos",
+                    JOptionPane.ERROR_MESSAGE
             );
         }
     }
+
+    // Desasignar un hogar del encuestador.
     public void desasignarHogar(
-        String idEncuestador,
-        String idHogar) {
+            String idEncuestador,
+            String idHogar) {
 
-    try {
-        boolean desasignado = enph.Main.desasignarHogar(idEncuestador, idHogar);
+        try {
+            boolean desasignado =
+                    hogarDAO.desasignarHogar(idEncuestador, idHogar);
 
-        if (desasignado) {
-            javax.swing.JOptionPane.showMessageDialog(
-                vista,
-                "La familia se desasignó correctamente.\n"
-                + "El hogar continúa registrado en el sistema.",
-                "Desasignación exitosa",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-            );
+            if (desasignado) {
+                JOptionPane.showMessageDialog(
+                        vista,
+                        "La familia se desasignó correctamente.\n"
+                        + "El hogar continúa registrado en el sistema.",
+                        "Desasignación exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
 
-            // Actualizar la tabla con las familias restantes.
-            cargarHogares(idEncuestador);
+                cargarHogares(idEncuestador);
 
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(
-                vista,
-                "No se pudo desasignar la familia. "
-                + "Es posible que ya no esté asignada "
-                + "a este encuestador.",
-                "Aviso",
-                javax.swing.JOptionPane.WARNING_MESSAGE
+            } else {
+                JOptionPane.showMessageDialog(
+                        vista,
+                        "No se pudo desasignar la familia. "
+                        + "Es posible que ya no esté asignada "
+                        + "a este encuestador.",
+                        "Aviso",
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(
+                    vista,
+                    "Error al desasignar la familia:\n" + e.getMessage(),
+                    "Error de base de datos",
+                    JOptionPane.ERROR_MESSAGE
             );
         }
-
-    } catch (java.sql.SQLException e) {
-        javax.swing.JOptionPane.showMessageDialog(
-            vista,
-            "Error al desasignar la familia:\n"
-            + e.getMessage(),
-            "Error de base de datos",
-            javax.swing.JOptionPane.ERROR_MESSAGE
-        );
     }
 }
-}
-
