@@ -10,28 +10,53 @@ package enph.controlador;
  */
 
 import enph.modelo.ReporteBarrio;
+import enph.modelo.ReporteEncuestadorDAO;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
+
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
 public class ReporteEncuestadorController {
 
-    public List<ReporteBarrio> generarReporte(LocalDate desde, LocalDate hasta)
-            throws SQLException {
+    private final ReporteEncuestadorDAO reporteDAO;
+
+    public ReporteEncuestadorController() {
+        this.reporteDAO = new ReporteEncuestadorDAO();
+    }
+
+    // Generar reporte de asignaciones del encuestador autenticado
+    public List<ReporteBarrio> generarReporte(
+            LocalDate desde, LocalDate hasta) throws SQLException {
 
         Usuario usuario = SesionUsuario.getActual();
 
-        if (usuario == null || usuario.getIdEncuestador() == null
+        if (usuario == null
+                || usuario.getIdEncuestador() == null
                 || usuario.getIdEncuestador().trim().isEmpty()) {
-            throw new SQLException("No se encontró el encuestador de la sesión.");
+
+            throw new SQLException(
+                    "No se encontró el encuestador de la sesión."
+            );
         }
 
-        if (desde == null || hasta == null || desde.isAfter(hasta)) {
-            throw new SQLException("El rango de fechas no es válido.");
+        if (desde == null || hasta == null) {
+            throw new SQLException(
+                    "Debe ingresar las dos fechas del reporte."
+            );
         }
 
-        return enph.Main.generarReporteEncuestador(usuario.getIdEncuestador(), desde, hasta);
+        if (desde.isAfter(hasta)) {
+            throw new SQLException(
+                    "La fecha inicial no puede ser posterior a la fecha final."
+            );
+        }
+
+        return reporteDAO.generarReporte(
+                usuario.getIdEncuestador(),
+                desde,
+                hasta
+        );
     }
 }

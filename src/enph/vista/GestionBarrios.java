@@ -3,9 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import java.util.List;
-import java.util.ArrayList;
-import enph.Main;
+import enph.controlador.BarrioController;
 import enph.modelo.Barrio;
 import enph.modelo.Ciudad;
 import enph.modelo.SesionUsuario;
@@ -20,70 +18,69 @@ import java.awt.GridLayout;
 public class GestionBarrios extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionBarrios.class.getName());
+    private List<Barrio> barriosEnTabla = new ArrayList<>();
+    private final BarrioController controlador = new BarrioController();
 
+    public GestionBarrios() {
 
-private List<Barrio> barriosEnTabla = new ArrayList<>();
+        initComponents();
 
-public GestionBarrios() {
+        Lbl__Usuario1.setText(SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(SesionUsuario.rolParaMostrar());
 
-    initComponents();
+        Tbl_Barrios.setRowHeight(32);
 
-    Lbl__Usuario1.setText(SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(SesionUsuario.rolParaMostrar());
+        Tbl_Barrios.getTableHeader().setFont(new java.awt.Font("Bahnschrift", 1, 18));
 
-    Tbl_Barrios.setRowHeight(32);
+        Tbl_Barrios.setFont(new java.awt.Font("Bahnschrift", 0, 18));
 
-    Tbl_Barrios.getTableHeader().setFont(new java.awt.Font("Bahnschrift", 1, 18));
+        Tbl_Barrios.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-    Tbl_Barrios.setFont(new java.awt.Font("Bahnschrift", 0, 18));
+        Tbl_Barrios.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
-    Tbl_Barrios.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        cargarBarrios();
 
-    Tbl_Barrios.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-
-    cargarBarrios();
-
-    setLocationRelativeTo(null);
-}
-private void cargarBarrios() {
-
-    try {
-
-        barriosEnTabla = Main.listarBarrios();
-
-        DefaultTableModel modelo = new DefaultTableModel(
-                new Object[]{"Barrio", "Ciudad"}, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int fila, int columna) {
-                return false;
-            }
-        };
-
-        for (Barrio barrio : barriosEnTabla) {
-
-            modelo.addRow(new Object[]{
-                barrio.getNombreBarrio(),
-                barrio.getNombreCiudad()
-            });
-        }
-
-        Tbl_Barrios.setModel(modelo);
-
-        ajustarColumnas(Tbl_Barrios);
-
-    } catch (SQLException e) {
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Error al cargar los barrios:\n" + e.getMessage(),
-                "Error de consulta",
-                JOptionPane.ERROR_MESSAGE
-        );
-
-        e.printStackTrace();
+        setLocationRelativeTo(null);
     }
-}
+    private void cargarBarrios() {
+
+        try {
+
+            barriosEnTabla = controlador.listarBarrios();
+
+            DefaultTableModel modelo = new DefaultTableModel(
+                    new Object[]{"Barrio", "Ciudad"}, 0
+            ) {
+                @Override
+                public boolean isCellEditable(int fila, int columna) {
+                    return false;
+                }
+            };
+
+            for (Barrio barrio : barriosEnTabla) {
+
+                modelo.addRow(new Object[]{
+                    barrio.getNombreBarrio(),
+                    barrio.getNombreCiudad()
+                });
+            }
+
+            Tbl_Barrios.setModel(modelo);
+
+            ajustarColumnas(Tbl_Barrios);
+
+        } catch (SQLException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al cargar los barrios:\n" + e.getMessage(),
+                    "Error de consulta",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            e.printStackTrace();
+        }
+    }
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {
@@ -110,7 +107,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
     boolean editar = barrio != null;
 
     // Obtener ciudades registradas
-    List<Ciudad> ciudades = Main.listarCiudades();
+    List<Ciudad> ciudades = controlador.listarCiudades();
 
     if (ciudades == null || ciudades.isEmpty()) {
 
@@ -123,8 +120,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
     JTextField txtNombre = new JTextField(20);
 
     // Combo para seleccionar la ciudad
-    JComboBox<Ciudad> cmbCiudad =
-            new JComboBox<>(ciudades.toArray(new Ciudad[0]));
+    JComboBox<Ciudad> cmbCiudad = new JComboBox<>(ciudades.toArray(new Ciudad[0]));
 
     // Si estamos editando, cargar los datos actuales
     if (editar) {
@@ -204,7 +200,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
 
         if (editar) {
 
-            resultado = Main.editarBarrio(
+            resultado = controlador.editarBarrio(
                     barrio.getIdBarrio(),
                     nombre,
                     ciudadSeleccionada.getId()
@@ -212,7 +208,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
 
         } else {
 
-            resultado = Main.crearBarrio(
+            resultado = controlador.crearBarrio(
                     nombre,
                     ciudadSeleccionada.getId()
             );
@@ -512,7 +508,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
     try {
 
         // Verificar si existen hogares asociados
-        if (Main.barrioEnUso(seleccionado.getIdBarrio())) {
+        if (controlador.barrioEnUso(seleccionado.getIdBarrio())) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -541,7 +537,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
             return;
         }
 
-        if (Main.eliminarBarrio(seleccionado.getIdBarrio())) {
+        if (controlador.eliminarBarrio(seleccionado.getIdBarrio())) {
 
             JOptionPane.showMessageDialog(
                     this,

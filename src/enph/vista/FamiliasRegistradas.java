@@ -6,6 +6,8 @@ package enph.vista;
 
 import javax.swing.table.DefaultTableModel;
 import enph.controlador.FamiliasController;
+import enph.controlador.SesionEncuestaController;
+import enph.controlador.SesionEncuesta;
 import enph.modelo.Hogar;
 import java.util.List;
 import java.util.ArrayList;
@@ -19,9 +21,12 @@ public class FamiliasRegistradas extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FamiliasRegistradas.class.getName());
 
-// Hogares que se ven ahora en la tabla, en el mismo orden que las filas.
-// Permite saber qué hogar corresponde a la fila donde se hizo clic.
-private List<Hogar> hogaresMostrados = new ArrayList<>();
+    // Hogares que se ven ahora en la tabla, en el mismo orden que las filas.
+    // Permite saber qué hogar corresponde a la fila donde se hizo clic.
+    private List<Hogar> hogaresMostrados = new ArrayList<>();
+    private final FamiliasController controlador;
+    private final SesionEncuestaController sesionController = new SesionEncuestaController();
+    
     public FamiliasRegistradas() {
 
         initComponents();
@@ -60,8 +65,7 @@ private List<Hogar> hogaresMostrados = new ArrayList<>();
         );
 
         // El controlador lee los hogares de Oracle y llama a mostrarHogares()
-        FamiliasController controlador =
-            new FamiliasController(this);
+        controlador = new FamiliasController(this);
 
         configurarResaltadoIncompletas();
 
@@ -388,7 +392,7 @@ private void configurarResaltadoIncompletas() {
         Hogar hogar = hogaresMostrados.get(fila);
         
 
-        if (enph.Main.hogarTieneEncuesta(hogar.getIdHogar())) {
+        if (controlador.hogarTieneEncuesta(hogar.getIdHogar())) {
             // Familia con encuesta: se le pregunta al encuestador qué hacer.
             // Si el administrador la marcó como incompleta, aparece "Completar".
             boolean incompleta = hogar.isIncompleta();
@@ -413,10 +417,10 @@ private void configurarResaltadoIncompletas() {
 
             if ("Completar".equals(elegida) || "Editar".equals(elegida)) {
                 // Completar: solo los grupos sin respuesta. Editar: desde el grupo 1.
-                enph.controlador.SesionEncuesta sesion =
-                        "Completar".equals(elegida)
-                        ? enph.controlador.SesionEncuesta.completar(hogar.getIdHogar())
-                        : enph.controlador.SesionEncuesta.editar(hogar.getIdHogar());
+                SesionEncuesta sesion =
+                "Completar".equals(elegida)
+                ? sesionController.completar(hogar.getIdHogar())
+                : sesionController.editar(hogar.getIdHogar());
 
                 if (sesion == null) {
                     javax.swing.JOptionPane.showMessageDialog(
@@ -443,13 +447,13 @@ private void configurarResaltadoIncompletas() {
                 );
 
                 if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
-                    if (enph.Main.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
+                    if (controlador.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
                                 "Encuesta eliminada. Ya puede registrar una nueva."
                         );
                         // Recarga la tabla para quitar el resaltado
-                        new FamiliasController(this).cargarHogares();
+                        controlador.cargarHogares();
                     } else {
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
@@ -464,9 +468,7 @@ private void configurarResaltadoIncompletas() {
 
         } else {
             // Familia sin encuesta: se crea una nueva y se abre el primer grupo
-            enph.controlador.SesionEncuesta sesion =
-                    enph.controlador.SesionEncuesta.iniciar(hogar.getIdHogar());
-
+            SesionEncuesta sesion = sesionController.iniciar(hogar.getIdHogar());
             if (sesion == null) {
                 javax.swing.JOptionPane.showMessageDialog(
                         this,

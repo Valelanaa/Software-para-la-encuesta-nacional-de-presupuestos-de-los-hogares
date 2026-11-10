@@ -7,6 +7,8 @@ import enph.Validador;
 import enph.controlador.SesionEncuesta;
 import enph.modelo.CabezaHogar;
 import javax.swing.JOptionPane;
+import enph.controlador.CabezaHogarController;
+import enph.controlador.EncuestaController;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
  * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
@@ -20,6 +22,9 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
 private SesionEncuesta sesion;
 private String idHogar;
 private String idCabezaHogar;
+private final CabezaHogarController cabezaController = new CabezaHogarController();
+
+private final EncuestaController encuestaController = new EncuestaController();
 
 
 /**
@@ -84,7 +89,7 @@ private void cargarDatosCabezaHogar() {
         return;
     }
 
-    CabezaHogar cabeza = enph.Main.buscarCabezaPorHogar(idHogar);
+    CabezaHogar cabeza = cabezaController.buscarPorHogar(idHogar);
 
     if (cabeza == null) {
         JOptionPane.showMessageDialog(
@@ -382,7 +387,7 @@ private void cargarDatosCabezaHogar() {
             } else {
                 // Si la encuesta está vacía, se elimina.
                 // Si ya tiene respuestas, se conserva.
-                enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
+                encuestaController.eliminarSiVacia(sesion.getIdEncuesta());
                 new FamiliasRegistradas().setVisible(true);
             }
 
@@ -476,7 +481,7 @@ private void cargarDatosCabezaHogar() {
         return;
     }
     
-    if (enph.Main.cabezaExisteDocumento(documento, idCabezaHogar)) {
+    if (cabezaController.existeDocumento(documento, idCabezaHogar)) {
         JOptionPane.showMessageDialog(
             this,
             "Ya existe otra cabeza de hogar con ese documento.",
@@ -495,7 +500,7 @@ private void cargarDatosCabezaHogar() {
     cabeza.setCorreo(correo);
     cabeza.setTelefono(telefono);
 
-    if (enph.Main.actualizarCabezaHogar(cabeza)) {
+    if (cabezaController.actualizar(cabeza)) {
         JOptionPane.showMessageDialog(
             this,
             "Los datos de la cabeza de hogar se actualizaron correctamente.",

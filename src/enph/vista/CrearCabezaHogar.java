@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.Main;
+import enph.controlador.EncuestaController;
 import enph.controlador.SesionEncuesta;
 import enph.Validador;
 import enph.controlador.HogarController;
@@ -12,7 +12,7 @@ public class CrearCabezaHogar extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CrearCabezaHogar.class.getName());
     private final HogarController controlador = new HogarController();
-
+    private final EncuestaController encuestaController = new EncuestaController();
     // Almacena los datos del hogar mientras se completa el formulario.
     private enph.modelo.Hogar hogar;
     private SesionEncuesta sesion;
@@ -324,8 +324,7 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
         } else {
             // Si la encuesta está vacía, se elimina.
             // Si tiene respuestas, no se elimina.
-            Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
-
+            encuestaController.eliminarSiVacia(sesion.getIdEncuesta());
             new FamiliasRegistradas().setVisible(true);
         }
 

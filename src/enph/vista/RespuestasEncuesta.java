@@ -5,6 +5,8 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.CaracterizacionController;
+import enph.controlador.EncuestaController;
 
 public class RespuestasEncuesta extends javax.swing.JFrame {
 
@@ -13,6 +15,8 @@ public class RespuestasEncuesta extends javax.swing.JFrame {
     private final String idHogar;
     private final String idEncuestador;
     private final String nombreEncuestador;
+    private final CaracterizacionController caracterizacionController = new CaracterizacionController();
+    private final EncuestaController encuestaController = new EncuestaController();
 
     public RespuestasEncuesta() {
         this(null, null, null);
@@ -50,7 +54,7 @@ public class RespuestasEncuesta extends javax.swing.JFrame {
 
         if (idHogar != null && !idHogar.trim().isEmpty()) {
             try {
-                filas = enph.Main.listarRespuestasPorHogar(idHogar);
+                filas = caracterizacionController.listarRespuestasPorHogar(idHogar);
             } catch (java.sql.SQLException ex) {
                 javax.swing.JOptionPane.showMessageDialog(
                     this,
@@ -322,12 +326,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        int idEncuesta;
-        try {
-            idEncuesta = enph.Main.obtenerIdEncuesta(Integer.parseInt(idHogar.trim()));
-        } catch (NumberFormatException ex) {
-            idEncuesta = -1;
-        }
+        int idEncuesta = encuestaController.obtenerIdEncuesta(idHogar);
 
         if (idEncuesta < 0) {
             javax.swing.JOptionPane.showMessageDialog(
@@ -352,7 +351,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (enph.Main.marcarEncuestaIncompleta(idEncuesta)) {
+        if (encuestaController.marcarIncompleta(idEncuesta)) {
             javax.swing.JOptionPane.showMessageDialog(
                 this,
                 "La encuesta se marcó como incompleta.",

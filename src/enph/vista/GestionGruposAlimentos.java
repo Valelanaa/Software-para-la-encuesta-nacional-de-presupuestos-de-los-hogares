@@ -6,56 +6,59 @@ package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
 import enph.Validador;
+import enph.controlador.GrupoAlimentoController;
+import enph.modelo.GrupoAlimento;
 
 public class GestionGruposAlimentos extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionGruposAlimentos.class.getName());
+    private List<GrupoAlimento> gruposEnTabla = new ArrayList<>();
+    private final GrupoAlimentoController controlador = new GrupoAlimentoController();
+
+    public GestionGruposAlimentos() {
+
+        initComponents();
+
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        // Ajustes de apariencia
+        Tbl_Alimentos.setRowHeight(32);
+        Tbl_Alimentos.getTableHeader().setFont(
+            new java.awt.Font("Bahnschrift", 1, 18)
+        );
+
+        Tbl_Alimentos.setAutoResizeMode(
+             javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        );
+
+        cargarGrupos();
 
 
-private List<enph.modelo.GrupoAlimento> gruposEnTabla = new ArrayList<>();
-
-public GestionGruposAlimentos() {
-
-    initComponents();
-
-    // Datos de quien inició sesión (banner de la ventana)
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    // Ajustes de apariencia
-    Tbl_Alimentos.setRowHeight(32);
-    Tbl_Alimentos.getTableHeader().setFont(
-        new java.awt.Font("Bahnschrift", 1, 18)
-    );
-
-    Tbl_Alimentos.setAutoResizeMode(
-         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-    );
-
-    cargarGrupos();
-    
-
-    setLocationRelativeTo(null);// centra la ventana en la pantalla
-}
-// Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
-private void cargarGrupos() {
-    gruposEnTabla = enph.Main.listarGrupos();
- 
-    // Una sola columna: el nombre del grupo; las celdas no se pueden editar a mano
-    javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
-            new Object[]{"Alimentos"}, 0) {
-        @Override
-        public boolean isCellEditable(int fila, int columna) {
-            return false;
-        }
-    };
- 
-    for (enph.modelo.GrupoAlimento g : gruposEnTabla) {
-        modelo.addRow(new Object[]{ g.getNombre() });
+        setLocationRelativeTo(null);// centra la ventana en la pantalla
     }
- 
-    Tbl_Alimentos.setModel(modelo);
-    ajustarColumnas(Tbl_Alimentos);
-}
+    // Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
+    private void cargarGrupos() {
+
+        gruposEnTabla = controlador.listarGrupos();
+
+        javax.swing.table.DefaultTableModel modelo =
+                new javax.swing.table.DefaultTableModel(
+                        new Object[]{"Alimentos"}, 0) {
+
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        for (GrupoAlimento grupo : gruposEnTabla) {
+            modelo.addRow(new Object[]{grupo.getNombre()});
+        }
+
+        Tbl_Alimentos.setModel(modelo);
+        ajustarColumnas(Tbl_Alimentos);
+    }
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {
@@ -324,7 +327,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     int indice = Tbl_Alimentos.convertRowIndexToModel(fila);
     enph.modelo.GrupoAlimento seleccionado = gruposEnTabla.get(indice);
 
-    if (enph.Main.grupoEnUso(seleccionado.getId())) {
+    if (controlador.grupoEnUso(seleccionado.getId())) {
         javax.swing.JOptionPane.showMessageDialog(this,
                 "El grupo \"" + seleccionado.getNombre() + "\" ya tiene respuestas registradas\n"
                 + "en encuestas, por eso no se puede eliminar.",
@@ -339,7 +342,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             javax.swing.JOptionPane.WARNING_MESSAGE);
     if (opcion != javax.swing.JOptionPane.YES_OPTION) return;
 
-    if (enph.Main.eliminarGrupo(seleccionado.getId())) {
+    if (controlador.eliminarGrupo(seleccionado.getId())) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo eliminado correctamente.");
         cargarGrupos();
     } else {
@@ -372,7 +375,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     );
     return;
     }
-    if (enph.Main.crearGrupo(nombre)) {
+    if (controlador.crearGrupo(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo creado correctamente.");
         cargarGrupos();
     } else {
@@ -415,7 +418,7 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     );
     return;
     }
-    if (enph.Main.editarGrupo(seleccionado.getId(), nombre)) {
+    if (controlador.editarGrupo(seleccionado.getId(), nombre)) {
         javax.swing.JOptionPane.showMessageDialog(this, "Grupo actualizado correctamente.");
         cargarGrupos();
     } else {

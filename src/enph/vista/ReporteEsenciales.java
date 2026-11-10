@@ -4,20 +4,19 @@
  */
 package enph.vista;
 
-import enph.Main;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.SesionUsuario;
-
 import java.sql.SQLException;
 import java.util.List;
-
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import enph.controlador.ReporteAlimentosController;
 
 public class ReporteEsenciales extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteEsenciales.class.getName());
-    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteEsenciales.class.getName());
+    private final ReporteAlimentosController controlador = new ReporteAlimentosController();    
+
 public ReporteEsenciales() {
 
     initComponents();
@@ -77,8 +76,7 @@ private void cargarReporte() {
     try {
 
         // Consultar los resultados mediante Main
-        List<ReporteEsencial> resultados =
-                Main.generarReporteEsenciales(frecuencia);
+        List<ReporteEsencial> resultados = controlador.generarReporteEsenciales(frecuencia);
 
         // Crear el modelo de la tabla
         DefaultTableModel modelo = new DefaultTableModel(

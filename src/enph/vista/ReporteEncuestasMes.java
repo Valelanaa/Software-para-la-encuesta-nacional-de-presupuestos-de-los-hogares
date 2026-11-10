@@ -4,7 +4,7 @@
  */
 package enph.vista;
 
-import enph.Main;
+import enph.controlador.ReporteRendimientoController;
 import enph.modelo.SesionUsuario;
 import java.sql.SQLException;
 import java.util.List;
@@ -15,8 +15,8 @@ import javax.swing.table.DefaultTableModel;
 
 public class ReporteEncuestasMes extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteEncuestasMes.class.getName());
-    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteEncuestasMes.class.getName());
+    private final ReporteRendimientoController controlador = new ReporteRendimientoController();
 public ReporteEncuestasMes() {
 
     initComponents();
@@ -107,8 +107,7 @@ private void cargarReporte() {
         }
 
         // Consultar el reporte mediante Main
-        List<ReporteRendimientoEncuestador> resultados =
-                Main.generarReporteRendimiento(mes, anio);
+        List<ReporteRendimientoEncuestador> resultados = controlador.generarReporte(mes, anio);
 
         // Crear el modelo de la tabla
         DefaultTableModel modelo = new DefaultTableModel(

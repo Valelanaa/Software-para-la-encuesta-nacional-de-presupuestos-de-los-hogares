@@ -5,89 +5,95 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.InformeEncuestaController;
+import enph.modelo.Usuario;
 
 public class InformeEncuesta extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(InformeEncuesta.class.getName());
+    private List<Usuario> encuestadoresEnTabla = new ArrayList<>();
+    private final InformeEncuestaController controlador = new InformeEncuestaController();
 
+    public InformeEncuesta() {
 
-private List<enph.modelo.Usuario> encuestadoresEnTabla = new ArrayList<>();
+        initComponents();
 
-public InformeEncuesta() {
-
-    initComponents();
-
-    // Datos de quien inició sesión (banner de la ventana)
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    // Ajustes de apariencia
-    Tbl_Frecuencias.setRowHeight(32);
-    Tbl_Frecuencias.getTableHeader().setFont(
-        new java.awt.Font("Bahnschrift", 1, 18)
-    );
-
-    Tbl_Frecuencias.setAutoResizeMode(
-         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-    );
-
-    cargarEncuestadores();
-    
-
-    setLocationRelativeTo(null);// centra la ventana en la pantalla
-}
-private void cargarEncuestadores() {
-    // Consultar los usuarios registrados.
-    List<enph.modelo.Usuario> usuarios = enph.Main.listarUsuarios();
-
-    encuestadoresEnTabla = new ArrayList<>();
-
-    // Conservar únicamente los usuarios con rol ENCUESTADOR.
-    for (enph.modelo.Usuario usuario : usuarios) {
-        if (usuario.getRol() != null && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
-        && usuario.getIdEncuestador() != null) {
-            encuestadoresEnTabla.add(usuario);
-        }
-    }
-
-    // Conteo de encuestas realizadas y pendientes por encuestador.
-    java.util.Map<String, int[]> conteos = new java.util.HashMap<>();
-    try {
-        conteos = enph.Main.contarEncuestasPorEncuestador();
-    } catch (java.sql.SQLException ex) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "No se pudo consultar el estado de las encuestas:\n" + ex.getMessage(),
-            "Error de base de datos",
-            javax.swing.JOptionPane.ERROR_MESSAGE
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        // Ajustes de apariencia
+        Tbl_Frecuencias.setRowHeight(32);
+        Tbl_Frecuencias.getTableHeader().setFont(
+            new java.awt.Font("Bahnschrift", 1, 18)
         );
+
+        Tbl_Frecuencias.setAutoResizeMode(
+             javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        );
+
+        cargarEncuestadores();
+
+
+        setLocationRelativeTo(null);// centra la ventana en la pantalla
     }
+    private void cargarEncuestadores() {
 
-    javax.swing.table.DefaultTableModel modelo =
-            new javax.swing.table.DefaultTableModel(
-                    new Object[]{"Nombre del encuestador", "Documento",
-                                 "Realizadas", "Pendientes"}, 0
-            ) {
-                @Override
-                public boolean isCellEditable(int fila, int columna) {
-                    return false;
-                }
-            };
+        // Consultar los encuestadores registrados.
+        encuestadoresEnTabla = controlador.listarEncuestadores();
 
-    for (enph.modelo.Usuario usuario : encuestadoresEnTabla) {
-        // Sin hogares asignados queda en 0 y 0.
-        int[] c = conteos.getOrDefault(usuario.getIdEncuestador(), new int[]{0, 0});
+        // Consultar las encuestas realizadas y pendientes.
+        java.util.Map<String, int[]> conteos = new java.util.HashMap<>();
 
-        modelo.addRow(new Object[]{
-            usuario.getNombreCompleto(),
-            usuario.getDocumentoIdentidad(),
-            c[0],
-            c[1]
-        });
+        try {
+
+            conteos = controlador.contarEncuestasPorEncuestador();
+
+        } catch (java.sql.SQLException ex) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo consultar el estado de las encuestas:\n"
+                    + ex.getMessage(),
+                    "Error de base de datos",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+        javax.swing.table.DefaultTableModel modelo =
+                new javax.swing.table.DefaultTableModel(
+                        new Object[]{
+                            "Nombre del encuestador",
+                            "Documento",
+                            "Realizadas",
+                            "Pendientes"
+                        }, 0
+                ) {
+
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        for (Usuario usuario : encuestadoresEnTabla) {
+
+            // Si no tiene hogares asignados, sus cantidades serán 0 y 0.
+            int[] cantidades = conteos.getOrDefault(
+                    usuario.getIdEncuestador(),
+                    new int[]{0, 0}
+            );
+
+            modelo.addRow(new Object[]{
+                usuario.getNombreCompleto(),
+                usuario.getDocumentoIdentidad(),
+                cantidades[0],
+                cantidades[1]
+            });
+        }
+
+        Tbl_Frecuencias.setModel(modelo);
+        ajustarColumnas(Tbl_Frecuencias);
     }
-
-    Tbl_Frecuencias.setModel(modelo);
-    ajustarColumnas(Tbl_Frecuencias);
-}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {

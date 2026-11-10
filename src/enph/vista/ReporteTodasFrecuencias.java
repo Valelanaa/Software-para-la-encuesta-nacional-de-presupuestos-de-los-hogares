@@ -4,60 +4,58 @@
  */
 package enph.vista;
 
-import enph.Main;
-import enph.modelo.CatalogoDAO;
+import enph.controlador.ReporteAlimentosController;
 import enph.modelo.FrecuenciaCompra;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.SesionUsuario;
-
 import java.sql.SQLException;
 import java.util.List;
-
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class ReporteTodasFrecuencias extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteTodasFrecuencias.class.getName());
-    
-public ReporteTodasFrecuencias() {
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ReporteTodasFrecuencias.class.getName());
+    private final ReporteAlimentosController controlador = new ReporteAlimentosController();    
 
-    initComponents();
+    public ReporteTodasFrecuencias() {
 
-    Lbl__Usuario1.setText(SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(SesionUsuario.rolParaMostrar());
+        initComponents();
 
-    Tbl_Alimentos.setRowHeight(32);
+        Lbl__Usuario1.setText(SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(SesionUsuario.rolParaMostrar());
 
-    Tbl_Alimentos.getTableHeader().setFont(
-            new java.awt.Font("Bahnschrift", 1, 18)
-    );
+        Tbl_Alimentos.setRowHeight(32);
 
-    Tbl_Alimentos.setFont(
-            new java.awt.Font("Bahnschrift", 0, 18)
-    );
+        Tbl_Alimentos.getTableHeader().setFont(
+                new java.awt.Font("Bahnschrift", 1, 18)
+        );
 
-    Tbl_Alimentos.setAutoResizeMode(
-            javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-    );
+        Tbl_Alimentos.setFont(
+                new java.awt.Font("Bahnschrift", 0, 18)
+        );
 
-    Tbl_Alimentos.setSelectionMode(
-            javax.swing.ListSelectionModel.SINGLE_SELECTION
-    );
+        Tbl_Alimentos.setAutoResizeMode(
+                javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        );
 
-    configurarTabla();
+        Tbl_Alimentos.setSelectionMode(
+                javax.swing.ListSelectionModel.SINGLE_SELECTION
+        );
 
-    // Cargar las frecuencias registradas en la base de datos.
-    cargarFrecuencias();
+        configurarTabla();
 
-    // Actualizar el reporte cuando cambie la frecuencia.
-    Cmb_Frecuencias.addActionListener(e -> cargarReporte());
+        // Cargar las frecuencias registradas en la base de datos.
+        cargarFrecuencias();
 
-    // Cargar inicialmente el reporte.
-    cargarReporte();
+        // Actualizar el reporte cuando cambie la frecuencia.
+        Cmb_Frecuencias.addActionListener(e -> cargarReporte());
 
-    setLocationRelativeTo(null);
-}
+        // Cargar inicialmente el reporte.
+        cargarReporte();
+
+        setLocationRelativeTo(null);
+    }
 private void configurarTabla() {
 
     DefaultTableModel modelo = new DefaultTableModel(
@@ -73,89 +71,88 @@ private void configurarTabla() {
 
     ajustarColumnas(Tbl_Alimentos);
 }
-private void cargarReporte() {
+    private void cargarReporte() {
 
-    String frecuencia = (String) Cmb_Frecuencias.getSelectedItem();
+        String frecuencia = (String) Cmb_Frecuencias.getSelectedItem();
 
-    if (frecuencia == null) {
-        return;
-    }
-
-    try {
-
-        // Consultar los resultados mediante Main
-        List<ReporteEsencial> resultados = Main.generarReporteTodasFrecuencias(frecuencia);
-
-        // Crear el modelo de la tabla
-        DefaultTableModel modelo = new DefaultTableModel(
-                new Object[]{"Grupo de alimento", "Cantidad"}, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int fila, int columna) {
-                return false;
-            }
-        };
-
-        // Agregar los resultados
-        for (ReporteEsencial reporte : resultados) {
-
-            modelo.addRow(new Object[]{
-                reporte.getGrupoAlimento(),
-                reporte.getCantidad()
-            });
+        if (frecuencia == null) {
+            return;
         }
 
-        Tbl_Alimentos.setModel(modelo);
+        try {
 
-        ajustarColumnas(Tbl_Alimentos);
+            // Consultar los resultados mediante Main
+            List<ReporteEsencial> resultados = controlador.generarReporteTodasFrecuencias(frecuencia);
 
-        if (resultados.isEmpty()) {
+            // Crear el modelo de la tabla
+            DefaultTableModel modelo = new DefaultTableModel(
+                    new Object[]{"Grupo de alimento", "Cantidad"}, 0
+            ) {
+                @Override
+                public boolean isCellEditable(int fila, int columna) {
+                    return false;
+                }
+            };
+
+            // Agregar los resultados
+            for (ReporteEsencial reporte : resultados) {
+
+                modelo.addRow(new Object[]{
+                    reporte.getGrupoAlimento(),
+                    reporte.getCantidad()
+                });
+            }
+
+            Tbl_Alimentos.setModel(modelo);
+
+            ajustarColumnas(Tbl_Alimentos);
+
+            if (resultados.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No hay registros para la frecuencia seleccionada.",
+                        "Sin resultados",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+
+        } catch (SQLException e) {
+
             JOptionPane.showMessageDialog(
                     this,
-                    "No hay registros para la frecuencia seleccionada.",
-                    "Sin resultados",
-                    JOptionPane.INFORMATION_MESSAGE
+                    "Error al generar el reporte:\n" + e.getMessage(),
+                    "Error de consulta",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            e.printStackTrace();
+        }
+    }
+
+    private void cargarFrecuencias() {
+
+        Cmb_Frecuencias.removeAllItems();
+        Cmb_Frecuencias.addItem("Todas");
+
+        try {
+
+            List<FrecuenciaCompra> frecuencias =
+                    controlador.listarFrecuencias();
+
+            for (FrecuenciaCompra frecuencia : frecuencias) {
+                Cmb_Frecuencias.addItem(frecuencia.getNombre());
+            }
+
+        } catch (Exception e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al cargar las frecuencias:\n" + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
             );
         }
-
-    } catch (SQLException e) {
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Error al generar el reporte:\n" + e.getMessage(),
-                "Error de consulta",
-                JOptionPane.ERROR_MESSAGE
-        );
-
-        e.printStackTrace();
     }
-}
-
-private void cargarFrecuencias() {
-
-    Cmb_Frecuencias.removeAllItems();
-    Cmb_Frecuencias.addItem("Todas");
-
-    try {
-
-        CatalogoDAO dao = new CatalogoDAO();
-
-        List<FrecuenciaCompra> frecuencias = dao.listarFrecuencias();
-
-        for (FrecuenciaCompra frecuencia : frecuencias) {
-            Cmb_Frecuencias.addItem(frecuencia.getNombre());
-        }
-
-    } catch (Exception e) {
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Error al cargar las frecuencias:\n" + e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE
-        );
-    }
-}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {

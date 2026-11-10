@@ -4,7 +4,7 @@
  */
 package enph.vista;
 
-import enph.Main;
+import enph.controlador.ReporteCiudadController;
 import enph.modelo.Ciudad;
 import enph.modelo.ReporteCiudadBarrio;
 import enph.modelo.SesionUsuario;
@@ -20,7 +20,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
 
     // Ciudades en el mismo orden en que aparecen en el combo (para obtener el ID de la seleccionada).
     private final List<Ciudad> ciudades = new ArrayList<>();
-
+    private final ReporteCiudadController controlador = new ReporteCiudadController();
     // Barrios de la tabla, en el mismo orden de las filas (para obtener el ID del barrio seleccionado).
     private List<ReporteCiudadBarrio> listaBarrios = new ArrayList<>();
 
@@ -82,12 +82,14 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
     }
 
     private void cargarCiudades() {
+
         ciudades.clear();
-        ciudades.addAll(Main.listarCiudades());
+        ciudades.addAll(controlador.listarCiudades());
 
         Cmb_Ciudades.removeAllItems();
-        for (Ciudad c : ciudades) {
-            Cmb_Ciudades.addItem(c.getNombre());
+
+        for (Ciudad ciudad : ciudades) {
+            Cmb_Ciudades.addItem(ciudad.getNombre());
         }
     }
 
@@ -120,8 +122,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
         try {
 
             // Consultar los barrios de la ciudad mediante Main
-            List<ReporteCiudadBarrio> resultados =
-                    Main.generarReporteCiudad(ciudad.getId());
+            List<ReporteCiudadBarrio> resultados = controlador.generarReporteCiudad(ciudad.getId());
 
             listaBarrios = resultados;
 

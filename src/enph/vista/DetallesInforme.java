@@ -5,6 +5,7 @@
 package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
+import enph.controlador.DetallesInformeController;
 
 public class DetallesInforme extends javax.swing.JFrame {
 
@@ -13,6 +14,7 @@ public class DetallesInforme extends javax.swing.JFrame {
     private final String idEncuestador;
     private final String nombreEncuestador;
     private List<String[]> filasEnTabla = new ArrayList<>();
+    private final DetallesInformeController controlador = new DetallesInformeController();
     
     public DetallesInforme() {
        this(null, null);
@@ -46,31 +48,38 @@ public class DetallesInforme extends javax.swing.JFrame {
 
     // Llena la tabla con las familias del encuestador y el estado de su encuesta.
     private void cargarFamilias() {
+
         List<String[]> filas = new ArrayList<>();
+
         try {
-            filas = enph.Main.listarEstadoEncuestasPorEncuestador(idEncuestador);
-                    
+
+            filas = controlador.listarEstadoEncuestas(idEncuestador);
+
         } catch (java.sql.SQLException ex) {
+
             javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "No se pudo consultar las familias del encuestador:\n" + ex.getMessage(),
-                "Error de base de datos",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+                    this,"No se pudo consultar las familias del encuestador:\n" + ex.getMessage(), "Error de base de datos",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
         }
+
         filasEnTabla = filas;
+
         javax.swing.table.DefaultTableModel modelo =
                 new javax.swing.table.DefaultTableModel(
                         new Object[]{"Familia", "Estado de la encuesta"}, 0
                 ) {
-                    @Override
-                    public boolean isCellEditable(int fila, int columna) {
-                        return false;
-                    }
-                };
 
-        for (String[] fila : filas) {
-            modelo.addRow(new Object[]{fila[0], fila[1]});
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        for (String[] fila : filasEnTabla) {
+            modelo.addRow(new Object[]{
+                fila[0],
+                fila[1]
+            });
         }
 
         Tbl_Frecuencias.setModel(modelo);

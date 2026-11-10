@@ -4,6 +4,7 @@
  */
 package enph.vista;
 
+import enph.controlador.DetalleEncuestaController;
 public class VerDetallesEncuesta extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VerDetallesEncuesta.class.getName());
@@ -11,6 +12,7 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
     private final String idEncuestador;
     private final String nombreEncuestador;
     private final String idHogar;
+    private final DetalleEncuestaController detalleController = new DetalleEncuestaController();
     
     public VerDetallesEncuesta() {
         this(null, null, null);
@@ -49,7 +51,7 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
         }
 
         try {
-            String[] d = enph.Main.buscarDetalleEncuesta(idHogar);
+            String[] d = detalleController.buscarDetalleEncuesta(idHogar);
 
             if (d == null) {
                 javax.swing.JOptionPane.showMessageDialog(

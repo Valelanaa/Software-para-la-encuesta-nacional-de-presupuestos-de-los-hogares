@@ -6,58 +6,59 @@ package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
 import enph.Validador;
-
+import enph.controlador.FrecuenciaController;
+import enph.modelo.FrecuenciaCompra;
 public class GestionFrecuencias extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionFrecuencias.class.getName());
+    private List<FrecuenciaCompra> frecuenciasEnTabla = new ArrayList<>();
+    private final FrecuenciaController controlador = new FrecuenciaController();
+
+    public GestionFrecuencias() {
+
+        initComponents();
+
+        // Datos de quien inició sesión (banner de la ventana)
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        // Ajustes de apariencia
+        Tbl_Frecuencias.setRowHeight(32);
+        Tbl_Frecuencias.getTableHeader().setFont(
+            new java.awt.Font("Bahnschrift", 1, 18)
+        );
+
+        Tbl_Frecuencias.setAutoResizeMode(
+             javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        );
+
+        cargarFrecuencias();
 
 
-private List<enph.modelo.FrecuenciaCompra> frecuenciasEnTabla = new ArrayList<>();
-
-public GestionFrecuencias() {
-
-    initComponents();
-
-    // Datos de quien inició sesión (banner de la ventana)
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    // Ajustes de apariencia
-    Tbl_Frecuencias.setRowHeight(32);
-    Tbl_Frecuencias.getTableHeader().setFont(
-        new java.awt.Font("Bahnschrift", 1, 18)
-    );
-
-    Tbl_Frecuencias.setAutoResizeMode(
-         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-    );
-
-    cargarFrecuencias();
-    
-
-    setLocationRelativeTo(null);// centra la ventana en la pantalla
-}
+        setLocationRelativeTo(null);// centra la ventana en la pantalla
+    }
 // Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
 // Lee las frecuencias de compra desde la base de datos.
-private void cargarFrecuencias() {
-    frecuenciasEnTabla = enph.Main.listarFrecuencias();
+    private void cargarFrecuencias() {
 
-    javax.swing.table.DefaultTableModel modelo =
-            new javax.swing.table.DefaultTableModel(
-                    new Object[]{"Frecuencia de compra"}, 0) {
+        frecuenciasEnTabla = controlador.listarFrecuencias();
 
-        @Override
-        public boolean isCellEditable(int fila, int columna) {
-            return false;
+        javax.swing.table.DefaultTableModel modelo =
+                new javax.swing.table.DefaultTableModel(
+                        new Object[]{"Frecuencia de compra"}, 0) {
+
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        for (FrecuenciaCompra frecuencia : frecuenciasEnTabla) {
+            modelo.addRow(new Object[]{frecuencia.getNombre()});
         }
-    };
 
-    for (enph.modelo.FrecuenciaCompra frecuencia : frecuenciasEnTabla) {
-        modelo.addRow(new Object[]{frecuencia.getNombre()});
+        Tbl_Frecuencias.setModel(modelo);
+        ajustarColumnas(Tbl_Frecuencias);
     }
-
-    Tbl_Frecuencias.setModel(modelo);
-    ajustarColumnas(Tbl_Frecuencias);
-}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {
@@ -324,10 +325,8 @@ int fila = Tbl_Frecuencias.getSelectedRow();
 
     enph.modelo.FrecuenciaCompra seleccionada = frecuenciasEnTabla.get(indice);
 
-    enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
-
     // No permitir eliminar frecuencias utilizadas en respuestas.
-    if (enph.Main.frecuenciaEnUso(seleccionada.getId())) {
+    if (controlador.frecuenciaEnUso(seleccionada.getId())) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "No puedes eliminar esta frecuencia porque está siendo "
@@ -351,7 +350,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
         return;
     }
 
-    if (enph.Main.eliminarFrecuencia(seleccionada.getId())) {
+    if (controlador.eliminarFrecuencia(seleccionada.getId())) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se eliminó correctamente.",
@@ -407,9 +406,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
     return;
     }
 
-    enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
-
-    if (enph.Main.crearFrecuencia(nombre)) {
+    if (controlador.crearFrecuencia(nombre)) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se creó correctamente.",
@@ -481,9 +478,7 @@ int fila = Tbl_Frecuencias.getSelectedRow();
     return;
     }
 
-    enph.modelo.CatalogoDAO dao = new enph.modelo.CatalogoDAO();
-
-    if (enph.Main.editarFrecuencia(seleccionada.getId(), nombre)) {
+    if (controlador.editarFrecuencia(seleccionada.getId(), nombre)) {
         javax.swing.JOptionPane.showMessageDialog(
             this,
             "La frecuencia se actualizó correctamente.",

@@ -3,11 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.CabezaHogarController;
+import enph.modelo.CabezaHogar;
 public class VerCabezaHogar extends javax.swing.JFrame {
     
 private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VerCabezaHogar.class.getName());
-
+private final CabezaHogarController cabezaController = new CabezaHogarController();
 public VerCabezaHogar() {
     this((String) null);
 }
@@ -43,7 +44,7 @@ private void cargarCabezaHogar(String idHogar) {
     if (idHogar == null || idHogar.trim().isEmpty()) {
         return;
     }
-    enph.modelo.CabezaHogar cabeza = enph.Main.buscarCabezaPorHogar(idHogar);
+    CabezaHogar cabeza = cabezaController.buscarPorHogar(idHogar);
     // Si existe un registro, mostrar sus datos.
     if (cabeza != null) {
 

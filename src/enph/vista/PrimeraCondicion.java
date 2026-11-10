@@ -17,6 +17,8 @@ public class PrimeraCondicion extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PrimeraCondicion.class.getName());
 
     private SesionEncuesta sesion; // estado de la encuesta (hogar, encuesta, grupo actual)
+    private final enph.controlador.CaracterizacionController controlador =
+            new enph.controlador.CaracterizacionController();
     private FrecuenciaCompra frecuencia; // frecuencia elegida en la pantalla anterior
 
     public PrimeraCondicion(SesionEncuesta sesion, FrecuenciaCompra frecuencia) {
@@ -35,17 +37,17 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         Lbl_Contador.setText((sesion.getGrupoActual() + 1) + "/" + sesion.getTotalGrupos());
         // Modo edición: rellena los campos con lo que ya estaba guardado
     if (sesion.isEdicion()) {
-            enph.modelo.RespuestaGrupo previa = enph.Main.obtenerCaracterizacion(sesion.getIdEncuesta(), sesion.getGrupo().getId());
+            enph.modelo.CaracterizacionCompra previa = controlador.obtenerPrevia(sesion);
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {
              // El valor puede ser null si antes la frecuencia no lo pedía
-            if (previa.getValor() != null) {
+            if (previa.getValorUltimaCompra() != null) {
                 // toPlainString evita notación científica (ej. 1E+4)
-                Txt_ValorDato.setText(previa.getValor().toPlainString());
+                Txt_ValorDato.setText(previa.getValorUltimaCompra().toPlainString());
             }
-            if (previa.getIntencion() != null) {
+            if (previa.getIntencionCompra() != null) {
                 // En el combo la posición 0 es "Sí" y la 1 es "No"
-                Cmb_VolverComprar.setSelectedIndex(previa.getIntencion() == 1 ? 0 : 1); // 0 = "Sí"
+                Cmb_VolverComprar.setSelectedIndex(previa.getIntencionCompra() ? 0 : 1); // 0 = "Sí"
             }
         }
     }
@@ -320,83 +322,78 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         // Deja solo los dígitos: quita puntos, comas, espacios y signos de pesos
         // (acepta "15.000" o "15,000")
         // Obtener el valor ingresado sin espacios al inicio ni al final.
-        String texto = Txt_ValorDato.getText().trim();
+        // Obtener el valor ingresado sin espacios al inicio ni al final.
+    String texto = Txt_ValorDato.getText().trim();
 
-        // Validar que el campo no esté vacío.
-        if (texto.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Ingrese el valor de la última compra.",
-                    "Campo obligatorio",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            Txt_ValorDato.requestFocus();
-            return;
-        }
-
-        // Validar que solamente contenga números enteros positivos.
-        if (!texto.matches("[0-9]+")) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "El valor de la última compra debe contener solamente números enteros positivos.",
-                    "Valor no válido",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            Txt_ValorDato.requestFocus();
-            return;
-        }
-
-        BigDecimal valor;
-
-        try {
-            valor = new BigDecimal(texto);
-        } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "El valor ingresado no es válido.",
-                    "Error",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            Txt_ValorDato.requestFocus();
-            return;
-        }
-
-        // Validar que el valor sea igual o superior a 1000.
-        if (valor.compareTo(new BigDecimal("1000")) < 0) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "El valor de la última compra debe ser mayor o igual a $1.000.",
-                    "Valor insuficiente",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            Txt_ValorDato.requestFocus();
-            return;
-        }
-
-        // 0 = "Sí" se guarda como 1; "No" se guarda como 0.
-        Integer intencion = Cmb_VolverComprar.getSelectedIndex() == 0 ? 1 : 0;
-
-        // Guardar la caracterización.
-        boolean guardado = enph.Main.guardarCaracterizacion(
-                sesion.getIdEncuesta(),
-                sesion.getGrupo().getId(),
-                frecuencia.getId(),
-                valor,
-                intencion
+    // Validar que el campo no esté vacío.
+    if (texto.isEmpty()) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Ingrese el valor de la última compra.",
+                "Campo obligatorio",
+                javax.swing.JOptionPane.WARNING_MESSAGE
         );
+        Txt_ValorDato.requestFocus();
+        return;
+    }
 
-        if (!guardado) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo guardar la respuesta.",
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
+    // Validar que solamente contenga números enteros positivos.
+    if (!texto.matches("[0-9]+")) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El valor de la última compra debe contener solamente números enteros positivos.",
+                "Valor no válido",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        Txt_ValorDato.requestFocus();
+        return;
+    }
 
-        // Avanzar al siguiente grupo.
-        FrecuenciaGasto.irAlSiguienteGrupo(sesion, this);
+    BigDecimal valor;
+
+    try {
+        valor = new BigDecimal(texto);
+    } catch (NumberFormatException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El valor ingresado no es válido.",
+                "Error",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        Txt_ValorDato.requestFocus();
+        return;
+    }
+
+    // Validar que el valor sea igual o superior a 1000.
+    if (valor.compareTo(new BigDecimal("1000")) < 0) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El valor de la última compra debe ser mayor o igual a $1.000.",
+                "Valor insuficiente",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        Txt_ValorDato.requestFocus();
+        return;
+    }
+
+    // 0 = "Sí" (true); 1 = "No" (false).
+    Boolean intencion = Cmb_VolverComprar.getSelectedIndex() == 0;
+
+    // Guardar la caracterización.
+    boolean guardado = controlador.guardar(sesion, frecuencia, valor, intencion);
+
+    if (!guardado) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "No se pudo guardar la respuesta.",
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
+
+    // Avanzar al siguiente grupo.
+    FrecuenciaGasto.irAlSiguienteGrupo(sesion, this);
     }                                             
 
     // Variables declaration - do not modify                     

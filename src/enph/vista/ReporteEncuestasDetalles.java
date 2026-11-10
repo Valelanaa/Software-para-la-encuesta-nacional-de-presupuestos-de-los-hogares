@@ -4,7 +4,7 @@
  */
 package enph.vista;
 
-import enph.Main;
+import enph.controlador.ReporteCiudadController;
 import enph.modelo.ReporteBarrioDetalle;
 import enph.modelo.SesionUsuario;
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ public class ReporteEncuestasDetalles extends javax.swing.JFrame {
 
     // Posición de la ciudad en el combo de la pantalla anterior (para volver a ella tal como estaba).
     private final int indiceCiudad;
-
+    private final ReporteCiudadController controlador = new ReporteCiudadController();
     public ReporteEncuestasDetalles(String idBarrio, String nombreBarrio, int indiceCiudad) {
 
         initComponents();
@@ -67,7 +67,7 @@ public class ReporteEncuestasDetalles extends javax.swing.JFrame {
 
         try {
 
-            List<ReporteBarrioDetalle> lista = Main.generarDetalleBarrio(idBarrio);
+            List<ReporteBarrioDetalle> lista = controlador.generarDetalleBarrio(idBarrio);
 
             for (ReporteBarrioDetalle detalle : lista) {
                 modelo.addRow(new Object[]{

@@ -6,49 +6,61 @@
 package enph.controlador;
 
 import enph.modelo.Hogar;
+import enph.modelo.HogarDAO;
+import enph.modelo.EncuestaDAO;
 import enph.vista.FamiliasRegistradas;
+
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 
-/**
- * Controlador de la pantalla FamiliasRegistradas (patrón MVC).
- * Hace de intermediario: pide los datos a HogarDAO (modelo) y se los
- * entrega a FamiliasRegistradas (vista), para que la ventana no tenga
- * que hablar directamente con la base de datos.
- */
-
 public class FamiliasController {
 
-    private final FamiliasRegistradas vista; // ventana que mostrará las familias
-    //la ventana FamiliasRegistradas que este controlador atiende
+    private final FamiliasRegistradas vista;
+    private final HogarDAO hogarDAO;
+    private final EncuestaDAO encuestaDAO;
+
     public FamiliasController(FamiliasRegistradas vista) {
         this.vista = vista;
+        this.hogarDAO = new HogarDAO();
+        this.encuestaDAO = new EncuestaDAO();
     }
+
     /**
-     * Lee los hogares de la base de datos y los muestra en la tabla de la vista.
-     * Si la base de datos falla (sin conexión, columna mal escrita, etc.),
-     * muestra el error en un cuadro de diálogo en lugar de cerrar el programa.
+     * Consulta los hogares registrados y los muestra en la tabla.
      */
     public void cargarHogares() {
 
         try {
-            // Consulta a la base de datos
-            List<Hogar> hogares = enph.Main.listarHogares();
-        // La vista se encarga de llenar la tabla con esa lista
+
+            List<Hogar> hogares = hogarDAO.listarHogares();
+
             vista.mostrarHogares(hogares);
 
         } catch (SQLException e) {
-            // Aviso para el usuario, con el mensaje de Oracle (ej. ORA-00904)
+
             JOptionPane.showMessageDialog(
-                vista,
-                "Error al cargar las familias desde Oracle:\n"
-                    + e.getMessage(),
-                "Error de base de datos",
-                JOptionPane.ERROR_MESSAGE
+                    vista,
+                    "Error al cargar las familias:\n" + e.getMessage(),
+                    "Error de base de datos",
+                    JOptionPane.ERROR_MESSAGE
             );
-            // El detalle completo queda en la consola para depurar
+
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Comprueba si un hogar tiene una encuesta registrada.
+     */
+    public boolean hogarTieneEncuesta(int idHogar) {
+        return encuestaDAO.hogarTieneEncuesta(idHogar);
+    }
+
+    /**
+     * Elimina las encuestas y respuestas pertenecientes a un hogar.
+     */
+    public boolean eliminarEncuestasDelHogar(int idHogar) {
+        return encuestaDAO.eliminarEncuestasDelHogar(idHogar);
     }
 }

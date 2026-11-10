@@ -18,6 +18,8 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrecuenciaGasto.class.getName());
     // Estado de la encuesta (hogar, encuesta, grupo actual, modo edición)
     private SesionEncuesta sesion;
+    private final enph.controlador.CaracterizacionController controlador = new enph.controlador.CaracterizacionController();
+    private final enph.controlador.EncuestaController encuestaController = new enph.controlador.EncuestaController();
     //la sesión compartida por todas las pantallas de la encuesta
     public FrecuenciaGasto(SesionEncuesta sesion) {
         initComponents();
@@ -32,12 +34,12 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         Cmb_Frecuencia.setModel(
                 new javax.swing.DefaultComboBoxModel<>(sesion.getNombresFrecuencias()));
         // Modo edición: selecciona en el combo la frecuencia que ya estaba guardada
-            if (sesion.isEdicion()) {
-                enph.modelo.RespuestaGrupo previa = enph.Main.obtenerCaracterizacion(sesion.getIdEncuesta(), sesion.getGrupo().getId());
+           if (sesion.isEdicion()) {
+        enph.modelo.CaracterizacionCompra previa = controlador.obtenerPrevia(sesion);
         // previa es null si este grupo todavía no se había respondido
         if (previa != null) {
             for (int i = 0; i < sesion.getFrecuencias().size(); i++) {
-                if (sesion.getFrecuencias().get(i).getId() == previa.getIdFrecuencia()) {
+                if (sesion.getFrecuencias().get(i).getId() == previa.getFrecuencia().getIdFrecuencia()) {
                     Cmb_Frecuencia.setSelectedIndex(i);
                     break;
                 }
@@ -53,23 +55,22 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
      * Es estático porque también lo llama PrimeraCondicion al terminar de guardar.
      */
     public static void irAlSiguienteGrupo(SesionEncuesta sesion, javax.swing.JFrame actual) {
-        if (sesion.hayMasGrupos()) {
-             // Quedan grupos: avanza y abre la misma pantalla con el grupo siguiente
-            sesion.avanzar();
-            new FrecuenciaGasto(sesion).setVisible(true);
-            actual.dispose();
-        } else {
-            // Era el último grupo: se registra la fecha de fin y se vuelve a la lista de familias
-            enph.Main.finalizarEncuesta(sesion.getIdEncuesta());
-            enph.Main.quitarMarcaIncompleta(sesion.getIdEncuesta());
-            javax.swing.JOptionPane.showMessageDialog(
-                    actual,
-                    "Se han completado los " + sesion.getTotalGrupos() + " grupos de alimentos."
-            );
-            new FamiliasRegistradas().setVisible(true);
-            actual.dispose();
-        }
+    if (sesion.hayMasGrupos()) {
+        // Quedan grupos: avanza y abre la misma pantalla con el grupo siguiente
+        sesion.avanzar();
+        new FrecuenciaGasto(sesion).setVisible(true);
+        actual.dispose();
+    } else {
+        // Era el último grupo: se registra la fecha de fin y se vuelve a la lista de familias
+        new enph.controlador.EncuestaController().finalizar(sesion.getIdEncuesta());
+        javax.swing.JOptionPane.showMessageDialog(
+                actual,
+                "Se han completado los " + sesion.getTotalGrupos() + " grupos de alimentos."
+        );
+        new FamiliasRegistradas().setVisible(true);
+        actual.dispose();
     }
+}
     /**
      * Indica si la frecuencia elegida obliga a preguntar el valor de la última
      * compra. Solo las frecuencias poco seguidas (mensual en adelante) lo piden;
@@ -266,11 +267,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
     
     private void Btt_ContinuarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btt_ContinuarActionPerformed
         // TODO add your handling code here:
-        // Mensajes de depuración
-        //System.out.println("Continuar pulsado, grupo " + (sesion.getGrupoActual() + 1));
-    // try/catch: si algo falla, el usuario ve el error en pantalla
-    // en lugar de que el botón "no haga nada"
-    try {
+        try {
         // La posición elegida en el combo es la misma que en la lista de frecuencias
         FrecuenciaCompra frecuencia = sesion.getFrecuencias().get(Cmb_Frecuencia.getSelectedIndex());
         System.out.println("Frecuencia elegida: " + frecuencia.getNombre());
@@ -282,12 +279,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         } else {
             // No necesita más datos: se guarda solo la frecuencia
             // (los dos null son el valor y la intención, que no aplican aquí)
-            boolean guardado = enph.Main.guardarCaracterizacion(
-                    sesion.getIdEncuesta(),
-                    sesion.getGrupo().getId(),
-                    frecuencia.getId(),
-                    null,
-                    null);
+            boolean guardado = controlador.guardar(sesion, frecuencia, null, null);
 
             if (!guardado) {
                 // No avanza: el encuestador puede reintentar
@@ -305,7 +297,6 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
                 "Error inesperado: " + ex, "Error",
                 javax.swing.JOptionPane.ERROR_MESSAGE);
     }
-    
     }//GEN-LAST:event_Btt_ContinuarActionPerformed
 /**
      * Botón "Anterior" (el nombre del método quedó como Cancelar por el diseñador).
@@ -321,10 +312,11 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         // Primer grupo: si la encuesta aún no tiene respuestas se borra, para no
         // dejar una encuesta vacía que bloquee a la familia. Si ya tiene respuestas
         // (por ejemplo, al editar), este método no borra nada.
-        enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
+        new enph.controlador.EncuestaController().eliminarSiVacia(sesion.getIdEncuesta());
         new FamiliasRegistradas().setVisible(true);
     }
     this.dispose();
+
     }//GEN-LAST:event_Btt_CancelarActionPerformed
 
     private void Cmb_FrecuenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Cmb_FrecuenciaActionPerformed
@@ -335,8 +327,7 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         // TODO add your handling code here:
         // Registra la fecha de fin de la encuesta.
         // Si no hay ninguna respuesta guardada, la encuesta se elimina en lugar de finalizarse.
-        enph.Main.eliminarEncuestaVacia(sesion.getIdEncuesta());
-        enph.Main.finalizarEncuesta(sesion.getIdEncuesta());
+        encuestaController.cerrar(sesion.getIdEncuesta());
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,

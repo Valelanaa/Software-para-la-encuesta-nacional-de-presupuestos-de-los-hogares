@@ -1,6 +1,7 @@
 
 package enph.modelo;
 
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.CallableStatement;
@@ -20,7 +21,18 @@ public class CaracterizacionDAO {
     /**
      * Guarda o actualiza la caracterización y su detalle.
      */
-    public boolean guardar(int idEncuesta, int idGrupo, int idFrecuencia, BigDecimal valor, Integer intencion) {
+    public boolean guardar(CaracterizacionCompra c) {
+        if (c == null || c.getEncuesta() == null || c.getGrupo() == null || c.getFrecuencia() == null) {
+            return false;
+        }
+
+        Integer intencion = c.getIntencionCompra() == null ? null : (c.getIntencionCompra() ? 1 : 0);
+
+        return guardar(c.getEncuesta().getIdEncuesta(), c.getGrupo().getId(),
+                c.getFrecuencia().getIdFrecuencia(), c.getValorUltimaCompra(), intencion);
+    }
+
+    private boolean guardar(int idEncuesta, int idGrupo, int idFrecuencia, BigDecimal valor, Integer intencion) {
         Connection con = Conexion.init();
         if (con == null) return false;
 
@@ -64,13 +76,16 @@ public class CaracterizacionDAO {
     /**
      * Consulta la respuesta de un grupo de alimentos.
      */
-    public RespuestaGrupo obtener(int idEncuesta, int idGrupo) {
+    public CaracterizacionCompra obtener(Encuesta encuesta, GrupoAlimento grupo,
+                                         List<FrecuenciaCompra> frecuencias) {
+        if (encuesta == null || grupo == null) return null;
+
         Connection con = Conexion.init();
         if (con == null) return null;
 
         try (CallableStatement cs = con.prepareCall("{CALL PR_OBTENER_CARACTERIZACION(?,?,?)}")) {
-            cs.setInt(1, idEncuesta);
-            cs.setInt(2, idGrupo);
+            cs.setInt(1, encuesta.getIdEncuesta());
+            cs.setInt(2, grupo.getId());
             cs.registerOutParameter(3, Types.REF_CURSOR);
             cs.execute();
 
@@ -80,10 +95,28 @@ public class CaracterizacionDAO {
                     BigDecimal valor = rs.getBigDecimal(2);
                     String texto = rs.getString(3);
 
-                    Integer intencion = texto == null ? null :
-                            (INTENCION_SI.equalsIgnoreCase(texto.trim()) ? 1 : 0);
+                    Boolean intencion = texto == null ? null : INTENCION_SI.equalsIgnoreCase(texto.trim());
 
-                    return new RespuestaGrupo(idFrecuencia, valor, intencion);
+                    // La frecuencia se toma de la lista ya cargada; si no está, solo con su id.
+                    FrecuenciaCompra frecuencia = new FrecuenciaCompra(idFrecuencia, null);
+                    for (FrecuenciaCompra f : frecuencias) {
+                        if (f.getIdFrecuencia() == idFrecuencia) {
+                            frecuencia = f;
+                            break;
+                        }
+                    }
+
+                    CaracterizacionCompra c =
+                            new CaracterizacionCompra(encuesta, grupo, frecuencia, valor, intencion);
+
+                    // La columna 4 (ID_CARACTERIZACION) existe si se ejecutó el script SQL actualizado.
+                    try {
+                        c.setIdCaracterizacion(rs.getInt(4));
+                    } catch (SQLException e) {
+                        // se deja en 0
+                    }
+
+                    return c;
                 }
             }
 
