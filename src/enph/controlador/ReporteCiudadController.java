@@ -33,25 +33,29 @@ public class ReporteCiudadController {
         return ciudadDAO.listarCiudades();
     }
 
-    // Generar reporte de encuestas por ciudad
-    public List<ReporteCiudadBarrio> generarReporteCiudad(
-            String idCiudad) throws SQLException {
+    public List<ReporteCiudadBarrio> generarReporteCiudad(String idCiudad) throws AppException {
 
         if (idCiudad == null || idCiudad.trim().isEmpty()) {
-            throw new SQLException("Debe seleccionar una ciudad.");
+            throw new AppException("Debe seleccionar una ciudad.");
         }
 
-        return reporteDAO.generarReporte(idCiudad.trim());
+        try {
+            return reporteDAO.generarReporte(idCiudad.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible generar el reporte por ciudad.", e);
+        }
     }
 
-    // Consultar familias y encuestadores de un barrio
-    public List<ReporteBarrioDetalle> generarDetalleBarrio(
-            String idBarrio) throws SQLException {
+    public List<ReporteBarrioDetalle> generarDetalleBarrio(String idBarrio) throws AppException {
 
         if (idBarrio == null || idBarrio.trim().isEmpty()) {
-            throw new SQLException("No se recibió el identificador del barrio.");
+            throw new AppException("No se recibió el identificador del barrio.");
         }
 
-        return reporteDAO.generarDetalleBarrio(idBarrio.trim());
+        try {
+            return reporteDAO.generarDetalleBarrio(idBarrio.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible consultar el detalle del barrio.", e);
+        }
     }
 }

@@ -6,7 +6,7 @@ package enph.vista;
 
 import enph.controlador.ReporteRendimientoController;
 import enph.modelo.SesionUsuario;
-import java.sql.SQLException;
+import enph.controlador.AppException;
 import java.util.List;
 import enph.modelo.ReporteRendimientoEncuestador;
 import java.time.LocalDate;
@@ -179,7 +179,7 @@ private void cargarReporte() {
                 JOptionPane.WARNING_MESSAGE
         );
 
-    } catch (SQLException e) {
+    }  catch (AppException e) {
 
         JOptionPane.showMessageDialog(
                 this,
@@ -188,7 +188,6 @@ private void cargarReporte() {
                 JOptionPane.ERROR_MESSAGE
         );
 
-        e.printStackTrace();
     }
 }
 

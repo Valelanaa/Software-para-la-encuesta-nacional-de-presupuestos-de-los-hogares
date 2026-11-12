@@ -14,7 +14,6 @@ import enph.modelo.FrecuenciaCompra;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.ReporteEsencialesDAO;
 import java.sql.SQLException;
-import java.sql.SQLException;
 import java.util.List;
 
 public class ReporteAlimentosController {
@@ -38,40 +37,36 @@ public class ReporteAlimentosController {
         }
     }
 
-    // Reporte de alimentos esenciales
-    public List<ReporteEsencial> generarReporteEsenciales(
-            String frecuencia) throws SQLException {
-
+    public List<ReporteEsencial> generarReporteEsenciales(String frecuencia) throws AppException {
         validarFrecuencia(frecuencia);
-
-        return reporteDAO.generarReporte(frecuencia);
+        try {
+            return reporteDAO.generarReporte(frecuencia);
+        } catch (SQLException e) {
+            throw new AppException("No fue posible generar el reporte de esenciales.", e);
+        }
     }
 
-    // Reporte de alimentos no esenciales
-    public List<ReporteEsencial> generarReporteNoEsenciales(
-            String frecuencia) throws SQLException {
-
+    public List<ReporteEsencial> generarReporteNoEsenciales(String frecuencia) throws AppException {
         validarFrecuencia(frecuencia);
-
-        return reporteDAO.generarReporteNoEsenciales(frecuencia);
+        try {
+            return reporteDAO.generarReporteNoEsenciales(frecuencia);
+        } catch (SQLException e) {
+            throw new AppException("No fue posible generar el reporte de no esenciales.", e);
+        }
     }
 
-    // Reporte de alimentos por todas las frecuencias
-    public List<ReporteEsencial> generarReporteTodasFrecuencias(
-            String frecuencia) throws SQLException {
-
+    public List<ReporteEsencial> generarReporteTodasFrecuencias(String frecuencia) throws AppException {
         validarFrecuencia(frecuencia);
-
-        return reporteDAO.generarReporteTodasFrecuencias(frecuencia);
+        try {
+            return reporteDAO.generarReporteTodasFrecuencias(frecuencia);
+        } catch (SQLException e) {
+            throw new AppException("No fue posible generar el reporte por frecuencias.", e);
+        }
     }
 
-    private void validarFrecuencia(String frecuencia)
-            throws SQLException {
-
+    private void validarFrecuencia(String frecuencia) throws AppException {
         if (frecuencia == null || frecuencia.trim().isEmpty()) {
-            throw new SQLException(
-                    "Debe seleccionar una frecuencia de compra."
-            );
+            throw new AppException("Debe seleccionar una frecuencia de compra.");
         }
     }
 }

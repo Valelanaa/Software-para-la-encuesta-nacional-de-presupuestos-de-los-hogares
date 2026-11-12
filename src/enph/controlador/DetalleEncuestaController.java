@@ -20,13 +20,16 @@ public class DetalleEncuestaController {
         this.hogarDAO = new HogarDAO();
     }
 
-    public String[] buscarDetalleEncuesta(String idHogar)
-            throws SQLException {
+    public String[] buscarDetalleEncuesta(String idHogar) throws AppException {
 
         if (idHogar == null || idHogar.trim().isEmpty()) {
             return null;
         }
 
-        return hogarDAO.buscarDetalleEncuesta(idHogar.trim());
+        try {
+            return hogarDAO.buscarDetalleEncuesta(idHogar.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible consultar el detalle de la encuesta.", e);
+        }
     }
 }

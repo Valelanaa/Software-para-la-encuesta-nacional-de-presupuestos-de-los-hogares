@@ -4,11 +4,12 @@
  */
 package enph.vista;
 
+import enph.controlador.AppException;
 import enph.controlador.ReporteAlimentosController;
 import enph.modelo.FrecuenciaCompra;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.SesionUsuario;
-import java.sql.SQLException;
+
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -116,7 +117,7 @@ private void configurarTabla() {
                 );
             }
 
-        } catch (SQLException e) {
+        } catch (AppException e) {
 
             JOptionPane.showMessageDialog(
                     this,

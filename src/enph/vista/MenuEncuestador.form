@@ -168,19 +168,15 @@
                           <EmptySpace min="-2" pref="435" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="Btn_Familias" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="356" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
                           <Component id="Btn_CerrarSesion" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="Btn_Usuario" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="326" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="Btn_Reporte" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="Btn_Usuario" alignment="1" min="-2" pref="380" max="-2" attributes="0"/>
+                              <Component id="Btn_Reporte" min="-2" max="-2" attributes="0"/>
+                              <Component id="Btn_Familias" alignment="1" min="-2" pref="380" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace min="-2" pref="276" max="-2" attributes="0"/>
                       </Group>
                   </Group>

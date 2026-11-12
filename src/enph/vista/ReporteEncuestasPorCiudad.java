@@ -4,11 +4,11 @@
  */
 package enph.vista;
 
+import enph.controlador.AppException;
 import enph.controlador.ReporteCiudadController;
 import enph.modelo.Ciudad;
 import enph.modelo.ReporteCiudadBarrio;
 import enph.modelo.SesionUsuario;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -148,7 +148,7 @@ public class ReporteEncuestasPorCiudad extends javax.swing.JFrame {
                 );
             }
 
-        } catch (SQLException e) {
+        }catch (AppException e){
 
             JOptionPane.showMessageDialog(
                     this,

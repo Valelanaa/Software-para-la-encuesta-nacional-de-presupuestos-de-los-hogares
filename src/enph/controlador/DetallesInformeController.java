@@ -22,15 +22,16 @@ public class DetallesInformeController {
     }
 
     // Consultar familias y estado de sus encuestas por encuestador
-    public List<String[]> listarEstadoEncuestas(String idEncuestador)
-            throws SQLException {
+    public List<String[]> listarEstadoEncuestas(String idEncuestador) throws AppException {
 
         if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
-            throw new SQLException("No se recibió el identificador del encuestador.");
+            throw new AppException("No se recibió el identificador del encuestador.");
         }
 
-        return hogarDAO.listarEstadoEncuestasPorEncuestador(
-                idEncuestador.trim()
-        );
+        try {
+            return hogarDAO.listarEstadoEncuestasPorEncuestador(idEncuestador.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible consultar el estado de las encuestas.", e);
+        }
     }
 }

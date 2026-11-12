@@ -142,44 +142,21 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="Pnl_Banner" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="-2" pref="154" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="Btn_Hogar" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="Btn_Barrio" alignment="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Component id="Btn_Usuarios" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="Btn_encuestas" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="95" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="Btn_Hogar" max="32767" attributes="0"/>
+                      <Component id="Btn_Barrio" max="32767" attributes="0"/>
+                      <Component id="Btn_encuestas" pref="325" max="32767" attributes="0"/>
+                      <Component id="Btn_Usuarios" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="Btn_alimentos" alignment="1" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="1" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="Btn_frecuencias" min="-2" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="72" max="-2" attributes="0"/>
-                                          <Component id="Btn_Reportes" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="Btn_asignar" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="175" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="Btn_alimentos" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <Component id="Btn_frecuencias" alignment="1" min="-2" pref="363" max="-2" attributes="0"/>
+                      <Component id="Btn_asignar" alignment="1" min="-2" pref="363" max="-2" attributes="0"/>
+                      <Component id="Btn_Reportes" alignment="1" min="-2" pref="363" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
               </Group>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="32767" attributes="0"/>

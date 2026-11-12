@@ -72,7 +72,7 @@ private static final java.util.logging.Logger logger = java.util.logging.Logger.
             if (d[4] != null) Lbl_FechaInicioRta.setText(d[4]);
             if (d[5] != null) Lbl_FechaFinRta.setText(d[5]);
 
-        } catch (java.sql.SQLException ex) {
+        } catch (enph.controlador.AppException ex) {
             javax.swing.JOptionPane.showMessageDialog(
                 this,
                 "No se pudieron consultar los datos:\n" + ex.getMessage(),

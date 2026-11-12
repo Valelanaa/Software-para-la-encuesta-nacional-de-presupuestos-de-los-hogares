@@ -49,8 +49,11 @@ public class InformeEncuestaController {
 
     // Obtener las encuestas realizadas y pendientes por encuestador
     public Map<String, int[]> contarEncuestasPorEncuestador()
-            throws SQLException {
-
-        return hogarDAO.contarEncuestasPorEncuestador();
-    }
+          throws AppException {
+      try {
+          return hogarDAO.contarEncuestasPorEncuestador();
+      } catch (SQLException e) {
+          throw new AppException("No fue posible contar las encuestas por encuestador.", e);
+      }
+  }
 }

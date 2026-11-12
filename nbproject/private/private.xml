@@ -46,6 +46,22 @@
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdmin.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/HogarDAO.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/Hogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteRendimientoController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasMes.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdminReportes.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuEncuestador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteCiudadController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasPorCiudad.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestasDetalles.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEsenciales.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteNoEsenciales.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTodasFrecuencias.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/DetallesInformeController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/DetallesInforme.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/InformeEncuestaController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/InformeEncuesta.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/DetalleEncuestaController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/VerDetallesEncuesta.java</file>
         </group>
     </open-files>
 </project-private>

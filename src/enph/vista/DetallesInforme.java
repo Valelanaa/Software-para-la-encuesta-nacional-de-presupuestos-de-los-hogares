@@ -55,7 +55,7 @@ public class DetallesInforme extends javax.swing.JFrame {
 
             filas = controlador.listarEstadoEncuestas(idEncuestador);
 
-        } catch (java.sql.SQLException ex) {
+        } catch (enph.controlador.AppException ex) {
 
             javax.swing.JOptionPane.showMessageDialog(
                     this,"No se pudo consultar las familias del encuestador:\n" + ex.getMessage(), "Error de base de datos",

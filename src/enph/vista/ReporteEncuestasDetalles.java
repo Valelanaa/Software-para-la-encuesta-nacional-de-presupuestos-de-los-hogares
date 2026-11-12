@@ -4,10 +4,10 @@
  */
 package enph.vista;
 
+import enph.controlador.AppException;
 import enph.controlador.ReporteCiudadController;
 import enph.modelo.ReporteBarrioDetalle;
 import enph.modelo.SesionUsuario;
-import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -88,7 +88,7 @@ public class ReporteEncuestasDetalles extends javax.swing.JFrame {
                 );
             }
 
-        } catch (SQLException e) {
+        } catch (AppException e){
 
             Tbl_Detalles.setModel(modelo);
 

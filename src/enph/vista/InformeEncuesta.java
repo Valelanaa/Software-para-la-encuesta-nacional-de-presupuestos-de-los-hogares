@@ -48,7 +48,7 @@ public class InformeEncuesta extends javax.swing.JFrame {
 
             conteos = controlador.contarEncuestasPorEncuestador();
 
-        } catch (java.sql.SQLException ex) {
+        } catch (enph.controlador.AppException ex) {
 
             javax.swing.JOptionPane.showMessageDialog(
                     this,
