@@ -8,10 +8,8 @@ package enph.controlador;
  *
  * @author Valeria
  */
-
 import enph.modelo.EncuestaDAO;
 import java.sql.SQLException;
-import java.util.List;
 
 public class EncuestaController {
 
@@ -21,43 +19,95 @@ public class EncuestaController {
         this.encuestaDAO = new EncuestaDAO();
     }
 
-    /** Registra la fecha de fin y quita la marca de incompleta. */
-    public void finalizar(int idEncuesta) {
-        encuestaDAO.finalizarEncuesta(idEncuesta);
-        encuestaDAO.quitarMarcaIncompleta(idEncuesta);
+    public void finalizar(int idEncuesta) throws AppException {
+        validarId(idEncuesta);
+
+        try {
+            encuestaDAO.finalizarEncuesta(idEncuesta);
+            encuestaDAO.quitarMarcaIncompleta(idEncuesta);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible finalizar la encuesta.", e
+            );
+        }
     }
 
-    /** Cierra la encuesta sin quitar la marca de incompleta. */
-    public void cerrar(int idEncuesta) {
-        encuestaDAO.eliminarEncuestaVacia(idEncuesta);
-        encuestaDAO.finalizarEncuesta(idEncuesta);
+    public void cerrar(int idEncuesta) throws AppException {
+        validarId(idEncuesta);
+
+        try {
+            boolean eliminada = encuestaDAO.eliminarEncuestaVacia(idEncuesta);
+
+            // Si tenía respuestas, se conserva y se finaliza.
+            if (!eliminada) {
+                encuestaDAO.finalizarEncuesta(idEncuesta);
+                encuestaDAO.quitarMarcaIncompleta(idEncuesta);
+            }
+
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible cerrar la encuesta.", e
+            );
+        }
     }
 
-    /** Elimina la encuesta únicamente si no tiene respuestas. */
-    public void eliminarSiVacia(int idEncuesta) {
-        encuestaDAO.eliminarEncuestaVacia(idEncuesta);
+    public boolean eliminarSiVacia(int idEncuesta) throws AppException {
+        validarId(idEncuesta);
+
+        try {
+            return encuestaDAO.eliminarEncuestaVacia(idEncuesta);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible comprobar o eliminar la encuesta vacía.", e
+            );
+        }
     }
 
-    /** Obtiene el identificador de la encuesta asociada a un hogar. */
-    public int obtenerIdEncuesta(String idHogar) {
+    public int obtenerIdEncuesta(String idHogar) throws AppException {
+
         if (idHogar == null || idHogar.trim().isEmpty()) {
-            return -1;
+            throw new AppException("Debe seleccionar un hogar.");
         }
 
         try {
             int id = Integer.parseInt(idHogar.trim());
+
+            if (id <= 0) {
+                throw new AppException(
+                        "El identificador del hogar no es válido."
+                );
+            }
+
             return encuestaDAO.obtenerIdEncuesta(id);
+
         } catch (NumberFormatException e) {
-            return -1;
+            throw new AppException(
+                    "El identificador del hogar no es válido.", e
+            );
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar la encuesta del hogar.", e
+            );
         }
     }
 
-    /** Marca una encuesta como incompleta según los permisos del usuario. */
-    public boolean marcarIncompleta(int idEncuesta) {
-        if (idEncuesta <= 0) {
-            return false;
-        }
+    public boolean marcarIncompleta(int idEncuesta) throws AppException {
+        validarId(idEncuesta);
 
-        return encuestaDAO.marcarIncompleta(idEncuesta);
+        try {
+            return encuestaDAO.marcarIncompleta(idEncuesta);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible cambiar el estado de la encuesta.", e
+            );
+        }
+    }
+
+    private void validarId(int idEncuesta) throws AppException {
+        if (idEncuesta <= 0) {
+            throw new AppException(
+                    "El identificador de la encuesta no es válido."
+            );
+        }
     }
 }

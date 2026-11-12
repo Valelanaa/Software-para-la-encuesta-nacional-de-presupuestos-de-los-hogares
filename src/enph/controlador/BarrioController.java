@@ -8,11 +8,11 @@ package enph.controlador;
  *
  * @author Valeria
  */
+
 import enph.modelo.Barrio;
 import enph.modelo.BarrioDAO;
 import enph.modelo.Ciudad;
 import enph.modelo.CiudadDAO;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -26,61 +26,82 @@ public class BarrioController {
         this.ciudadDAO = new CiudadDAO();
     }
 
-    // Listar todos los barrios
-    public List<Barrio> listarBarrios() throws SQLException {
-        return barrioDAO.listarBarrios();
+    public List<Barrio> listarBarrios() throws AppException {
+        try {
+            return barrioDAO.listarBarrios();
+        } catch (SQLException e) {
+            throw new AppException("No fue posible cargar los barrios.", e);
+        }
     }
 
-    // Listar ciudades para el combo
     public List<Ciudad> listarCiudades() {
         return ciudadDAO.listarCiudades();
     }
 
-    // Crear un barrio
     public boolean crearBarrio(String nombre, String idCiudad)
-            throws SQLException {
+            throws AppException {
 
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new SQLException("Debe ingresar el nombre del barrio.");
+            throw new AppException("Debe ingresar el nombre del barrio.");
         }
 
         if (idCiudad == null || idCiudad.trim().isEmpty()) {
-            throw new SQLException("Debe seleccionar una ciudad.");
+            throw new AppException("Debe seleccionar una ciudad.");
         }
 
-        return barrioDAO.crearBarrio(nombre.trim(), idCiudad.trim());
+        try {
+            return barrioDAO.crearBarrio(nombre.trim(), idCiudad.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible crear el barrio.", e);
+        }
     }
 
-    // Editar un barrio
-    public boolean editarBarrio(String idBarrio, String nombre,
-                                String idCiudad) throws SQLException {
+    public boolean editarBarrio(
+            String idBarrio,
+            String nombre,
+            String idCiudad) throws AppException {
 
         if (idBarrio == null || idBarrio.trim().isEmpty()) {
-            throw new SQLException("No se recibió el identificador del barrio.");
+            throw new AppException("No se recibió el identificador del barrio.");
         }
 
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new SQLException("Debe ingresar el nombre del barrio.");
+            throw new AppException("Debe ingresar el nombre del barrio.");
         }
 
         if (idCiudad == null || idCiudad.trim().isEmpty()) {
-            throw new SQLException("Debe seleccionar una ciudad.");
+            throw new AppException("Debe seleccionar una ciudad.");
         }
 
-        return barrioDAO.editarBarrio(
-                idBarrio.trim(),
-                nombre.trim(),
-                idCiudad.trim()
-        );
+        try {
+            return barrioDAO.editarBarrio(
+                    idBarrio.trim(),
+                    nombre.trim(),
+                    idCiudad.trim()
+            );
+        } catch (SQLException e) {
+            throw new AppException("No fue posible actualizar el barrio.", e);
+        }
     }
 
-    // Comprobar si el barrio tiene hogares asociados
-    public boolean barrioEnUso(String idBarrio) throws SQLException {
-        return barrioDAO.barrioEnUso(idBarrio);
+    public boolean barrioEnUso(String idBarrio) throws AppException {
+        try {
+            return barrioDAO.barrioEnUso(idBarrio);
+        } catch (SQLException e) {
+            throw new AppException("No fue posible comprobar si el barrio está en uso.", e);
+        }
     }
 
-    // Eliminar un barrio
-    public boolean eliminarBarrio(String idBarrio) throws SQLException {
-        return barrioDAO.eliminarBarrio(idBarrio);
+    public boolean eliminarBarrio(String idBarrio) throws AppException {
+
+        if (idBarrio == null || idBarrio.trim().isEmpty()) {
+            throw new AppException("Debe seleccionar un barrio.");
+        }
+
+        try {
+            return barrioDAO.eliminarBarrio(idBarrio.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible eliminar el barrio.", e);
+        }
     }
 }

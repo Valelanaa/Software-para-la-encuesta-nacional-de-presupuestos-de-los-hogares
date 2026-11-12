@@ -11,7 +11,7 @@ package enph.controlador;
 
 import enph.modelo.CatalogoDAO;
 import enph.modelo.GrupoAlimento;
-
+import java.sql.SQLException;
 import java.util.List;
 
 public class GrupoAlimentoController {
@@ -23,8 +23,14 @@ public class GrupoAlimentoController {
     }
 
     // Listar grupos de alimentos
-    public List<GrupoAlimento> listarGrupos() {
-        return catalogoDAO.listarGrupos();
+    public List<GrupoAlimento> listarGrupos() throws AppException {
+        try {
+            return catalogoDAO.listarGrupos();
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar los grupos de alimentos.", e
+            );
+        }
     }
 
     // Crear un grupo

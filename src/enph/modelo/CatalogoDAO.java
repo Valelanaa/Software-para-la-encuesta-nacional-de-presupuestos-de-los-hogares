@@ -13,45 +13,75 @@ public class CatalogoDAO {
 
     // ==================== LISTAR CATÁLOGOS ====================
 
-    public List<GrupoAlimento> listarGrupos() {
+
+    public List<GrupoAlimento> listarGrupos() throws SQLException {
+
         List<GrupoAlimento> grupos = new ArrayList<>();
+
         for (Object[] fila : listar("{call PR_LISTAR_GRUPOS(?)}")) {
-            grupos.add(new GrupoAlimento((Integer) fila[0], (String) fila[1]));
+            grupos.add(new GrupoAlimento(
+                    (Integer) fila[0],
+                    (String) fila[1]
+            ));
         }
+
         return grupos;
     }
 
-    public List<FrecuenciaCompra> listarFrecuencias() {
+    public List<FrecuenciaCompra> listarFrecuencias() throws SQLException {
+
         List<FrecuenciaCompra> frecuencias = new ArrayList<>();
+
         for (Object[] fila : listar("{call PR_LISTAR_FRECUENCIAS(?)}")) {
-            frecuencias.add(new FrecuenciaCompra((Integer) fila[0], (String) fila[1]));
+            frecuencias.add(new FrecuenciaCompra(
+                    (Integer) fila[0],
+                    (String) fila[1]
+            ));
         }
+
         return frecuencias;
     }
 
-    // Método común para leer los dos catálogos: cada fila es {id, nombre}.
-    private List<Object[]> listar(String llamada) {
+    /**
+     * Ejecuta una consulta de catálogo.
+     * Devuelve una lista vacía si la consulta no encuentra registros.
+     * Propaga los errores de conexión y SQL.
+     */
+    private List<Object[]> listar(String llamada) throws SQLException {
+
         List<Object[]> lista = new ArrayList<>();
-        Connection con = Conexion.init();
-        if (con == null) return lista;
 
-        try (CallableStatement cs = con.prepareCall(llamada)) {
-            cs.registerOutParameter(1, Types.REF_CURSOR);
-            cs.execute();
+        try (Connection con = Conexion.init()) {
 
-            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
-                while (rs.next()) {
-                    String nombre = rs.getString(2);
-                    lista.add(new Object[]{rs.getInt(1), nombre == null ? "" : nombre.trim()});
+            if (con == null) {
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.registerOutParameter(1, Types.REF_CURSOR);
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+
+                    while (rs != null && rs.next()) {
+
+                        String nombre = rs.getString(2);
+
+                        lista.add(new Object[]{
+                            rs.getInt(1),
+                            nombre == null ? "" : nombre.trim()
+                        });
+                    }
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error al listar el catálogo: " + e.getMessage());
-        } finally {
-            Conexion.close(con);
         }
+
         return lista;
     }
+
 
     // ==================== GRUPOS DE ALIMENTOS ====================
 

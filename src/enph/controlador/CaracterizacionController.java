@@ -19,10 +19,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Respuestas (caracterización de compra) de la encuesta en curso.
- * Lo usan FrecuenciaGasto, PrimeraCondicion y RespuestasEncuesta.
- */
 public class CaracterizacionController {
 
     private final CaracterizacionDAO caracterizacionDAO;
@@ -33,35 +29,113 @@ public class CaracterizacionController {
         this.encuestaDAO = new EncuestaDAO();
     }
 
-    // ==================== CONSULTAS ====================
+    public CaracterizacionCompra obtenerPrevia(SesionEncuesta sesion)
+            throws AppException {
 
-    /** Respuesta ya guardada del grupo actual de la sesión; null si todavía no se respondió. */
-    public CaracterizacionCompra obtenerPrevia(SesionEncuesta sesion) {
-        Encuesta encuesta = encuestaDAO.buscarPorId(sesion.getIdEncuesta());
+        validarSesion(sesion);
 
-        return caracterizacionDAO.obtener(encuesta, sesion.getGrupo(), sesion.getFrecuencias());
+        try {
+            Encuesta encuesta =
+                    encuestaDAO.buscarPorId(sesion.getIdEncuesta());
+
+            if (encuesta == null) {
+                throw new AppException(
+                        "No se encontró la encuesta asociada a la sesión."
+                );
+            }
+
+            return caracterizacionDAO.obtener(
+                    encuesta,
+                    sesion.getGrupo(),
+                    sesion.getFrecuencias()
+            );
+
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar la respuesta guardada.", e
+            );
+        }
     }
 
-    public List<String[]> listarRespuestasPorHogar(String idHogar) throws SQLException {
-        return caracterizacionDAO.listarRespuestasPorHogar(idHogar);
+    public List<String[]> listarRespuestasPorHogar(String idHogar)
+            throws AppException {
+
+        if (idHogar == null || idHogar.trim().isEmpty()) {
+            throw new AppException("Debe seleccionar un hogar.");
+        }
+
+        try {
+            return caracterizacionDAO.listarRespuestasPorHogar(idHogar);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar las respuestas del hogar.", e
+            );
+        }
     }
 
-    public Set<Integer> listarGruposRespondidos(int idEncuesta) {
-        return caracterizacionDAO.listarGruposRespondidos(idEncuesta);
+    public Set<Integer> listarGruposRespondidos(int idEncuesta)
+            throws AppException {
+
+        if (idEncuesta <= 0) {
+            throw new AppException("El identificador de la encuesta no es válido.");
+        }
+
+        try {
+            return caracterizacionDAO.listarGruposRespondidos(idEncuesta);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar los grupos respondidos.", e
+            );
+        }
     }
 
-    // ==================== GUARDAR ====================
+    public boolean guardar(SesionEncuesta sesion,
+                           FrecuenciaCompra frecuencia,
+                           BigDecimal valor,
+                           Boolean intencion) throws AppException {
 
-    /**
-     * Guarda la respuesta del grupo actual de la sesión.
-     * valor e intencion pueden ser null cuando la frecuencia no los pide.
-     */
-    public boolean guardar(SesionEncuesta sesion, FrecuenciaCompra frecuencia,
-                           BigDecimal valor, Boolean intencion) {
+        validarSesion(sesion);
 
-        Encuesta encuesta = encuestaDAO.buscarPorId(sesion.getIdEncuesta());
+        if (frecuencia == null || frecuencia.getIdFrecuencia() <= 0) {
+            throw new AppException("Debe seleccionar una frecuencia válida.");
+        }
 
-        return caracterizacionDAO.guardar(
-                new CaracterizacionCompra(encuesta, sesion.getGrupo(), frecuencia, valor, intencion));
+        try {
+            Encuesta encuesta =
+                    encuestaDAO.buscarPorId(sesion.getIdEncuesta());
+
+            if (encuesta == null) {
+                throw new AppException(
+                        "No se encontró la encuesta que se desea actualizar."
+                );
+            }
+
+            CaracterizacionCompra caracterizacion =
+                    new CaracterizacionCompra(
+                            encuesta,
+                            sesion.getGrupo(),
+                            frecuencia,
+                            valor,
+                            intencion
+                    );
+
+            return caracterizacionDAO.guardar(caracterizacion);
+
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible guardar la respuesta.", e
+            );
+        }
+    }
+
+    private void validarSesion(SesionEncuesta sesion)
+            throws AppException {
+
+        if (sesion == null
+                || sesion.getIdEncuesta() <= 0
+                || sesion.getGrupo() == null) {
+
+            throw new AppException("La sesión de encuesta no es válida.");
+        }
     }
 }

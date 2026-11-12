@@ -4,9 +4,8 @@
  */
 package enph.vista;
 
-import enph.Main;
 import enph.modelo.SesionUsuario;
-import java.sql.SQLException;
+import enph.controlador.AppException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -54,10 +53,22 @@ public class ReporteTiempoDetalles extends javax.swing.JFrame {
 
         configurarTabla();
 
-        controlador = new ReporteTiempoDetalleController(this);
+        controlador = new ReporteTiempoDetalleController();
 
-        controlador.cargarDetalle(idEncuestador);
+        try {
+            List<ReporteTiempoDetalleDTO> lista =
+                    controlador.cargarDetalle(idEncuestador);
 
+            mostrarDetalle(lista);
+
+        } catch (AppException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al cargar el detalle",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
         setLocationRelativeTo(null);
     }
     private void configurarTabla() {

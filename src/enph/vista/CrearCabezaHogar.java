@@ -6,6 +6,7 @@ package enph.vista;
 import enph.controlador.EncuestaController;
 import enph.controlador.SesionEncuesta;
 import enph.Validador;
+import enph.controlador.AppException;
 import enph.controlador.HogarController;
 
 public class CrearCabezaHogar extends javax.swing.JFrame {
@@ -324,7 +325,17 @@ public CrearCabezaHogar(SesionEncuesta sesion) {
         } else {
             // Si la encuesta está vacía, se elimina.
             // Si tiene respuestas, no se elimina.
+            try {
             encuestaController.eliminarSiVacia(sesion.getIdEncuesta());
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al regresar",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
             new FamiliasRegistradas().setVisible(true);
         }
 

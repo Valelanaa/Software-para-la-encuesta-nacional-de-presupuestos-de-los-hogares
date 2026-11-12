@@ -1,6 +1,6 @@
 package enph.vista;
 
-import enph.modelo.CaracterizacionDAO;
+import enph.controlador.AppException;
 import enph.modelo.FrecuenciaCompra;
 import enph.controlador.SesionEncuesta;
 import java.math.BigDecimal;
@@ -36,21 +36,35 @@ public class PrimeraCondicion extends javax.swing.JFrame {
         // Contador de progreso, por ejemplo "3/25"
         Lbl_Contador.setText((sesion.getGrupoActual() + 1) + "/" + sesion.getTotalGrupos());
         // Modo edición: rellena los campos con lo que ya estaba guardado
-    if (sesion.isEdicion()) {
-            enph.modelo.CaracterizacionCompra previa = controlador.obtenerPrevia(sesion);
-        // previa es null si este grupo todavía no se había respondido
+if (sesion.isEdicion()) {
+    try {
+        enph.modelo.CaracterizacionCompra previa =
+                controlador.obtenerPrevia(sesion);
+
         if (previa != null) {
-             // El valor puede ser null si antes la frecuencia no lo pedía
             if (previa.getValorUltimaCompra() != null) {
-                // toPlainString evita notación científica (ej. 1E+4)
-                Txt_ValorDato.setText(previa.getValorUltimaCompra().toPlainString());
+                Txt_ValorDato.setText(
+                    previa.getValorUltimaCompra().toPlainString()
+                );
             }
+
             if (previa.getIntencionCompra() != null) {
-                // En el combo la posición 0 es "Sí" y la 1 es "No"
-                Cmb_VolverComprar.setSelectedIndex(previa.getIntencionCompra() ? 0 : 1); // 0 = "Sí"
+                Cmb_VolverComprar.setSelectedIndex(
+                    previa.getIntencionCompra() ? 0 : 1
+                );
             }
         }
+    } catch (AppException ex) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error al consultar la respuesta",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        dispose();
+        return;
     }
+}
         setLocationRelativeTo(null);  // centra la ventana en la pantalla
         //setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); Para que la ventana se abra en pantalla completa automaticamente
     }
@@ -380,7 +394,21 @@ public class PrimeraCondicion extends javax.swing.JFrame {
     Boolean intencion = Cmb_VolverComprar.getSelectedIndex() == 0;
 
     // Guardar la caracterización.
-    boolean guardado = controlador.guardar(sesion, frecuencia, valor, intencion);
+    boolean guardado;
+
+    try {
+        guardado = controlador.guardar(
+                sesion, frecuencia, valor, intencion
+        );
+    } catch (AppException ex) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error al guardar",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
 
     if (!guardado) {
         javax.swing.JOptionPane.showMessageDialog(

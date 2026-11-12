@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import enph.Validador;
 import enph.controlador.FrecuenciaController;
 import enph.modelo.FrecuenciaCompra;
+import enph.controlador.AppException;
+
 public class GestionFrecuencias extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(GestionFrecuencias.class.getName());
@@ -40,24 +42,35 @@ public class GestionFrecuencias extends javax.swing.JFrame {
 // Lee las frecuencias de compra desde la base de datos.
     private void cargarFrecuencias() {
 
-        frecuenciasEnTabla = controlador.listarFrecuencias();
+        try {
+            frecuenciasEnTabla = controlador.listarFrecuencias();
 
-        javax.swing.table.DefaultTableModel modelo =
-                new javax.swing.table.DefaultTableModel(
-                        new Object[]{"Frecuencia de compra"}, 0) {
+            javax.swing.table.DefaultTableModel modelo =
+                    new javax.swing.table.DefaultTableModel(
+                            new Object[]{"Frecuencia de compra"}, 0) {
 
-            @Override
-            public boolean isCellEditable(int fila, int columna) {
-                return false;
+                @Override
+                public boolean isCellEditable(int fila, int columna) {
+                    return false;
+                }
+            };
+
+            for (FrecuenciaCompra frecuencia : frecuenciasEnTabla) {
+                modelo.addRow(new Object[]{frecuencia.getNombre()});
             }
-        };
 
-        for (FrecuenciaCompra frecuencia : frecuenciasEnTabla) {
-            modelo.addRow(new Object[]{frecuencia.getNombre()});
+            Tbl_Frecuencias.setModel(modelo);
+            ajustarColumnas(Tbl_Frecuencias);
+
+        } catch (AppException e) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al cargar frecuencias",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
         }
-
-        Tbl_Frecuencias.setModel(modelo);
-        ajustarColumnas(Tbl_Frecuencias);
     }
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.

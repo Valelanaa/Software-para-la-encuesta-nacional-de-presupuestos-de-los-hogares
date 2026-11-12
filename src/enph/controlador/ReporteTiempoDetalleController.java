@@ -8,44 +8,32 @@ package enph.controlador;
  *
  * @author Valeria
  */
-
+    
 import enph.modelo.ReporteTiempoDetalleDAO;
 import enph.modelo.ReporteTiempoDetalleDTO;
-import enph.vista.ReporteTiempoDetalles;
-
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 public class ReporteTiempoDetalleController {
 
-    private final ReporteTiempoDetalles vista;
     private final ReporteTiempoDetalleDAO dao;
 
-    public ReporteTiempoDetalleController(ReporteTiempoDetalles vista) {
-
-        this.vista = vista;
+    public ReporteTiempoDetalleController() {
         this.dao = new ReporteTiempoDetalleDAO();
     }
 
-    public void cargarDetalle(String idEncuestador) {
+    public List<ReporteTiempoDetalleDTO> cargarDetalle(String idEncuestador)
+            throws AppException {
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new AppException("No se recibió un encuestador válido.");
+        }
 
         try {
-
-            List<ReporteTiempoDetalleDTO> lista =
-                    dao.obtenerDetalle(idEncuestador);
-
-            vista.mostrarDetalle(lista);
-
+            return dao.obtenerDetalle(idEncuestador.trim());
         } catch (SQLException e) {
-
-            JOptionPane.showMessageDialog(
-                    vista,
-                    "Error al cargar el detalle de tiempos:\n"
-                    + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+            throw new AppException(
+                    "No fue posible cargar el detalle de tiempos.", e
             );
         }
     }

@@ -5,6 +5,7 @@
 package enph.vista;
 import enph.Validador;
 import enph.controlador.HogarController;
+import enph.controlador.AppException;
 /**
  * Pantalla "Familias Registradas": muestra en una tabla las familias (hogares)
  * leídas de la base de datos. Al hacer clic en una familia, inicia su encuesta
@@ -13,139 +14,139 @@ import enph.controlador.HogarController;
  */
 public class EditarHogar extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarHogar.class.getName());
-
-/// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
-private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
-// Usuario que se está editando (con los datos que tiene en la base)
-private enph.modelo.Usuario usuarioEditado;
-// true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
-private boolean esAdministrador;
-// true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
-private boolean editaSusDatos;
-private enph.modelo.Hogar hogarEditado;
-private final HogarController controlador = new HogarController();
-
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarHogar.class.getName());
+    /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
+    private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
+    // Usuario que se está editando (con los datos que tiene en la base)
+    private enph.modelo.Usuario usuarioEditado;
+    // true si quien tiene la sesión es ADMINISTRADOR; false si es ENCUESTADOR
+    private boolean esAdministrador;
+    // true si el usuario que se edita es el mismo de la sesión (muestra nombre, cédula, teléfono y contraseña)
+    private boolean editaSusDatos;
+    private enph.modelo.Hogar hogarEditado;
+    private final HogarController controlador = new HogarController();
 
 
-public EditarHogar() {
-    this(null);
-}
 
-public EditarHogar(String idHogar) {
-    initComponents();
-
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-
-    cargarCiudades();
-
-    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
-
-    if (idHogar != null) {
-        cargarHogar(idHogar);
+    public EditarHogar() {
+        this(null);
     }
 
-    setLocationRelativeTo(null);
-}
+    public EditarHogar(String idHogar) {
+        initComponents();
 
-private void volver() {
-    new GestionHogar().setVisible(true);
-    dispose();
-}
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
-private void cargarBarrios() {
-    Cmb_Barrio.removeAllItems();
+        cargarCiudades();
 
-    int indice = Cmb_Ciudad.getSelectedIndex();
+        Cmb_Ciudad.addActionListener(e -> cargarBarrios());
 
-    if (indice < 0 || indice >= ciudades.size()) {
-        return;
-    }
-
-    String idCiudad = ciudades.get(indice).getId();
-
-    try {
-        for (enph.modelo.Barrio barrio : controlador.listarBarriosPorCiudad(idCiudad) ) {
-            Cmb_Barrio.addItem(barrio);
+        if (idHogar != null) {
+            cargarHogar(idHogar);
         }
-    } catch (java.sql.SQLException e) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Error al cargar los barrios: " + e.getMessage(),
-                "Error",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-    }
-}
 
-private void cargarCiudades() {
-    ciudades.clear();
-    ciudades.addAll(controlador.listarCiudades());
-    Cmb_Ciudad.removeAllItems();
-    for (enph.modelo.Ciudad c : ciudades) {
-        Cmb_Ciudad.addItem(c.getNombre());
-    }
-}
-
-private void cargarHogar(String idHogar) {
-    hogarEditado = controlador.buscarHogar(idHogar);
-
-    if (hogarEditado == null) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "No se pudo cargar el hogar.",
-                "Error",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-        return;
+        setLocationRelativeTo(null);
     }
 
-    Txt_Nombre.setText(hogarEditado.getNombreFamilia());
-    Txt_Direccion.setText(hogarEditado.getDireccion());
+    private void volver() {
+        new GestionHogar().setVisible(true);
+        dispose();
+    }
 
-    // Seleccionar la ciudad del hogar.
-    for (int i = 0; i < ciudades.size(); i++) {
-        if (ciudades.get(i).getId().equals(hogarEditado.getIdCiudad())) {
-            Cmb_Ciudad.setSelectedIndex(i);
-            break;
+    private void cargarBarrios() {
+        Cmb_Barrio.removeAllItems();
+
+        int indice = Cmb_Ciudad.getSelectedIndex();
+
+        if (indice < 0 || indice >= ciudades.size()) {
+            return;
+        }
+
+        String idCiudad = ciudades.get(indice).getId();
+
+        try {
+            for (enph.modelo.Barrio barrio
+                    : controlador.listarBarriosPorCiudad(idCiudad)) {
+                Cmb_Barrio.addItem(barrio);
+            }
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al cargar los barrios",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    // Cargar los barrios de esa ciudad.
-    cargarBarrios();
-
-    // Seleccionar el barrio que tiene guardado el hogar.
-    for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
-        enph.modelo.Barrio barrio = Cmb_Barrio.getItemAt(i);
-
-        if (barrio.getIdBarrio().equals(hogarEditado.getIdBarrio())) {
-            Cmb_Barrio.setSelectedIndex(i);
-            break;
+    private void cargarCiudades() {
+        ciudades.clear();
+        ciudades.addAll(controlador.listarCiudades());
+        Cmb_Ciudad.removeAllItems();
+        for (enph.modelo.Ciudad c : ciudades) {
+            Cmb_Ciudad.addItem(c.getNombre());
         }
     }
-}
 
-private boolean hayCambiosSinGuardar() {
-    if (hogarEditado == null) {
-        return false;
+    private void cargarHogar(String idHogar) {
+        hogarEditado = controlador.buscarHogar(idHogar);
+
+        if (hogarEditado == null) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo cargar el hogar.",
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        Txt_Nombre.setText(hogarEditado.getNombreFamilia());
+        Txt_Direccion.setText(hogarEditado.getDireccion());
+
+        // Seleccionar la ciudad del hogar.
+        for (int i = 0; i < ciudades.size(); i++) {
+            if (ciudades.get(i).getId().equals(hogarEditado.getIdCiudad())) {
+                Cmb_Ciudad.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        // Cargar los barrios de esa ciudad.
+        cargarBarrios();
+
+        // Seleccionar el barrio que tiene guardado el hogar.
+        for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
+            enph.modelo.Barrio barrio = Cmb_Barrio.getItemAt(i);
+
+            if (barrio.getIdBarrio().equals(hogarEditado.getIdBarrio())) {
+                Cmb_Barrio.setSelectedIndex(i);
+                break;
+            }
+        }
     }
 
-    int indice = Cmb_Ciudad.getSelectedIndex();
+    private boolean hayCambiosSinGuardar() {
+        if (hogarEditado == null) {
+            return false;
+        }
 
-    String idCiudad = indice >= 0 && indice < ciudades.size()
-            ? ciudades.get(indice).getId() : "";
+        int indice = Cmb_Ciudad.getSelectedIndex();
 
-    enph.modelo.Barrio barrio =
-            (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
+        String idCiudad = indice >= 0 && indice < ciudades.size()
+                ? ciudades.get(indice).getId() : "";
 
-    String idBarrio = barrio != null ? barrio.getIdBarrio() : "";
+        enph.modelo.Barrio barrio =
+                (enph.modelo.Barrio) Cmb_Barrio.getSelectedItem();
 
-    return !Txt_Nombre.getText().trim().equals(hogarEditado.getNombreFamilia())
-            || !Txt_Direccion.getText().trim().equals(hogarEditado.getDireccion())
-            || !idCiudad.equals(hogarEditado.getIdCiudad())
-            || !idBarrio.equals(hogarEditado.getIdBarrio());
-}
+        String idBarrio = barrio != null ? barrio.getIdBarrio() : "";
+
+        return !Txt_Nombre.getText().trim().equals(hogarEditado.getNombreFamilia())
+                || !Txt_Direccion.getText().trim().equals(hogarEditado.getDireccion())
+                || !idCiudad.equals(hogarEditado.getIdCiudad())
+                || !idBarrio.equals(hogarEditado.getIdBarrio());
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -514,24 +515,14 @@ private boolean hayCambiosSinGuardar() {
                      javax.swing.JOptionPane.ERROR_MESSAGE
              );
          }
-     } catch (java.sql.SQLException e) {
-         String msg = e.getMessage();
-
-         // Errores propios (ORA-20030, ORA-20033...): mostrar solo el texto del mensaje
-         if (msg != null && msg.contains("ORA-2003")) {
-             msg = msg.split("\n")[0].replaceFirst("^ORA-\\d+:\\s*", "");
-         } else {
-             msg = "Error de base de datos. Revise la consola.";
-             e.printStackTrace();
-         }
-
-         javax.swing.JOptionPane.showMessageDialog(
-                 this,
-                 msg,
-                 "No se pudo actualizar",
-                 javax.swing.JOptionPane.ERROR_MESSAGE
-         );
-     }
+        }catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "No se pudo actualizar",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     private void Btn_CabezaHogarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CabezaHogarActionPerformed

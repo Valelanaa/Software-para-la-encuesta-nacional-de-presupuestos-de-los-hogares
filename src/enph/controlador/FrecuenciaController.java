@@ -10,7 +10,7 @@ package enph.controlador;
  */
 import enph.modelo.CatalogoDAO;
 import enph.modelo.FrecuenciaCompra;
-
+import java.sql.SQLException;
 import java.util.List;
 
 public class FrecuenciaController {
@@ -22,8 +22,14 @@ public class FrecuenciaController {
     }
 
     // Consultar frecuencias de compra
-    public List<FrecuenciaCompra> listarFrecuencias() {
-        return catalogoDAO.listarFrecuencias();
+    public List<FrecuenciaCompra> listarFrecuencias() throws AppException {
+        try {
+            return catalogoDAO.listarFrecuencias();
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible consultar las frecuencias de compra.", e
+            );
+        }
     }
 
     // Crear una frecuencia

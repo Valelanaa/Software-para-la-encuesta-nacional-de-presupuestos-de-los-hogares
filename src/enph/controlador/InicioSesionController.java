@@ -1,118 +1,69 @@
-
 package enph.controlador;
 
 import enph.modelo.Conexion;
 import enph.modelo.SesionUsuario;
 import enph.modelo.Usuario;
 import enph.modelo.UsuarioDAO;
-import enph.vista.InicioSesion;
-import enph.vista.MenuAdmin;
-import enph.vista.MenuEncuestador;
+import java.sql.SQLException;
 
 public class InicioSesionController {
 
-    private final InicioSesion vista;
     private final UsuarioDAO usuarioDAO;
 
-    public InicioSesionController(InicioSesion vista) {
-        this.vista = vista;
+    public InicioSesionController() {
         this.usuarioDAO = new UsuarioDAO();
     }
 
-    public void iniciarSesion() {
+    public Usuario iniciarSesion(String documento, String password)
+            throws AppException {
 
-        String documento = vista.getTxtUsuario().getText().trim();
-
-        String password = new String(
-                vista.getTxtPassword().getPassword()
-        );
-
-        // Validar campos
-        if (documento.isEmpty() || password.isEmpty()) {
-            vista.mostrarMensaje(
-                    "Ingrese su documento y contraseña.",
-                    "Campos incompletos",
-                    2
+        if (documento == null || documento.trim().isEmpty()
+                || password == null || password.isEmpty()) {
+            throw new AppException(
+                    "Ingrese su documento y contraseña."
             );
-            return;
         }
 
-        // Consultar el modelo mediante UsuarioDAO
-        Usuario usuario = usuarioDAO.autenticar(documento, password);
+        Usuario usuario;
+
+        try {
+            usuario = usuarioDAO.autenticar(
+                    documento.trim(),
+                    password
+            );
+        } catch (SQLException e) {
+            throw new AppException("No fue posible validar las credenciales con la base de datos.", e);
+        }
 
         if (usuario == null) {
-            vista.mostrarMensaje(
+            throw new AppException(
                     "Documento o contraseña incorrectos, "
-                    + "o no fue posible validar el acceso.",
-                    "Error de inicio de sesión",
-                    0
+                    + "o no fue posible validar el acceso."
             );
-
-            vista.limpiarContrasena();
-            return;
         }
 
         String rol = usuario.getRol() == null
                 ? ""
                 : usuario.getRol().trim();
 
-        // Validar rol
         if (!"ADMINISTRADOR".equalsIgnoreCase(rol)
                 && !"ENCUESTADOR".equalsIgnoreCase(rol)) {
 
-            vista.mostrarMensaje(
-                    "El usuario no tiene un rol válido asignado.",
-                    "Rol no reconocido",
-                    2
+            throw new AppException(
+                    "El usuario no tiene un rol válido asignado."
             );
-            return;
         }
 
-        // Configurar conexión según el rol
         if (!Conexion.usarRol(rol)) {
-
-            vista.mostrarMensaje(
-                    "No fue posible configurar el acceso según el rol.",
-                    "Error de conexión",
-                    0
-            );
-
             Conexion.usarGeneral();
-            return;
+
+            throw new AppException(
+                    "No fue posible configurar el acceso según el rol."
+            );
         }
 
-        // Registrar sesión
         SesionUsuario.iniciar(usuario);
 
-        try {
-
-            if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {
-
-                MenuAdmin menu = new MenuAdmin();
-                menu.setLocationRelativeTo(null);
-                menu.setVisible(true);
-
-            } else {
-
-                MenuEncuestador menu = new MenuEncuestador();
-                menu.setLocationRelativeTo(null);
-                menu.setVisible(true);
-            }
-
-            vista.dispose();
-
-        } catch (Exception e) {
-
-            SesionUsuario.cerrar();
-
-            vista.mostrarMensaje(
-                    "No fue posible abrir el menú correspondiente:\n"
-                    + e.getMessage(),
-                    "Error",
-                    0
-            );
-
-            e.printStackTrace();
-        }
+        return usuario;
     }
 }

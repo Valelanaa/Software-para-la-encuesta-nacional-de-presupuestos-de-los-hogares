@@ -26,9 +26,8 @@ public class ReporteEncuestadorController {
         this.reporteDAO = new ReporteEncuestadorDAO();
     }
 
-    // Generar reporte de asignaciones del encuestador autenticado
     public List<ReporteBarrio> generarReporte(
-            LocalDate desde, LocalDate hasta) throws SQLException {
+            LocalDate desde, LocalDate hasta) throws AppException {
 
         Usuario usuario = SesionUsuario.getActual();
 
@@ -36,27 +35,35 @@ public class ReporteEncuestadorController {
                 || usuario.getIdEncuestador() == null
                 || usuario.getIdEncuestador().trim().isEmpty()) {
 
-            throw new SQLException(
+            throw new AppException(
                     "No se encontró el encuestador de la sesión."
             );
         }
 
         if (desde == null || hasta == null) {
-            throw new SQLException(
+            throw new AppException(
                     "Debe ingresar las dos fechas del reporte."
             );
         }
 
         if (desde.isAfter(hasta)) {
-            throw new SQLException(
+            throw new AppException(
                     "La fecha inicial no puede ser posterior a la fecha final."
             );
         }
 
-        return reporteDAO.generarReporte(
-                usuario.getIdEncuestador(),
-                desde,
-                hasta
-        );
+        try {
+            return reporteDAO.generarReporte(
+                    usuario.getIdEncuestador(),
+                    desde,
+                    hasta
+            );
+
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible generar el reporte de encuestas.",
+                    e
+            );
+        }
     }
 }

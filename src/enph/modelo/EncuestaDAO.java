@@ -25,37 +25,27 @@ public class EncuestaDAO {
      *
      * Invoca FN_HOGAR_TIENE_ENCUESTA.
      */
-    public boolean hogarTieneEncuesta(int idHogar) {
+    public boolean hogarTieneEncuesta(int idHogar) throws SQLException {
 
         String sql = "{? = call FN_HOGAR_TIENE_ENCUESTA(?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return false;
-        }
+            if (con == null) {
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            cs.registerOutParameter(1, Types.NUMERIC);
-            cs.setInt(2, idHogar);
+                cs.registerOutParameter(1, Types.NUMERIC);
+                cs.setInt(2, idHogar);
 
-            cs.execute();
+                cs.execute();
 
-            return cs.getInt(1) == 1;
-
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al consultar la encuesta del hogar: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return false;
-
-        } finally {
-            Conexion.close(con);
+                return cs.getInt(1) == 1;
+            }
         }
     }
 
@@ -66,37 +56,29 @@ public class EncuestaDAO {
      *
      * Devuelve -1 si no existe o ocurre un error.
      */
-    public int obtenerIdEncuesta(int idHogar) {
+    public int obtenerIdEncuesta(int idHogar) throws SQLException {
 
         String sql = "{? = call FN_OBTENER_ID_ENCUESTA(?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return -1;
-        }
+            if (con == null) {
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            cs.registerOutParameter(1, Types.NUMERIC);
-            cs.setInt(2, idHogar);
+                cs.registerOutParameter(1, Types.NUMERIC);
+                cs.setInt(2, idHogar);
 
-            cs.execute();
+                cs.execute();
 
-            return cs.getInt(1);
+                int resultado = cs.getInt(1);
 
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al buscar la encuesta del hogar: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return -1;
-
-        } finally {
-            Conexion.close(con);
+                return cs.wasNull() ? -1 : resultado;
+            }
         }
     }
 
@@ -106,18 +88,18 @@ public class EncuestaDAO {
      *
      * Invoca PR_ELIMINAR_ENCUESTAS_HOGAR.
      */
-    public boolean eliminarEncuestasDelHogar(int idHogar) {
+    public boolean eliminarEncuestasDelHogar(int idHogar)
+            throws SQLException {
 
-        String sql =
-            "{call PR_ELIMINAR_ENCUESTAS_HOGAR(?, ?)}";
+        String sql = "{call PR_ELIMINAR_ENCUESTAS_HOGAR(?, ?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return false;
-        }
-
-        try {
+            if (con == null) {
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
+            }
 
             con.setAutoCommit(false);
 
@@ -137,29 +119,17 @@ public class EncuestaDAO {
 
                 con.rollback();
                 return false;
+
+            } catch (SQLException e) {
+
+                try {
+                    con.rollback();
+                } catch (SQLException errorRollback) {
+                    e.addSuppressed(errorRollback);
+                }
+
+                throw e;
             }
-
-        } catch (SQLException e) {
-
-            try {
-                con.rollback();
-            } catch (SQLException ex) {
-                System.err.println(
-                    "Error al revertir la eliminación: "
-                    + ex.getMessage()
-                );
-            }
-
-            System.err.println(
-                "Error al eliminar las encuestas del hogar: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return false;
-
-        } finally {
-            Conexion.close(con);
         }
     }
 
@@ -170,37 +140,29 @@ public class EncuestaDAO {
      *
      * Devuelve el ID generado o -1 si ocurre un error.
      */
-    public int crearEncuesta(int idHogar) {
+    public int crearEncuesta(int idHogar) throws SQLException {
 
         String sql = "{call PR_CREAR_ENCUESTA(?, ?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return -1;
-        }
+            if (con == null) {
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            cs.setInt(1, idHogar);
-            cs.registerOutParameter(2, Types.NUMERIC);
+                cs.setInt(1, idHogar);
+                cs.registerOutParameter(2, Types.NUMERIC);
 
-            cs.execute();
+                cs.execute();
 
-            return cs.getInt(2);
+                int resultado = cs.getInt(2);
 
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al crear la encuesta: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return -1;
-
-        } finally {
-            Conexion.close(con);
+                return cs.wasNull() ? -1 : resultado;
+            }
         }
     }
 
@@ -209,32 +171,24 @@ public class EncuestaDAO {
      *
      * Invoca PR_FINALIZAR_ENCUESTA.
      */
-    public void finalizarEncuesta(int idEncuesta) {
+    public void finalizarEncuesta(int idEncuesta) throws SQLException {
+
+        if (idEncuesta <= 0) {
+            throw new SQLException("El identificador de la encuesta no es válido.");
+        }
 
         String sql = "{call PR_FINALIZAR_ENCUESTA(?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return;
-        }
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
-
-            cs.setInt(1, idEncuesta);
-            cs.execute();
-
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al finalizar la encuesta: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-
-        } finally {
-            Conexion.close(con);
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.setInt(1, idEncuesta);
+                cs.execute();
+            }
         }
     }
 
@@ -244,44 +198,29 @@ public class EncuestaDAO {
      *
      * Invoca PR_ELIMINAR_ENCUESTA_VACIA.
      */
-    public void eliminarEncuestaVacia(int idEncuesta) {
+    public boolean eliminarEncuestaVacia(int idEncuesta) throws SQLException {
 
-        String sql =
-            "{call PR_ELIMINAR_ENCUESTA_VACIA(?, ?)}";
-
-        Connection con = Conexion.init();
-
-        if (con == null) {
-            return;
+        if (idEncuesta <= 0) {
+            throw new SQLException("El identificador de la encuesta no es válido.");
         }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+        String sql = "{call PR_ELIMINAR_ENCUESTA_VACIA(?, ?)}";
 
-            cs.setInt(1, idEncuesta);
-            cs.registerOutParameter(2, Types.NUMERIC);
+        try (Connection con = Conexion.init()) {
 
-            cs.execute();
-
-            int resultado = cs.getInt(2);
-
-            if (resultado == 0) {
-                System.out.println(
-                    "La encuesta no se eliminó porque tiene "
-                    + "caracterizaciones o no existe."
-                );
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
             }
 
-        } catch (SQLException e) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            System.err.println(
-                "Error al eliminar la encuesta vacía: "
-                + e.getMessage()
-            );
+                cs.setInt(1, idEncuesta);
+                cs.registerOutParameter(2, Types.NUMERIC);
 
-            e.printStackTrace();
+                cs.execute();
 
-        } finally {
-            Conexion.close(con);
+                return cs.getInt(2) == 1;
+            }
         }
     }
 
@@ -318,190 +257,152 @@ public class EncuestaDAO {
      * Encuestador:
      * Invoca PR_ACTUALIZAR_ESTADO_ENCUESTA.
      */
-    public boolean marcarIncompleta(int idEncuesta) {
+    public boolean marcarIncompleta(int idEncuesta) throws SQLException {
+
+        if (idEncuesta <= 0) {
+            throw new SQLException("El identificador de la encuesta no es válido.");
+        }
 
         Usuario usuario = SesionUsuario.getActual();
 
         if (usuario == null || usuario.getRol() == null) {
-            System.err.println("No hay una sesión activa.");
-            return false;
+            throw new SQLException("No hay una sesión activa.");
         }
 
         String rol = usuario.getRol().trim();
 
         if ("ADMINISTRADOR".equalsIgnoreCase(rol)) {
-
             return marcarIncompletaAdministrador(idEncuesta);
-
-        } else if ("ENCUESTADOR".equalsIgnoreCase(rol)) {
-
-            return actualizarMarca(
-                idEncuesta,
-                ESTADO_INCOMPLETA
-            );
         }
 
-        return false;
+        if ("ENCUESTADOR".equalsIgnoreCase(rol)) {
+            return actualizarMarca(idEncuesta, ESTADO_INCOMPLETA);
+        }
+
+        throw new SQLException("El usuario no tiene permisos para esta operación.");
     }
 
-    /**
-     * Procedimiento exclusivo del administrador.
-     *
-     * Invoca PR_MARCAR_ENCUESTA_INCOMPLETA.
-     */
-    private boolean marcarIncompletaAdministrador(int idEncuesta) {
+    private boolean marcarIncompletaAdministrador(int idEncuesta)
+            throws SQLException {
 
-        String sql =
-            "{call PR_MARCAR_ENCUESTA_INCOMPLETA(?, ?)}";
+        String sql = "{call PR_MARCAR_ENCUESTA_INCOMPLETA(?, ?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return false;
-        }
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            cs.setInt(1, idEncuesta);
-            cs.registerOutParameter(2, Types.NUMERIC);
+                cs.setInt(1, idEncuesta);
+                cs.registerOutParameter(2, Types.NUMERIC);
 
-            cs.execute();
+                cs.execute();
 
-            return cs.getInt(2) == 1;
-
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al marcar la encuesta como incompleta: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return false;
-
-        } finally {
-            Conexion.close(con);
+                return cs.getInt(2) == 1;
+            }
         }
     }
 
-    /**
-     * Quita la marca de incompleta.
-     *
-     * Esta operación corresponde al encuestador.
-     */
-    public void quitarMarcaIncompleta(int idEncuesta) {
+    public void quitarMarcaIncompleta(int idEncuesta) throws SQLException {
+
+        if (idEncuesta <= 0) {
+            throw new SQLException("El identificador de la encuesta no es válido.");
+        }
 
         Usuario usuario = SesionUsuario.getActual();
 
-        if (usuario == null
-                || usuario.getRol() == null
-                || !usuario.getRol().trim()
-                    .equalsIgnoreCase("ENCUESTADOR")) {
+        if (usuario == null || usuario.getRol() == null
+                || !"ENCUESTADOR".equalsIgnoreCase(usuario.getRol().trim())) {
 
-            System.err.println(
-                "Esta operación solo está permitida para el encuestador."
+            throw new SQLException(
+                    "Esta operación solo está permitida para el encuestador."
             );
-
-            return;
         }
 
-        actualizarMarca(
-            idEncuesta,
-            ESTADO_COMPLETA
-        );
+        actualizarMarca(idEncuesta, ESTADO_COMPLETA);
     }
 
-    /**
-     * Actualiza el estado de una encuesta.
-     *
-     * Invoca PR_ACTUALIZAR_ESTADO_ENCUESTA.
-     *
-     * Se utiliza para las operaciones del encuestador.
-     */
-    private boolean actualizarMarca(
-        int idEncuesta,
-        String estado
-    ) {
+    private boolean actualizarMarca(int idEncuesta, String estado)
+            throws SQLException {
 
-        String sql =
-            "{call PR_ACTUALIZAR_ESTADO_ENCUESTA(?, ?, ?)}";
+        String sql = "{call PR_ACTUALIZAR_ESTADO_ENCUESTA(?, ?, ?)}";
 
-        Connection con = Conexion.init();
+        try (Connection con = Conexion.init()) {
 
-        if (con == null) {
-            return false;
-        }
+            if (con == null) {
+                throw new SQLException("No fue posible conectar con Oracle.");
+            }
 
-        try (CallableStatement cs = con.prepareCall(sql)) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
 
-            cs.setInt(1, idEncuesta);
-            cs.setString(2, estado);
-            cs.registerOutParameter(3, Types.NUMERIC);
+                cs.setInt(1, idEncuesta);
+                cs.setString(2, estado);
+                cs.registerOutParameter(3, Types.NUMERIC);
 
-            cs.execute();
+                cs.execute();
 
-            return cs.getInt(3) == 1;
-
-        } catch (SQLException e) {
-
-            System.err.println(
-                "Error al actualizar el estado de la encuesta: "
-                + e.getMessage()
-            );
-
-            e.printStackTrace();
-            return false;
-
-        } finally {
-            Conexion.close(con);
+                return cs.getInt(3) == 1;
+            }
         }
     }
     // ==================== BUSCAR (devuelven Encuesta) ====================
- 
-    /** Busca una encuesta por su ID. Invoca PR_BUSCAR_ENCUESTA. Devuelve null si no existe. */
-    public Encuesta buscarPorId(int idEncuesta) {
+
+    /**
+     * Busca una encuesta por su identificador.
+     * Devuelve null únicamente si no existe.
+     */
+    public Encuesta buscarPorId(int idEncuesta) throws SQLException {
+        if (idEncuesta <= 0) {
+            throw new SQLException("El identificador de la encuesta no es válido.");
+        }
+
         return buscarEncuesta("{call PR_BUSCAR_ENCUESTA(?,?)}", idEncuesta);
     }
- 
-    /** Busca la encuesta más reciente de un hogar. Invoca PR_BUSCAR_ENCUESTA_HOGAR. Devuelve null si no existe. */
-    public Encuesta buscarPorHogar(int idHogar) {
+
+    /**
+     * Busca la encuesta más reciente de un hogar.
+     * Devuelve null únicamente si no existe.
+     */
+    public Encuesta buscarPorHogar(int idHogar) throws SQLException {
+        if (idHogar <= 0) {
+            throw new SQLException("El identificador del hogar no es válido.");
+        }
+
         return buscarEncuesta("{call PR_BUSCAR_ENCUESTA_HOGAR(?,?)}", idHogar);
     }
- 
-    private Encuesta buscarEncuesta(String llamada, int id) {
- 
-        Connection con = Conexion.init();
- 
-        if (con == null) {
-            return null;
-        }
- 
-        try (CallableStatement cs = con.prepareCall(llamada)) {
- 
-            cs.setString(1, String.valueOf(id));
-            cs.registerOutParameter(2, Types.REF_CURSOR);
-            cs.execute();
- 
-            try (ResultSet rs = (ResultSet) cs.getObject(2)) {
-                if (rs != null && rs.next()) {
-                    return obtenerEncuesta(rs);
+
+    /**
+     * Ejecuta la consulta correspondiente y convierte el resultado.
+     */
+    private Encuesta buscarEncuesta(String llamada, int id) throws SQLException {
+
+        try (Connection con = Conexion.init()) {
+
+            if (con == null) {
+                throw new SQLException(
+                    "No fue posible conectar con la base de datos."
+                );
+            }
+
+            try (CallableStatement cs = con.prepareCall(llamada)) {
+
+                cs.setString(1, String.valueOf(id));
+                cs.registerOutParameter(2, Types.REF_CURSOR);
+                cs.execute();
+
+                try (ResultSet rs = (ResultSet) cs.getObject(2)) {
+                    if (rs != null && rs.next()) {
+                        return obtenerEncuesta(rs);
+                    }
                 }
             }
- 
-        } catch (SQLException e) {
- 
-            System.err.println(
-                "Error al buscar la encuesta: " + e.getMessage()
-            );
- 
-            e.printStackTrace();
- 
-        } finally {
-            Conexion.close(con);
         }
- 
+
         return null;
     }
+
  
     /** Convierte una fila de ENCUESTA en un objeto Encuesta (estado true = completa). */
     private Encuesta obtenerEncuesta(ResultSet rs) throws SQLException {

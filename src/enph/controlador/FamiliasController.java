@@ -2,65 +2,55 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package enph.controlador;
 
 import enph.modelo.Hogar;
 import enph.modelo.HogarDAO;
 import enph.modelo.EncuestaDAO;
-import enph.vista.FamiliasRegistradas;
-
 import java.sql.SQLException;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 public class FamiliasController {
 
-    private final FamiliasRegistradas vista;
     private final HogarDAO hogarDAO;
     private final EncuestaDAO encuestaDAO;
 
-    public FamiliasController(FamiliasRegistradas vista) {
-        this.vista = vista;
+    public FamiliasController() {
         this.hogarDAO = new HogarDAO();
         this.encuestaDAO = new EncuestaDAO();
     }
 
-    /**
-     * Consulta los hogares registrados y los muestra en la tabla.
-     */
-    public void cargarHogares() {
-
+    public List<Hogar> cargarHogares() throws AppException {
         try {
-
-            List<Hogar> hogares = hogarDAO.listarHogares();
-
-            vista.mostrarHogares(hogares);
-
+            return hogarDAO.listarHogares();
         } catch (SQLException e) {
-
-            JOptionPane.showMessageDialog(
-                    vista,
-                    "Error al cargar las familias:\n" + e.getMessage(),
-                    "Error de base de datos",
-                    JOptionPane.ERROR_MESSAGE
+            throw new AppException(
+                    "No fue posible cargar las familias registradas.", e
             );
-
-            e.printStackTrace();
         }
     }
 
-    /**
-     * Comprueba si un hogar tiene una encuesta registrada.
-     */
-    public boolean hogarTieneEncuesta(int idHogar) {
-        return encuestaDAO.hogarTieneEncuesta(idHogar);
+    public boolean hogarTieneEncuesta(int idHogar) throws AppException {
+
+        try {
+            return encuestaDAO.hogarTieneEncuesta(idHogar);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible comprobar si el hogar tiene una encuesta.",
+                    e
+            );
+        }
     }
 
-    /**
-     * Elimina las encuestas y respuestas pertenecientes a un hogar.
-     */
-    public boolean eliminarEncuestasDelHogar(int idHogar) {
-        return encuestaDAO.eliminarEncuestasDelHogar(idHogar);
+    public boolean eliminarEncuestasDelHogar(int idHogar) throws AppException {
+
+        try {
+            return encuestaDAO.eliminarEncuestasDelHogar(idHogar);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible eliminar las encuestas del hogar.",
+                    e
+            );
+        }
     }
 }

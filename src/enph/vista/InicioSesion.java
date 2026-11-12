@@ -5,7 +5,12 @@
 package enph.vista;
 
 import enph.controlador.InicioSesionController;
-
+import enph.controlador.AppException;
+import enph.modelo.SesionUsuario;
+import enph.modelo.Usuario;
+import enph.vista.MenuAdmin;
+import enph.vista.MenuEncuestador;
+import javax.swing.JOptionPane;
 
 /**
  *Pantalla de inicio de sesión: es la primera que ve el encuestador.
@@ -22,11 +27,11 @@ public class InicioSesion extends javax.swing.JFrame {
      * Creates new form NewJFrame
      */
     public InicioSesion() {
-    initComponents();
-    setLocationRelativeTo(null);
+        initComponents();
+        setLocationRelativeTo(null);
 
-    controlador = new InicioSesionController(this);
-}
+        controlador = new InicioSesionController();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -45,7 +50,7 @@ public class InicioSesion extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         Pnl_Centrado = new javax.swing.JPanel();
         Pnl_Contenido = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
+        Btn_Ingresar = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
         jPasswordField1 = new javax.swing.JPasswordField();
         jLabel4 = new javax.swing.JLabel();
@@ -89,11 +94,11 @@ public class InicioSesion extends javax.swing.JFrame {
 
         Pnl_Centrado.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setBackground(new java.awt.Color(182, 215, 168));
-        jButton1.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(0, 158, 15));
-        jButton1.setText("Ingresar");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
+        Btn_Ingresar.setBackground(new java.awt.Color(182, 215, 168));
+        Btn_Ingresar.setFont(new java.awt.Font("Bahnschrift", 0, 24)); // NOI18N
+        Btn_Ingresar.setForeground(new java.awt.Color(0, 158, 15));
+        Btn_Ingresar.setText("Ingresar");
+        Btn_Ingresar.addActionListener(this::Btn_IngresarActionPerformed);
 
         jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
 
@@ -126,7 +131,7 @@ public class InicioSesion extends javax.swing.JFrame {
                             .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(Pnl_ContenidoLayout.createSequentialGroup()
                         .addGap(189, 189, 189)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(Btn_Ingresar, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -144,7 +149,7 @@ public class InicioSesion extends javax.swing.JFrame {
                     .addComponent(jPasswordField1)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(66, 66, 66)
-                .addComponent(jButton1)
+                .addComponent(Btn_Ingresar)
                 .addContainerGap())
         );
 
@@ -188,10 +193,65 @@ public class InicioSesion extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void Btn_IngresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_IngresarActionPerformed
         // TODO add your handling code here:
-        controlador.iniciarSesion();
-    }//GEN-LAST:event_jButton1ActionPerformed
+        String documento = jTextField1.getText().trim();
+
+        String password = new String(
+                jPasswordField1.getPassword()
+        );
+
+        try {
+            Usuario usuario = controlador.iniciarSesion(
+                    documento,
+                    password
+            );
+
+            if (usuario == null) {
+                return;
+            }
+
+            if ("ADMINISTRADOR".equalsIgnoreCase(usuario.getRol())) {
+
+                MenuAdmin menu = new MenuAdmin();
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+
+            } else if ("ENCUESTADOR".equalsIgnoreCase(usuario.getRol())) {
+
+                MenuEncuestador menu = new MenuEncuestador();
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+            }
+
+            dispose();
+
+        } catch (AppException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error de inicio de sesión",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            jPasswordField1.setText("");
+
+        } catch (Exception e) {
+
+            SesionUsuario.cerrar();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No fue posible abrir el menú correspondiente.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            jPasswordField1.setText("");
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_Btn_IngresarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -219,9 +279,9 @@ public class InicioSesion extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Btn_Ingresar;
     private javax.swing.JPanel Pnl_Centrado;
     private javax.swing.JPanel Pnl_Contenido;
-    private javax.swing.JButton jButton1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -233,29 +293,5 @@ public class InicioSesion extends javax.swing.JFrame {
     private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
-//Métodos Getter para conectar con el Controlador 
-//El controlador no puede acceder a jTextField1 ni a jPasswordField1 porque son privados, estos métodos le entregan los campos para que lea su contenido.
-
-    // Campo de texto donde se escribe el documento de identidad (usuario). 
-    public javax.swing.JTextField getTxtUsuario() {
-        return jTextField1;
-    }
-    //Campo de contraseña (oculta lo que se escribe)
-    public javax.swing.JPasswordField getTxtPassword() {
-        return jPasswordField1;
-    }
-    
-    public void mostrarMensaje(String mensaje, String titulo, int tipo) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                mensaje,
-                titulo,
-                tipo
-        );
-    }
-
-    public void limpiarContrasena() {
-        jPasswordField1.setText("");
-    }
 
 }

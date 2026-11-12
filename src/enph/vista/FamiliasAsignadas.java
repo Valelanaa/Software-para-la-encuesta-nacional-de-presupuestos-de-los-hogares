@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.AppException;
 import javax.swing.table.DefaultTableModel;
 import enph.modelo.Hogar;
 import java.util.List;
@@ -99,8 +99,18 @@ public FamiliasAsignadas(
         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
     );
 
-    controlador = new AsignacionController(this, idEncuestadorSeleccionado);
-    controlador.cargarHogares();
+    controlador = new AsignacionController(idEncuestadorSeleccionado);
+
+    try {
+        mostrarHogares(controlador.cargarHogares());
+    } catch (AppException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error al cargar las familias",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
     
 }
 
@@ -460,11 +470,29 @@ public void mostrarHogares(List<Hogar> hogares) {
         return;
     }
 
-    // El controlador se encarga de guardar en Oracle.
-    controlador.asignarHogares(
-        idEncuestadorSeleccionado,
-        idsHogares
-    );
+        try {
+        controlador.asignarHogares(
+                idEncuestadorSeleccionado,
+                idsHogares
+        );
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Las familias fueron asignadas correctamente.",
+                "Asignación exitosa",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE
+        );
+
+        mostrarHogares(controlador.cargarHogares());
+
+    } catch (AppException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error de asignación",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
     }//GEN-LAST:event_Btn_AsignarActionPerformed
 
     /**

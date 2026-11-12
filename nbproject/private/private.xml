@@ -3,15 +3,49 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/Main.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/AppException.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteEncuestador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/BarrioController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionBarrios.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/HogarController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/EditarHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteTiempoController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteTiempoDetalleController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTiempo.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/ReporteTiempoDetalles.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/AsignacionController.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/AsignarFamilias.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/FamiliasController.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/FamiliasEncuestadorController.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FamiliasAsignadas.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/AsignacionDAO.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/HogarDAO.java</file>
             <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FamiliasEncuestador.java</file>
-            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CaracterizacionCompra.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FamiliasRegistradas.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/InicioSesionController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/InicioSesion.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/UsuarioDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/EncuestaDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/SesionEncuestaController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/EncuestaController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/RespuestasEncuesta.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/Usuario.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/FrecuenciaGasto.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/EditarCabezaHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/CrearCabezaHogar.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/CaracterizacionController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/PrimeraCondicion.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CaracterizacionDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/CatalogoDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/FrecuenciaController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/GrupoAlimentoController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/controlador/ReporteAlimentosController.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionFrecuencias.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/GestionGruposAlimentos.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/Validador.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/Main.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/vista/MenuAdmin.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/HogarDAO.java</file>
+            <file>file:/C:/Users/Valeria/OneDrive/Documents/Semestre%204/Proyecto%20integrador/ENPH/ENPH/src/enph/modelo/Hogar.java</file>
         </group>
     </open-files>
 </project-private>

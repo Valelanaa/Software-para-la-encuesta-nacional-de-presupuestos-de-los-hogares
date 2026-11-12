@@ -13,7 +13,7 @@ import enph.modelo.CatalogoDAO;
 import enph.modelo.FrecuenciaCompra;
 import enph.modelo.ReporteEsencial;
 import enph.modelo.ReporteEsencialesDAO;
-
+import java.sql.SQLException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -28,8 +28,14 @@ public class ReporteAlimentosController {
     }
 
     // Consultar las frecuencias registradas
-    public List<FrecuenciaCompra> listarFrecuencias() {
-        return catalogoDAO.listarFrecuencias();
+    public List<FrecuenciaCompra> listarFrecuencias() throws AppException {
+        try {
+            return catalogoDAO.listarFrecuencias();
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible cargar las frecuencias del reporte.", e
+            );
+        }
     }
 
     // Reporte de alimentos esenciales

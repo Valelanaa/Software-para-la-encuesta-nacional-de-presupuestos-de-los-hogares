@@ -5,6 +5,8 @@
 package enph.vista;
 import enph.modelo.FrecuenciaCompra;  
 import enph.controlador.SesionEncuesta;
+import enph.controlador.AppException;
+import enph.controlador.EncuestaController;
 
 /**
  * Pantalla de la encuesta que muestra un grupo de alimentos y pide la
@@ -34,18 +36,33 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
         Cmb_Frecuencia.setModel(
                 new javax.swing.DefaultComboBoxModel<>(sesion.getNombresFrecuencias()));
         // Modo edición: selecciona en el combo la frecuencia que ya estaba guardada
-           if (sesion.isEdicion()) {
-        enph.modelo.CaracterizacionCompra previa = controlador.obtenerPrevia(sesion);
-        // previa es null si este grupo todavía no se había respondido
+        if (sesion.isEdicion()) {
+    try {
+        enph.modelo.CaracterizacionCompra previa =
+                controlador.obtenerPrevia(sesion);
+
         if (previa != null) {
             for (int i = 0; i < sesion.getFrecuencias().size(); i++) {
-                if (sesion.getFrecuencias().get(i).getId() == previa.getFrecuencia().getIdFrecuencia()) {
+                if (sesion.getFrecuencias().get(i).getId()
+                        == previa.getFrecuencia().getIdFrecuencia()) {
+
                     Cmb_Frecuencia.setSelectedIndex(i);
                     break;
                 }
             }
         }
+
+    } catch (AppException ex) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                ex.getMessage(),
+                "Error al consultar la respuesta",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        dispose();
+        return;
     }
+}
 
         setLocationRelativeTo(null); // centra la ventana en la pantalla
         //setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); Para que la ventana se abra en pantalla completa automaticamente
@@ -54,21 +71,41 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
     /** Pasa al siguiente grupo o, si era el último, cierra la encuesta.
      * Es estático porque también lo llama PrimeraCondicion al terminar de guardar.
      */
-    public static void irAlSiguienteGrupo(SesionEncuesta sesion, javax.swing.JFrame actual) {
+public static void irAlSiguienteGrupo(SesionEncuesta sesion, javax.swing.JFrame actual) {
+
     if (sesion.hayMasGrupos()) {
-        // Quedan grupos: avanza y abre la misma pantalla con el grupo siguiente
+
         sesion.avanzar();
+
         new FrecuenciaGasto(sesion).setVisible(true);
         actual.dispose();
+
     } else {
-        // Era el último grupo: se registra la fecha de fin y se vuelve a la lista de familias
-        new enph.controlador.EncuestaController().finalizar(sesion.getIdEncuesta());
-        javax.swing.JOptionPane.showMessageDialog(
-                actual,
-                "Se han completado los " + sesion.getTotalGrupos() + " grupos de alimentos."
-        );
-        new FamiliasRegistradas().setVisible(true);
-        actual.dispose();
+
+        try {
+            EncuestaController controladorEncuesta =
+                    new EncuestaController();
+
+            controladorEncuesta.cerrar(sesion.getIdEncuesta());
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    actual,
+                    "La encuesta finalizó correctamente.",
+                    "Encuesta finalizada",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
+
+            new FamiliasRegistradas().setVisible(true);
+            actual.dispose();
+
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    actual,
+                    e.getMessage(),
+                    "Error al finalizar",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 }
     /**
@@ -304,19 +341,32 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
      * - Si es el primer grupo: sale de la encuesta a la lista de familias.
      */
     private void Btt_CancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btt_CancelarActionPerformed
-        // TODO add your handling code here:
-        if (sesion.hayAnterior()) {
-        sesion.retroceder();
-        new FrecuenciaGasto(sesion).setVisible(true);
-    } else {
-        // Primer grupo: si la encuesta aún no tiene respuestas se borra, para no
-        // dejar una encuesta vacía que bloquee a la familia. Si ya tiene respuestas
-        // (por ejemplo, al editar), este método no borra nada.
-        new enph.controlador.EncuestaController().eliminarSiVacia(sesion.getIdEncuesta());
-        new FamiliasRegistradas().setVisible(true);
-    }
-    this.dispose();
 
+    if (sesion.hayAnterior()) {
+
+        sesion.retroceder();
+
+        new FrecuenciaGasto(sesion).setVisible(true);
+        this.dispose();
+
+    } else {
+
+        try {
+            encuestaController.eliminarSiVacia(sesion.getIdEncuesta());
+
+            new FamiliasRegistradas().setVisible(true);
+            this.dispose();
+
+        } catch (AppException e) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al salir de la encuesta",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
     }//GEN-LAST:event_Btt_CancelarActionPerformed
 
     private void Cmb_FrecuenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Cmb_FrecuenciaActionPerformed
@@ -325,20 +375,28 @@ public class FrecuenciaGasto extends javax.swing.JFrame {
 
     private void Btt_CerrarEncuestaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btt_CerrarEncuestaActionPerformed
         // TODO add your handling code here:
-        // Registra la fecha de fin de la encuesta.
-        // Si no hay ninguna respuesta guardada, la encuesta se elimina en lugar de finalizarse.
+    try {
         encuestaController.cerrar(sesion.getIdEncuesta());
 
         javax.swing.JOptionPane.showMessageDialog(
                 this,
-                "La encuesta se marcó como finalizada.",
-                "Encuesta finalizada",
+                "La encuesta se cerró correctamente.",
+                "Encuesta cerrada",
                 javax.swing.JOptionPane.INFORMATION_MESSAGE
         );
 
-        // Vuelve a la lista de familias.
         new FamiliasRegistradas().setVisible(true);
         this.dispose();
+
+    } catch (AppException e) {
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error al cerrar la encuesta",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
     }//GEN-LAST:event_Btt_CerrarEncuestaActionPerformed
 
     /**

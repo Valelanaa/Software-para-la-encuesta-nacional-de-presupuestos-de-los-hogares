@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.AppException;
 import javax.swing.table.DefaultTableModel;
 import enph.modelo.Hogar;
 import java.util.List;
@@ -96,19 +96,12 @@ public FamiliasEncuestador(
         javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
     );
 
-    controlador = new FamiliasEncuestadorController(this);
+    controlador = new FamiliasEncuestadorController();
 
-    if (idEncuestadorSeleccionado != null
-            && !idEncuestadorSeleccionado.trim().isEmpty()) {
-
-        controlador.cargarHogares(idEncuestadorSeleccionado);
-
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "No se recibió un encuestador válido.",
-            "Error",
-            javax.swing.JOptionPane.WARNING_MESSAGE
+    try {
+        mostrarHogares(controlador.cargarHogares(idEncuestadorSeleccionado));
+    } catch (AppException e) {
+        javax.swing.JOptionPane.showMessageDialog(this,e.getMessage(),"Error al cargar las familias",javax.swing.JOptionPane.ERROR_MESSAGE
         );
     }
 }
@@ -484,11 +477,43 @@ public void mostrarHogares(List<Hogar> hogares) {
             return;
         }
 
-        // Ejecutar la desasignación mediante el controlador.
-        controlador.desasignarHogar(
-            idEncuestadorSeleccionado,
-            idHogar
+        try {
+        boolean desasignado = controlador.desasignarHogar(
+                idEncuestadorSeleccionado,
+                idHogar
         );
+
+        if (desasignado) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "La familia se desasignó correctamente.\n"
+                    + "El hogar continúa registrado en el sistema.",
+                    "Desasignación exitosa",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
+
+            mostrarHogares(
+                    controlador.cargarHogares(idEncuestadorSeleccionado)
+            );
+
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo desasignar la familia. "
+                    + "Es posible que ya no esté asignada a este encuestador.",
+                    "Aviso",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+        }
+
+    } catch (AppException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error al desasignar",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+    }
     }//GEN-LAST:event_Btn_EliminarActionPerformed
 
     /**

@@ -8,7 +8,7 @@ import enph.modelo.Barrio;
 import enph.modelo.Ciudad;
 import enph.modelo.SesionUsuario;
 import enph.Validador;
-import java.sql.SQLException;
+import enph.controlador.AppException;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -45,7 +45,6 @@ public class GestionBarrios extends javax.swing.JFrame {
     private void cargarBarrios() {
 
         try {
-
             barriosEnTabla = controlador.listarBarrios();
 
             DefaultTableModel modelo = new DefaultTableModel(
@@ -58,7 +57,6 @@ public class GestionBarrios extends javax.swing.JFrame {
             };
 
             for (Barrio barrio : barriosEnTabla) {
-
                 modelo.addRow(new Object[]{
                     barrio.getNombreBarrio(),
                     barrio.getNombreCiudad()
@@ -66,189 +64,183 @@ public class GestionBarrios extends javax.swing.JFrame {
             }
 
             Tbl_Barrios.setModel(modelo);
-
             ajustarColumnas(Tbl_Barrios);
 
-        } catch (SQLException e) {
-
+        } catch (AppException e) {
             JOptionPane.showMessageDialog(
                     this,
                     "Error al cargar los barrios:\n" + e.getMessage(),
                     "Error de consulta",
                     JOptionPane.ERROR_MESSAGE
             );
-
-            e.printStackTrace();
         }
     }
 
-// Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
-private void ajustarColumnas(javax.swing.JTable tabla) {
-    for (int col = 0; col < tabla.getColumnCount(); col++) {
-        javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
+    // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
+    private void ajustarColumnas(javax.swing.JTable tabla) {
+        for (int col = 0; col < tabla.getColumnCount(); col++) {
+            javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
 
-        // Ancho del título
-        java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
-                .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
-        int ancho = comp.getPreferredSize().width;
+            // Ancho del título
+            java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
+                    .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
+            int ancho = comp.getPreferredSize().width;
 
-        // Ancho del dato más largo
-        for (int fila = 0; fila < tabla.getRowCount(); fila++) {
-            comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
-            ancho = Math.max(ancho, comp.getPreferredSize().width);
-        }
-
-        columna.setPreferredWidth(ancho + 20); // 20 px de margen
-    }
-}
-
-private void mostrarDialogoBarrio(Barrio barrio) {
-
-    boolean editar = barrio != null;
-
-    // Obtener ciudades registradas
-    List<Ciudad> ciudades = controlador.listarCiudades();
-
-    if (ciudades == null || ciudades.isEmpty()) {
-
-        JOptionPane.showMessageDialog(this, "No hay ciudades registradas para seleccionar.", "Ciudades no disponibles", JOptionPane.WARNING_MESSAGE);
-
-        return;
-    }
-
-    // Campo para el nombre del barrio
-    JTextField txtNombre = new JTextField(20);
-
-    // Combo para seleccionar la ciudad
-    JComboBox<Ciudad> cmbCiudad = new JComboBox<>(ciudades.toArray(new Ciudad[0]));
-
-    // Si estamos editando, cargar los datos actuales
-    if (editar) {
-
-        txtNombre.setText(barrio.getNombreBarrio());
-
-        for (int i = 0; i < cmbCiudad.getItemCount(); i++) {
-
-            Ciudad ciudad = cmbCiudad.getItemAt(i);
-
-            if (ciudad.getId().equals(barrio.getIdCiudad())) {
-
-                cmbCiudad.setSelectedIndex(i);
-                break;
+            // Ancho del dato más largo
+            for (int fila = 0; fila < tabla.getRowCount(); fila++) {
+                comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
+                ancho = Math.max(ancho, comp.getPreferredSize().width);
             }
+
+            columna.setPreferredWidth(ancho + 20); // 20 px de margen
         }
     }
 
-    // Construir el panel
-    JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
+    private void mostrarDialogoBarrio(Barrio barrio) {
 
-    panel.add(new JLabel("Nombre del barrio:"));
-    panel.add(txtNombre);
+        boolean editar = barrio != null;
 
-    panel.add(new JLabel("Ciudad:"));
-    panel.add(cmbCiudad);
+        // Obtener ciudades registradas
+        List<Ciudad> ciudades = controlador.listarCiudades();
 
-    // Mostrar ventana emergente
-    int opcion = JOptionPane.showConfirmDialog(this,panel,editar ? "Editar barrio" : "Crear barrio",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+        if (ciudades == null || ciudades.isEmpty()) {
 
-    if (opcion != JOptionPane.OK_OPTION) {
-        return;
-    }
+            JOptionPane.showMessageDialog(this, "No hay ciudades registradas para seleccionar.", "Ciudades no disponibles", JOptionPane.WARNING_MESSAGE);
 
-   // Obtener y validar nombre del barrio
-    String nombre = txtNombre.getText().trim();
+            return;
+        }
 
-    if (nombre.isEmpty()) {
-        JOptionPane.showMessageDialog(
-                this,
-                "Debe ingresar el nombre del barrio.",
-                "Dato requerido",
-                JOptionPane.WARNING_MESSAGE
-        );
-        txtNombre.requestFocus();
-        return;
-    }
+        // Campo para el nombre del barrio
+        JTextField txtNombre = new JTextField(20);
 
-    if (!Validador.nombreValido(nombre)) {
-        JOptionPane.showMessageDialog(
-                this,
-                "El nombre del barrio debe tener mínimo 3 caracteres "
-                + "y contener solamente letras y espacios.",
-                "Nombre no válido",
-                JOptionPane.WARNING_MESSAGE
-        );
-        txtNombre.requestFocus();
-        return;
-    }
+        // Combo para seleccionar la ciudad
+        JComboBox<Ciudad> cmbCiudad = new JComboBox<>(ciudades.toArray(new Ciudad[0]));
 
-    Ciudad ciudadSeleccionada =
-            (Ciudad) cmbCiudad.getSelectedItem();
-
-    if (ciudadSeleccionada == null) {
-        JOptionPane.showMessageDialog(
-                this,
-                "Debe seleccionar una ciudad.",
-                "Dato requerido",
-                JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
-
-    try {
-
-        boolean resultado;
-
+        // Si estamos editando, cargar los datos actuales
         if (editar) {
 
-            resultado = controlador.editarBarrio(
-                    barrio.getIdBarrio(),
-                    nombre,
-                    ciudadSeleccionada.getId()
-            );
+            txtNombre.setText(barrio.getNombreBarrio());
 
-        } else {
+            for (int i = 0; i < cmbCiudad.getItemCount(); i++) {
 
-            resultado = controlador.crearBarrio(
-                    nombre,
-                    ciudadSeleccionada.getId()
-            );
+                Ciudad ciudad = cmbCiudad.getItemAt(i);
+
+                if (ciudad.getId().equals(barrio.getIdCiudad())) {
+
+                    cmbCiudad.setSelectedIndex(i);
+                    break;
+                }
+            }
         }
 
-        if (resultado) {
+        // Construir el panel
+        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    editar
-                    ? "Barrio actualizado correctamente."
-                    : "Barrio creado correctamente.",
-                    "Operación exitosa",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+        panel.add(new JLabel("Nombre del barrio:"));
+        panel.add(txtNombre);
 
-            cargarBarrios();
+        panel.add(new JLabel("Ciudad:"));
+        panel.add(cmbCiudad);
 
-        } else {
+        // Mostrar ventana emergente
+        int opcion = JOptionPane.showConfirmDialog(this,panel,editar ? "Editar barrio" : "Crear barrio",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo realizar la operación.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+        if (opcion != JOptionPane.OK_OPTION) {
+            return;
         }
 
-    } catch (SQLException e) {
+       // Obtener y validar nombre del barrio
+        String nombre = txtNombre.getText().trim();
+
+        if (nombre.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Debe ingresar el nombre del barrio.",
+                    "Dato requerido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            txtNombre.requestFocus();
+            return;
+        }
+
+        if (!Validador.nombreValido(nombre)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El nombre del barrio debe tener mínimo 3 caracteres "
+                    + "y contener solamente letras y espacios.",
+                    "Nombre no válido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            txtNombre.requestFocus();
+            return;
+        }
+
+        Ciudad ciudadSeleccionada =
+                (Ciudad) cmbCiudad.getSelectedItem();
+
+        if (ciudadSeleccionada == null) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Debe seleccionar una ciudad.",
+                    "Dato requerido",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+
+            boolean resultado;
+
+            if (editar) {
+
+                resultado = controlador.editarBarrio(
+                        barrio.getIdBarrio(),
+                        nombre,
+                        ciudadSeleccionada.getId()
+                );
+
+            } else {
+
+                resultado = controlador.crearBarrio(
+                        nombre,
+                        ciudadSeleccionada.getId()
+                );
+            }
+
+            if (resultado) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        editar
+                        ? "Barrio actualizado correctamente."
+                        : "Barrio creado correctamente.",
+                        "Operación exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                cargarBarrios();
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo realizar la operación.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+
+        } catch (AppException e) {
 
         JOptionPane.showMessageDialog(
                 this,
                 "Error al guardar el barrio:\n" + e.getMessage(),
-                "Error de base de datos",
+                "Error",
                 JOptionPane.ERROR_MESSAGE
         );
-
-        e.printStackTrace();
     }
-}
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -550,7 +542,7 @@ private void mostrarDialogoBarrio(Barrio barrio) {
 
         }
 
-    } catch (SQLException e) {
+    } catch (AppException e) {
 
         JOptionPane.showMessageDialog(
                 this,
@@ -558,8 +550,6 @@ private void mostrarDialogoBarrio(Barrio barrio) {
                 "Error",
                 JOptionPane.ERROR_MESSAGE
         );
-
-        e.printStackTrace();
     }
     }//GEN-LAST:event_Btn_EliminarActionPerformed
 

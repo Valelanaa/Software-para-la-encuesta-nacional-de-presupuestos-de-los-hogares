@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
+import enph.controlador.AppException;
 import java.util.List;
 import java.util.ArrayList;
 import enph.controlador.CaracterizacionController;
@@ -55,7 +56,7 @@ public class RespuestasEncuesta extends javax.swing.JFrame {
         if (idHogar != null && !idHogar.trim().isEmpty()) {
             try {
                 filas = caracterizacionController.listarRespuestasPorHogar(idHogar);
-            } catch (java.sql.SQLException ex) {
+            } catch (AppException ex) {
                 javax.swing.JOptionPane.showMessageDialog(
                     this,
                     "No se pudieron consultar las respuestas:\n" + ex.getMessage(),
@@ -322,48 +323,58 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_IncompletoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_IncompletoActionPerformed
         // TODO add your handling code here:
-         if (idHogar == null || idHogar.trim().isEmpty()) {
+        if (idHogar == null || idHogar.trim().isEmpty()) {
             return;
         }
 
-        int idEncuesta = encuestaController.obtenerIdEncuesta(idHogar);
+        try {
+            int idEncuesta = encuestaController.obtenerIdEncuesta(idHogar);
 
-        if (idEncuesta < 0) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Esta familia no tiene una encuesta registrada.",
-                "Sin encuesta",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
+            if (idEncuesta <= 0) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Esta familia no tiene una encuesta registrada.",
+                        "Sin encuesta",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+            }
+
+            int confirmar = javax.swing.JOptionPane.showConfirmDialog(
+                    this,
+                    "La encuesta quedará marcada como incompleta y el encuestador\n"
+                    + "verá la familia resaltada para completarla. ¿Continuar?",
+                    "Marcar como incompleto",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.QUESTION_MESSAGE
             );
-            return;
-        }
 
-        int confirmar = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "La encuesta quedará marcada como incompleta y el encuestador\n"
-            + "verá la familia resaltada para completarla. ¿Continuar?",
-            "Marcar como incompleto",
-            javax.swing.JOptionPane.YES_NO_OPTION,
-            javax.swing.JOptionPane.QUESTION_MESSAGE
-        );
+            if (confirmar != javax.swing.JOptionPane.YES_OPTION) {
+                return;
+            }
 
-        if (confirmar != javax.swing.JOptionPane.YES_OPTION) {
-            return;
-        }
+            if (encuestaController.marcarIncompleta(idEncuesta)) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "La encuesta se marcó como incompleta.",
+                        "Encuesta incompleta",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo cambiar el estado de la encuesta.",
+                        "Aviso",
+                        javax.swing.JOptionPane.WARNING_MESSAGE
+                );
+            }
 
-        if (encuestaController.marcarIncompleta(idEncuesta)) {
+        } catch (AppException e) {
             javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "La encuesta se marcó como incompleta.",
-                "Encuesta incompleta",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-            );
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "No se pudo marcar la encuesta.",
-                "Error",
-                javax.swing.JOptionPane.ERROR_MESSAGE
+                    this,
+                    e.getMessage(),
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
             );
         }
     }//GEN-LAST:event_Btn_IncompletoActionPerformed

@@ -4,12 +4,10 @@
  */
 package enph.vista;
 
-import enph.Main;
-import enph.modelo.ReporteEsencial;
 import enph.modelo.SesionUsuario;
 import enph.controlador.ReporteTiempoController;
 import enph.modelo.ReporteTiempoDTO;
-import java.sql.SQLException;
+import enph.controlador.AppException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -39,11 +37,20 @@ public class ReporteTiempo extends javax.swing.JFrame {
 
         configurarTabla();
 
-        // Conectar la vista con el controlador
-        controlador = new ReporteTiempoController(this);
+        controlador = new ReporteTiempoController();
 
-        // Cargar los tiempos promedio desde Oracle
-        controlador.cargarReporte();
+        try {
+            List<ReporteTiempoDTO> lista = controlador.cargarReporte();
+            mostrarReporte(lista);
+
+        } catch (AppException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al cargar el reporte",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
 
         setLocationRelativeTo(null);
     }

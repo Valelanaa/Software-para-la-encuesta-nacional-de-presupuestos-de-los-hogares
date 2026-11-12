@@ -4,6 +4,7 @@
  */
 package enph.vista;
 import enph.Validador;
+import enph.controlador.AppException;
 import enph.controlador.SesionEncuesta;
 import enph.modelo.CabezaHogar;
 import javax.swing.JOptionPane;
@@ -387,7 +388,17 @@ private void cargarDatosCabezaHogar() {
             } else {
                 // Si la encuesta está vacía, se elimina.
                 // Si ya tiene respuestas, se conserva.
+                try {
                 encuestaController.eliminarSiVacia(sesion.getIdEncuesta());
+            } catch (AppException e) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        e.getMessage(),
+                        "Error al regresar",
+                        javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
                 new FamiliasRegistradas().setVisible(true);
             }
 

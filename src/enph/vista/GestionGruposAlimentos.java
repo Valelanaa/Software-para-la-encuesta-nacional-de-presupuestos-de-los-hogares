@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import enph.Validador;
 import enph.controlador.GrupoAlimentoController;
 import enph.modelo.GrupoAlimento;
+import enph.controlador.AppException;
 
 public class GestionGruposAlimentos extends javax.swing.JFrame {
     
@@ -38,8 +39,9 @@ public class GestionGruposAlimentos extends javax.swing.JFrame {
         setLocationRelativeTo(null);// centra la ventana en la pantalla
     }
     // Lee los grupos de alimentos de la base de datos y muestra solo su nombre en la tabla
-    private void cargarGrupos() {
+private void cargarGrupos() {
 
+    try {
         gruposEnTabla = controlador.listarGrupos();
 
         javax.swing.table.DefaultTableModel modelo =
@@ -58,7 +60,17 @@ public class GestionGruposAlimentos extends javax.swing.JFrame {
 
         Tbl_Alimentos.setModel(modelo);
         ajustarColumnas(Tbl_Alimentos);
+
+    } catch (AppException e) {
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error al cargar grupos",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
     }
+}
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
 private void ajustarColumnas(javax.swing.JTable tabla) {

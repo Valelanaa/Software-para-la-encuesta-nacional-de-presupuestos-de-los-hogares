@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-
+import enph.controlador.AppException;
 import javax.swing.table.DefaultTableModel;
 import enph.controlador.FamiliasController;
 import enph.controlador.SesionEncuestaController;
@@ -64,12 +64,15 @@ public class FamiliasRegistradas extends javax.swing.JFrame {
             javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
         );
 
-        // El controlador lee los hogares de Oracle y llama a mostrarHogares()
-        controlador = new FamiliasController(this);
+        controlador = new FamiliasController();
 
         configurarResaltadoIncompletas();
 
-        controlador.cargarHogares();
+        try {
+        mostrarHogares(controlador.cargarHogares());
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error al cargar las familias",javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
@@ -383,105 +386,173 @@ private void configurarResaltadoIncompletas() {
      */
     
     private void Tbl_FamiliasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Tbl_FamiliasMouseClicked
-           int fila = Tbl_Familias.getSelectedRow();
-        // Clic en una zona vacía de la tabla: no hay nada que hacer
-        if (fila == -1 || fila >= hogaresMostrados.size()) {
-            return;
-        }
-        // El hogar de esa fila (la lista y la tabla tienen el mismo orden)
-        Hogar hogar = hogaresMostrados.get(fila);
-        
+    int fila = Tbl_Familias.getSelectedRow();
 
-        if (controlador.hogarTieneEncuesta(hogar.getIdHogar())) {
-            // Familia con encuesta: se le pregunta al encuestador qué hacer.
-            // Si el administrador la marcó como incompleta, aparece "Completar".
-            boolean incompleta = hogar.isIncompleta();
-            Object[] opciones = incompleta
-                    ? new Object[]{"Completar", "Editar", "Eliminar", "Cancelar"}
-                    : new Object[]{"Editar", "Eliminar", "Cancelar"};
-            String mensaje = incompleta
-                    ? "El administrador marcó esta encuesta como incompleta.\n"
-                      + "Faltan respuestas de algunos grupos de alimentos.\n¿Qué desea hacer?"
-                    : "Esta familia ya tiene una encuesta registrada.\n¿Qué desea hacer?";
+    // Clic en una zona vacía de la tabla.
+    if (fila == -1 || fila >= hogaresMostrados.size()) {
+        return;
+    }
 
-            int opcion = javax.swing.JOptionPane.showOptionDialog(
-                    this,
-                    mensaje,
-                    "Encuesta existente",
-                    javax.swing.JOptionPane.DEFAULT_OPTION,
-                    javax.swing.JOptionPane.QUESTION_MESSAGE,
-                    null, opciones, opciones[0]);
+    // Obtener el hogar seleccionado.
+    Hogar hogar = hogaresMostrados.get(fila);
 
-            // Se compara por texto porque las posiciones cambian según las opciones
-            Object elegida = opcion >= 0 ? opciones[opcion] : null;
+    // Consultar si el hogar ya tiene una encuesta.
+    boolean tieneEncuesta;
 
-            if ("Completar".equals(elegida) || "Editar".equals(elegida)) {
-                // Completar: solo los grupos sin respuesta. Editar: desde el grupo 1.
-                SesionEncuesta sesion =
-                "Completar".equals(elegida)
-                ? sesionController.completar(hogar.getIdHogar())
-                : sesionController.editar(hogar.getIdHogar());
+    try {
+        tieneEncuesta = controlador.hogarTieneEncuesta(
+                hogar.getIdHogar()
+        );
 
-                if (sesion == null) {
-                    javax.swing.JOptionPane.showMessageDialog(
-                            this,
-                            "No se pudo abrir la encuesta.",
-                            "Error",
-                            javax.swing.JOptionPane.ERROR_MESSAGE
+    } catch (AppException e) {
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error de consulta",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
+
+    if (tieneEncuesta) {
+
+        // La familia ya tiene una encuesta registrada.
+        boolean incompleta = hogar.isIncompleta();
+
+        Object[] opciones = incompleta
+                ? new Object[]{"Completar", "Editar", "Eliminar", "Cancelar"}
+                : new Object[]{"Editar", "Eliminar", "Cancelar"};
+
+        String mensaje = incompleta
+                ? "El administrador marcó esta encuesta como incompleta.\n"
+                  + "Faltan respuestas de algunos grupos de alimentos.\n"
+                  + "¿Qué desea hacer?"
+                : "Esta familia ya tiene una encuesta registrada.\n"
+                  + "¿Qué desea hacer?";
+
+        int opcion = javax.swing.JOptionPane.showOptionDialog(
+                this,
+                mensaje,
+                "Encuesta existente",
+                javax.swing.JOptionPane.DEFAULT_OPTION,
+                javax.swing.JOptionPane.QUESTION_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        // Identificar la opción seleccionada.
+        Object elegida = opcion >= 0 ? opciones[opcion] : null;
+
+        // Completar o editar una encuesta existente.
+        if ("Completar".equals(elegida)
+                || "Editar".equals(elegida)) {
+
+            try {
+
+                SesionEncuesta sesion;
+
+                if ("Completar".equals(elegida)) {
+                    sesion = sesionController.completar(
+                            hogar.getIdHogar()
                     );
-                    return;
+                } else {
+                    sesion = sesionController.editar(
+                            hogar.getIdHogar()
+                    );
                 }
 
                 new FrecuenciaGasto(sesion).setVisible(true);
                 this.dispose();
 
-            } else if ("Eliminar".equals(elegida)) {
-                // Se pide confirmación porque el borrado no se puede deshacer
-                int confirmar = javax.swing.JOptionPane.showConfirmDialog(
-                        this,
-                        "Se borrará la encuesta y todas sus respuestas.\n"
-                        + "Esta acción no se puede deshacer. ¿Continuar?",
-                        "Confirmar eliminación",
-                        javax.swing.JOptionPane.YES_NO_OPTION,
-                        javax.swing.JOptionPane.WARNING_MESSAGE
-                );
+            } catch (AppException e) {
 
-                if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
-                    if (controlador.eliminarEncuestasDelHogar(hogar.getIdHogar())) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        e.getMessage(),
+                        "Error al abrir la encuesta",
+                        javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+
+        } else if ("Eliminar".equals(elegida)) {
+
+            // Confirmar eliminación de la encuesta.
+            int confirmar = javax.swing.JOptionPane.showConfirmDialog(
+                    this,
+                    "Se borrará la encuesta y todas sus respuestas.\n"
+                    + "Esta acción no se puede deshacer. ¿Continuar?",
+                    "Confirmar eliminación",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirmar == javax.swing.JOptionPane.YES_OPTION) {
+
+                try {
+
+                    boolean eliminada =
+                            controlador.eliminarEncuestasDelHogar(
+                                    hogar.getIdHogar()
+                            );
+
+                    if (eliminada) {
+
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
-                                "Encuesta eliminada. Ya puede registrar una nueva."
+                                "Encuesta eliminada. Ya puede registrar una nueva.",
+                                "Eliminación exitosa",
+                                javax.swing.JOptionPane.INFORMATION_MESSAGE
                         );
-                        // Recarga la tabla para quitar el resaltado
-                        controlador.cargarHogares();
+
+                        mostrarHogares(controlador.cargarHogares());
+
                     } else {
+
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
                                 "No se pudo eliminar la encuesta.",
-                                "Error",
-                                javax.swing.JOptionPane.ERROR_MESSAGE
+                                "Aviso",
+                                javax.swing.JOptionPane.WARNING_MESSAGE
                         );
                     }
+
+                } catch (AppException e) {
+
+                    javax.swing.JOptionPane.showMessageDialog(
+                            this,
+                            e.getMessage(),
+                            "Error al eliminar",
+                            javax.swing.JOptionPane.ERROR_MESSAGE
+                    );
                 }
             }
-            // Cancelar (o cerrar el cuadro): no hace nada
+        }
 
-        } else {
-            // Familia sin encuesta: se crea una nueva y se abre el primer grupo
-            SesionEncuesta sesion = sesionController.iniciar(hogar.getIdHogar());
-            if (sesion == null) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        this,
-                        "No se pudo iniciar la encuesta. Verifique la conexión y que existan grupos y frecuencias registrados.",
-                        "Error",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
+        // Si selecciona Cancelar o cierra el diálogo, no hace nada.
+
+    } else {
+
+        // La familia no tiene encuesta: iniciar una nueva.
+        try {
+
+            SesionEncuesta sesion =
+                    sesionController.iniciar(hogar.getIdHogar());
 
             new FrecuenciaGasto(sesion).setVisible(true);
-            this.dispose(); // cierra esta ventana al pasar a la encuesta
+            this.dispose();
+
+        } catch (AppException e) {
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al iniciar la encuesta",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
         }
+    }
     }//GEN-LAST:event_Tbl_FamiliasMouseClicked
 
     private void Btn_Volver1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_Volver1ActionPerformed

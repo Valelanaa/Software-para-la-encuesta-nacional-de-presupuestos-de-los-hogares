@@ -91,72 +91,66 @@ public class UsuarioDAO {
      * Devuelve los datos necesarios para iniciar la sesión.
      * Si las credenciales no coinciden, devuelve null.
      */
-    public Usuario autenticar(String documento, String contrasenna) {
+    public Usuario autenticar(String documento, String contrasenna) throws SQLException {
 
         String llamada = "{call PR_AUTENTICAR_USUARIO(?, ?, ?)}";
 
         try (Connection con = Conexion.init()) {
 
             if (con == null) {
-                System.err.println("No se pudo conectar a la base de datos.");
-                return null;
+                throw new SQLException(
+                        "No fue posible conectar con la base de datos."
+                );
             }
 
             try (CallableStatement cs = con.prepareCall(llamada)) {
 
                 cs.setString(1, documento);
                 cs.setString(2, contrasenna);
-
                 cs.registerOutParameter(3, OracleTypes.CURSOR);
 
                 cs.execute();
 
                 try (ResultSet rs = (ResultSet) cs.getObject(3)) {
 
-                    if (rs != null && rs.next()) {
-
-                        Usuario usuario = new Usuario();
-
-                        usuario.setIdUsuario(
-                                limpiar(rs.getString("ID_USUARIO"))
-                        );
-
-                        usuario.setDocumentoIdentidad(
-                                limpiar(rs.getString("DOCUMENTO_IDENTIDAD"))
-                        );
-
-                        usuario.setNombreCompleto(
-                                limpiar(rs.getString("NOMBRE_COMPLETO"))
-                        );
-
-                        usuario.setRol(
-                                limpiar(rs.getString("ROL"))
-                        );
-
-                        usuario.setIdEncuestador(
-                                limpiarONull(rs.getString("ID_ENCUESTADOR"))
-                        );
-
-                        // Solo el encuestador tiene ciudad al iniciar sesión:
-                        // se carga completa (con departamento) desde su registro.
-                        if (usuario.getIdEncuestador() != null) {
-                            Usuario detalle = buscarPorId(usuario.getIdUsuario());
-                            if (detalle != null) {
-                                usuario.setCiudad(detalle.getCiudad());
-                            }
-                        }
-
-                        return usuario;
+                    if (rs == null || !rs.next()) {
+                        return null;
                     }
+
+                    Usuario usuario = new Usuario();
+
+                    usuario.setIdUsuario(
+                            limpiar(rs.getString("ID_USUARIO"))
+                    );
+
+                    usuario.setDocumentoIdentidad(
+                            limpiar(rs.getString("DOCUMENTO_IDENTIDAD"))
+                    );
+
+                    usuario.setNombreCompleto(
+                            limpiar(rs.getString("NOMBRE_COMPLETO"))
+                    );
+
+                    usuario.setRol(
+                            limpiar(rs.getString("ROL"))
+                    );
+
+                    usuario.setIdEncuestador(
+                            limpiarONull(rs.getString("ID_ENCUESTADOR"))
+                    );
+
+                    if (usuario.getIdEncuestador() != null) {
+                        Usuario detalle = buscarPorId(usuario.getIdUsuario());
+
+                        if (detalle != null) {
+                            usuario.setCiudad(detalle.getCiudad());
+                        }
+                    }
+
+                    return usuario;
                 }
             }
-
-        } catch (SQLException e) {
-            System.err.println("Error al autenticar usuario: " + e.getMessage());
-            e.printStackTrace();
         }
-
-        return null;
     }
 
     /**

@@ -5,6 +5,7 @@
 package enph.vista;
 import enph.Validador;
 import enph.controlador.HogarController;
+import enph.controlador.AppException;
 
 public class CrearHogar extends javax.swing.JFrame {
     
@@ -15,80 +16,81 @@ public class CrearHogar extends javax.swing.JFrame {
     private enph.modelo.Hogar hogar;
     private final HogarController controlador = new HogarController();
 
-public CrearHogar() {
-    initComponents();
+    public CrearHogar() {
+        initComponents();
 
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
 
-    cargarCiudades();
-    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
+        cargarCiudades();
+        Cmb_Ciudad.addActionListener(e -> cargarBarrios());
 
-    setLocationRelativeTo(null);
-}
-
-public CrearHogar(enph.modelo.Hogar hogar) {
-    initComponents();
-
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-
-    cargarCiudades();
-    Cmb_Ciudad.addActionListener(e -> cargarBarrios());
-
-    if (hogar != null) {
-        Txt_Nombre.setText(hogar.getNombreFamilia());
-        Txt_Direccion.setText(hogar.getDireccion());
-
-        // Seleccionar la ciudad.
-        for (int i = 0; i < ciudades.size(); i++) {
-            if (ciudades.get(i).getId().equals(hogar.getIdCiudad())) {
-                Cmb_Ciudad.setSelectedIndex(i);
-                break;
-            }
-        }
-
-        // Cargar los barrios de la ciudad seleccionada.
-        cargarBarrios();
-
-        // Seleccionar el barrio guardado.
-        for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
-            enph.modelo.Barrio barrio = (enph.modelo.Barrio) Cmb_Barrio.getItemAt(i);
-
-            if (barrio.getIdBarrio().equals(hogar.getIdBarrio())) {
-                Cmb_Barrio.setSelectedIndex(i);
-                break;
-            }
-        }
+        setLocationRelativeTo(null);
     }
 
-    setLocationRelativeTo(null);
-}
+    public CrearHogar(enph.modelo.Hogar hogar) {
+        initComponents();
+
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+
+        cargarCiudades();
+        Cmb_Ciudad.addActionListener(e -> cargarBarrios());
+
+        if (hogar != null) {
+            Txt_Nombre.setText(hogar.getNombreFamilia());
+            Txt_Direccion.setText(hogar.getDireccion());
+
+            // Seleccionar la ciudad.
+            for (int i = 0; i < ciudades.size(); i++) {
+                if (ciudades.get(i).getId().equals(hogar.getIdCiudad())) {
+                    Cmb_Ciudad.setSelectedIndex(i);
+                    break;
+                }
+            }
+
+            // Cargar los barrios de la ciudad seleccionada.
+            cargarBarrios();
+
+            // Seleccionar el barrio guardado.
+            for (int i = 0; i < Cmb_Barrio.getItemCount(); i++) {
+                enph.modelo.Barrio barrio = (enph.modelo.Barrio) Cmb_Barrio.getItemAt(i);
+
+                if (barrio.getIdBarrio().equals(hogar.getIdBarrio())) {
+                    Cmb_Barrio.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+
+        setLocationRelativeTo(null);
+    }
     
     private void cargarBarrios() {
-    Cmb_Barrio.removeAllItems();
+        Cmb_Barrio.removeAllItems();
 
-    int indice = Cmb_Ciudad.getSelectedIndex();
+        int indice = Cmb_Ciudad.getSelectedIndex();
 
-    if (indice < 0 || indice >= ciudades.size()) {
-        return;
+        if (indice < 0 || indice >= ciudades.size()) {
+            return;
+        }
+
+        String idCiudad = ciudades.get(indice).getId();
+
+        try {
+            for (enph.modelo.Barrio barrio
+                    : controlador.listarBarriosPorCiudad(idCiudad)) {
+                Cmb_Barrio.addItem(barrio);
+            }
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al cargar los barrios",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
-
-    String idCiudad = ciudades.get(indice).getId();
-
-    try {
-        for (enph.modelo.Barrio barrio : controlador.listarBarriosPorCiudad(idCiudad)) {
-        Cmb_Barrio.addItem(barrio);
-    }
-    } catch (java.sql.SQLException e) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Error al cargar los barrios: " + e.getMessage(),
-                "Error",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-        );
-    }
-}
 
     private void volver() {
         new GestionHogar().setVisible(true);

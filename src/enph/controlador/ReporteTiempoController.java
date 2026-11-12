@@ -8,40 +8,26 @@ package enph.controlador;
  *
  * @author Valeria
  */
+    import enph.modelo.ReporteTiempoDAO;
+    import enph.modelo.ReporteTiempoDTO;
+    import java.sql.SQLException;
+    import java.util.List;
 
-import enph.modelo.ReporteTiempoDAO;
-import enph.modelo.ReporteTiempoDTO;
-import enph.vista.ReporteTiempo;
+    public class ReporteTiempoController {
 
-import java.sql.SQLException;
-import java.util.List;
+        private final ReporteTiempoDAO dao;
 
-public class ReporteTiempoController {
+        public ReporteTiempoController() {
+            this.dao = new ReporteTiempoDAO();
+        }
 
-    private final ReporteTiempo vista;
-    private final ReporteTiempoDAO dao;
-
-    public ReporteTiempoController(ReporteTiempo vista) {
-        this.vista = vista;
-        this.dao = new ReporteTiempoDAO();
-    }
-
-    public void cargarReporte() {
-
-        try {
-
-            List<ReporteTiempoDTO> lista = dao.obtenerReporte();
-
-            vista.mostrarReporte(lista);
-
-        } catch (SQLException e) {
-
-            javax.swing.JOptionPane.showMessageDialog(
-                    vista,
-                    "Error al cargar el reporte de tiempos:\n" + e.getMessage(),
-                    "Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+        public List<ReporteTiempoDTO> cargarReporte() throws AppException {
+            try {
+                return dao.obtenerReporte();
+            } catch (SQLException e) {
+                throw new AppException(
+                        "No fue posible cargar el reporte de tiempos.", e
+                );
+            }
         }
     }
-}

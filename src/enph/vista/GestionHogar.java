@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
+import enph.controlador.AppException;
 import java.util.List;
 import java.util.ArrayList;
 import enph.controlador.HogarController;
@@ -326,7 +327,6 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_EliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_EliminarActionPerformed
         // TODO add your handling code here:
-    // TODO add your handling code here:
         int fila = Tbl_Hogares.getSelectedRow();
         if (fila < 0) {
             javax.swing.JOptionPane.showMessageDialog(this,
@@ -338,13 +338,28 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
         enph.modelo.Hogar seleccionado = hogaresEnTabla.get(indice);
 
         // Un hogar con encuesta no se elimina: se perdería información histórica
-        if (controlador.hogarTieneEncuesta(seleccionado.getIdHogar())) {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "El hogar \"" + seleccionado.getNombreFamilia() + "\" ya tiene una encuesta registrada,\n"
-                    + "por eso no se puede eliminar.",
-                    "Acción no permitida", javax.swing.JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        try {
+    if (controlador.hogarTieneEncuesta(seleccionado.getIdHogar())) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "El hogar \"" + seleccionado.getNombreFamilia()
+                + "\" ya tiene una encuesta registrada,\n"
+                + "por eso no se puede eliminar.",
+                "Acción no permitida",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+    } catch (AppException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
+                "Error de consulta",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
 
         // Confirmación antes de borrar: la acción no se puede deshacer
         int opcion = javax.swing.JOptionPane.showConfirmDialog(this,
@@ -357,13 +372,29 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
             return;
         }
 
-        if (controlador.eliminarHogar(seleccionado.getIdTexto())) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Hogar eliminado correctamente.");
-            cargarHogares(); // actualiza la tabla sin el hogar borrado
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "No se pudo eliminar el hogar. Revise la consola para ver el detalle.",
-                    "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        try {
+            if (controlador.eliminarHogar(seleccionado.getIdTexto())) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Hogar eliminado correctamente."
+                );
+                cargarHogares();
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo eliminar el hogar.",
+                        "Aviso",
+                        javax.swing.JOptionPane.WARNING_MESSAGE
+                );
+            }
+
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al eliminar",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
         }
     }//GEN-LAST:event_Btn_EliminarActionPerformed
 

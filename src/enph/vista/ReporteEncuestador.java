@@ -3,11 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import java.util.List;
-import java.util.ArrayList;
 import enph.controlador.ReporteEncuestadorController;
 import enph.modelo.ReporteBarrio;
-import java.sql.SQLException;
+import enph.controlador.AppException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -24,122 +22,126 @@ public class ReporteEncuestador extends javax.swing.JFrame {
     private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
 
 
-public ReporteEncuestador() {
-    initComponents();
+    public ReporteEncuestador() {
+        initComponents();
 
-    Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
-    Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
-    Lbl_TituloPantalla.setText("Reporte de encuestas");
+        Lbl__Usuario1.setText(enph.modelo.SesionUsuario.nombreParaMostrar());
+        Lbl_Rol1.setText(enph.modelo.SesionUsuario.rolParaMostrar());
+        Lbl_TituloPantalla.setText("Reporte de encuestas");
 
-    txt_FechaDesde.setToolTipText("Formato: dd/MM/yyyy");
-    txt_FechaHasta.setToolTipText("Formato: dd/MM/yyyy");
+        txt_FechaDesde.setToolTipText("Formato: dd/MM/yyyy");
+        txt_FechaHasta.setToolTipText("Formato: dd/MM/yyyy");
 
-    Tbl_Frecuencias.setRowHeight(32);
-    Tbl_Frecuencias.getTableHeader().setFont(
-            new java.awt.Font("Bahnschrift", 1, 18));
-    Tbl_Frecuencias.setAutoResizeMode(
-            javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Tbl_Frecuencias.setRowHeight(32);
+        Tbl_Frecuencias.getTableHeader().setFont(
+                new java.awt.Font("Bahnschrift", 1, 18));
+        Tbl_Frecuencias.setAutoResizeMode(
+                javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-    configurarTabla();
-    setLocationRelativeTo(null);
-}
-private void configurarTabla() {
-    DefaultTableModel modelo = new DefaultTableModel(
-            new Object[]{"Barrio", "Asignadas", "Finalizadas",
-                "Pendientes", "Incompletas"}, 0) {
-        @Override
-        public boolean isCellEditable(int fila, int columna) {
-            return false;
-        }
-    };
-
-    Tbl_Frecuencias.setModel(modelo);
-    ajustarColumnas(Tbl_Frecuencias);
-}
-// Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
-private void ajustarColumnas(javax.swing.JTable tabla) {
-    for (int col = 0; col < tabla.getColumnCount(); col++) {
-        javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
-
-        // Ancho del título
-        java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
-                .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
-        int ancho = comp.getPreferredSize().width;
-
-        // Ancho del dato más largo
-        for (int fila = 0; fila < tabla.getRowCount(); fila++) {
-            comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
-            ancho = Math.max(ancho, comp.getPreferredSize().width);
-        }
-
-        columna.setPreferredWidth(ancho + 20); // 20 px de margen
+        configurarTabla();
+        setLocationRelativeTo(null);
     }
-}
-private LocalDate obtenerFecha(String texto) {
-    return LocalDate.parse(texto.trim(), formatoFecha);
-}
-private void generarReporte() {
-    try {
-        LocalDate desde = obtenerFecha(txt_FechaDesde.getText());
-        LocalDate hasta = obtenerFecha(txt_FechaHasta.getText());
+    private void configurarTabla() {
+        DefaultTableModel modelo = new DefaultTableModel(
+                new Object[]{"Barrio", "Asignadas", "Finalizadas",
+                    "Pendientes", "Incompletas"}, 0) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
 
-        if (desde.isAfter(hasta)) {
-            JOptionPane.showMessageDialog(this,
-                    "La fecha Desde no puede ser posterior a la fecha Hasta.",
-                    "Fechas incorrectas", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        List<ReporteBarrio> datos = controlador.generarReporte(desde, hasta);
-
-        DefaultTableModel modelo =
-                (DefaultTableModel) Tbl_Frecuencias.getModel();
-
-        modelo.setRowCount(0);
-
-        int totalAsignadas = 0;
-        int totalFinalizadas = 0;
-        int totalPendientes = 0;
-        int totalIncompletas = 0;
-
-        for (ReporteBarrio r : datos) {
-            modelo.addRow(new Object[]{
-                r.getBarrio(),
-                r.getAsignadas(),
-                r.getFinalizadas(),
-                r.getPendientes(),
-                r.getIncompletas()
-            });
-
-            totalAsignadas += r.getAsignadas();
-            totalFinalizadas += r.getFinalizadas();
-            totalPendientes += r.getPendientes();
-            totalIncompletas += r.getIncompletas();
-        }
-
-        Lbl_Asignadas.setText(String.valueOf(totalAsignadas));
-        Lbl_Finalizadas.setText(String.valueOf(totalFinalizadas));
-        Lbl_Pendientes.setText(String.valueOf(totalPendientes));
-        Lbl_Incompletas.setText(String.valueOf(totalIncompletas));
-
+        Tbl_Frecuencias.setModel(modelo);
         ajustarColumnas(Tbl_Frecuencias);
-
-        if (datos.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "No se encontraron asignaciones en el rango seleccionado.",
-                    "Reporte", JOptionPane.INFORMATION_MESSAGE);
-        }
-
-    } catch (DateTimeParseException e) {
-        JOptionPane.showMessageDialog(this,
-                "Ingresa ambas fechas correctamente con el formato dd/MM/yyyy.",
-                "Formato incorrecto", JOptionPane.WARNING_MESSAGE);
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this,
-                "Error al generar el reporte: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
+    // Ajusta el ancho de cada columna al contenido más largo: toma el mayor entre el título y todos los datos de la columna.
+    private void ajustarColumnas(javax.swing.JTable tabla) {
+        for (int col = 0; col < tabla.getColumnCount(); col++) {
+            javax.swing.table.TableColumn columna = tabla.getColumnModel().getColumn(col);
+
+            // Ancho del título
+            java.awt.Component comp = tabla.getTableHeader().getDefaultRenderer()
+                    .getTableCellRendererComponent(tabla, columna.getHeaderValue(), false, false, 0, col);
+            int ancho = comp.getPreferredSize().width;
+
+            // Ancho del dato más largo
+            for (int fila = 0; fila < tabla.getRowCount(); fila++) {
+                comp = tabla.prepareRenderer(tabla.getCellRenderer(fila, col), fila, col);
+                ancho = Math.max(ancho, comp.getPreferredSize().width);
+            }
+
+            columna.setPreferredWidth(ancho + 20); // 20 px de margen
+        }
+    }
+    private LocalDate obtenerFecha(String texto) {
+        return LocalDate.parse(texto.trim(), formatoFecha);
+    }
+    private void generarReporte() {
+        try {
+            LocalDate desde = obtenerFecha(txt_FechaDesde.getText());
+            LocalDate hasta = obtenerFecha(txt_FechaHasta.getText());
+
+            List<ReporteBarrio> datos =
+                    controlador.generarReporte(desde, hasta);
+
+            DefaultTableModel modelo =
+                    (DefaultTableModel) Tbl_Frecuencias.getModel();
+
+            modelo.setRowCount(0);
+
+            int totalAsignadas = 0;
+            int totalFinalizadas = 0;
+            int totalPendientes = 0;
+            int totalIncompletas = 0;
+
+            for (ReporteBarrio r : datos) {
+                modelo.addRow(new Object[]{
+                    r.getBarrio(),
+                    r.getAsignadas(),
+                    r.getFinalizadas(),
+                    r.getPendientes(),
+                    r.getIncompletas()
+                });
+
+                totalAsignadas += r.getAsignadas();
+                totalFinalizadas += r.getFinalizadas();
+                totalPendientes += r.getPendientes();
+                totalIncompletas += r.getIncompletas();
+            }
+
+            Lbl_Asignadas.setText(String.valueOf(totalAsignadas));
+            Lbl_Finalizadas.setText(String.valueOf(totalFinalizadas));
+            Lbl_Pendientes.setText(String.valueOf(totalPendientes));
+            Lbl_Incompletas.setText(String.valueOf(totalIncompletas));
+
+            ajustarColumnas(Tbl_Frecuencias);
+
+            if (datos.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se encontraron asignaciones en el rango seleccionado.",
+                        "Reporte",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingresa ambas fechas correctamente con el formato dd/MM/yyyy.",
+                    "Formato incorrecto",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+        } catch (AppException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Error al generar el reporte",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

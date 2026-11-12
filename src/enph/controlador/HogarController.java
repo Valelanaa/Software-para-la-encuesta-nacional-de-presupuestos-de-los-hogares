@@ -18,7 +18,6 @@ import enph.modelo.BarrioDAO;
 import enph.modelo.CabezaHogar;
 import enph.modelo.CabezaHogarDAO;
 import enph.modelo.EncuestaDAO;
-
 import java.sql.SQLException;
 import java.util.List;
 
@@ -56,14 +55,17 @@ public class HogarController {
         return ciudadDAO.listarCiudades();
     }
 
-    public List<Barrio> listarBarriosPorCiudad(String idCiudad)
-            throws SQLException {
+    public List<Barrio> listarBarriosPorCiudad(String idCiudad) throws AppException {
 
         if (idCiudad == null || idCiudad.trim().isEmpty()) {
-            throw new SQLException("Debe seleccionar una ciudad.");
+            throw new AppException("Debe seleccionar una ciudad.");
         }
 
-        return barrioDAO.listarPorCiudad(idCiudad.trim());
+        try {
+            return barrioDAO.listarPorCiudad(idCiudad.trim());
+        } catch (SQLException e) {
+            throw new AppException("No fue posible cargar los barrios de la ciudad.", e);
+        }
     }
 
     // ==================== CREACIÓN ====================
@@ -82,24 +84,41 @@ public class HogarController {
 
     // ==================== ACTUALIZACIÓN ====================
 
-    public boolean actualizarHogar(Hogar hogar)
-            throws SQLException {
+    public boolean actualizarHogar(Hogar hogar) throws AppException {
 
-        if (hogar == null || hogar.getBarrio() == null
-                || hogar.getIdHogar() <= 0) {
-            return false;
+        if (hogar == null) {
+            throw new AppException("No se recibió la información del hogar.");
         }
 
-        return hogarDAO.actualizarHogar(hogar);
-    }
+        if (hogar.getIdHogar() <= 0) {
+            throw new AppException("El identificador del hogar no es válido.");
+        }
 
+        if (hogar.getBarrio() == null) {
+            throw new AppException("Debe seleccionar un barrio.");
+        }
+
+        try {
+            return hogarDAO.actualizarHogar(hogar);
+        } catch (SQLException e) {
+            throw new AppException("No fue posible actualizar el hogar.", e);
+        }
+    }
     // ==================== ELIMINACIÓN ====================
 
-    public boolean hogarTieneEncuesta(int idHogar) {
-        return encuestaDAO.hogarTieneEncuesta(idHogar);
+    public boolean hogarTieneEncuesta(int idHogar) throws AppException {
+
+        try {
+            return encuestaDAO.hogarTieneEncuesta(idHogar);
+        } catch (SQLException e) {
+            throw new AppException(
+                    "No fue posible comprobar si el hogar tiene una encuesta.",
+                    e
+            );
+        }
     }
 
-    public boolean eliminarHogar(String idHogar) {
+    public boolean eliminarHogar(String idHogar) throws AppException {
 
         if (idHogar == null || idHogar.trim().isEmpty()) {
             return false;
