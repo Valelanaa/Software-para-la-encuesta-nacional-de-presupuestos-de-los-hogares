@@ -225,30 +225,6 @@ public class EncuestaDAO {
     }
 
     /**
-     * Siguiente ID disponible (máximo + 1).
-     *
-     * Se conserva para no afectar otros DAO del proyecto
-     * que puedan utilizar este método.
-     */
-    static int siguienteId(
-        Connection con,
-        String tabla,
-        String columna
-    ) throws SQLException {
-
-        String sql =
-            "SELECT NVL(MAX(TO_NUMBER(" + columna + ")), 0) + 1 "
-            + "FROM " + tabla;
-
-        try (
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(sql)
-        ) {
-            return rs.next() ? rs.getInt(1) : 1;
-        }
-    }
-
-    /**
      * Marca una encuesta como incompleta.
      *
      * Administrador:
