@@ -6,6 +6,7 @@ package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
 import enph.controlador.InformeEncuestaController;
+import enph.modelo.Encuestador;
 import enph.modelo.Usuario;
 
 public class InformeEncuesta extends javax.swing.JFrame {
@@ -78,10 +79,7 @@ public class InformeEncuesta extends javax.swing.JFrame {
         for (Usuario usuario : encuestadoresEnTabla) {
 
             // Si no tiene hogares asignados, sus cantidades serán 0 y 0.
-            int[] cantidades = conteos.getOrDefault(
-                    usuario.getIdEncuestador(),
-                    new int[]{0, 0}
-            );
+            int[] cantidades = conteos.getOrDefault(((Encuestador) usuario).getIdEncuestador(), new int[]{0, 0});
 
             modelo.addRow(new Object[]{
                 usuario.getNombreCompleto(),
@@ -327,32 +325,30 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
 
     private void Btn_CrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_CrearActionPerformed
         // TODO add your handling code here:
-    int fila = Tbl_Frecuencias.getSelectedRow();
+        int fila = Tbl_Frecuencias.getSelectedRow();
 
-    if (fila == -1) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this,
-            "Selecciona un encuestador para ver sus asignaciones.",
-            "Seleccionar encuestador",
-            javax.swing.JOptionPane.WARNING_MESSAGE
+        if (fila == -1) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Selecciona un encuestador para ver sus asignaciones.",
+                "Seleccionar encuestador",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // Obtener el índice correcto de la fila seleccionada.
+        int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
+
+        Encuestador encuestador = (Encuestador) encuestadoresEnTabla.get(indice);
+
+        DetallesInforme pantalla = new DetallesInforme(
+            encuestador.getIdEncuestador(),
+            encuestador.getNombreCompleto()
         );
-        return;
-    }
 
-    // Obtener el índice correcto de la fila seleccionada.
-    int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
-
-    enph.modelo.Usuario encuestador =
-            encuestadoresEnTabla.get(indice);
-
-        // Abrir el detalle enviando el ID y el nombre del encuestador.
-    DetallesInforme pantalla = new DetallesInforme(
-        encuestador.getIdEncuestador(), 
-        encuestador.getNombreCompleto()
-    );
-
-    pantalla.setVisible(true);
-    this.dispose();
+        pantalla.setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_Btn_CrearActionPerformed
 
     /**

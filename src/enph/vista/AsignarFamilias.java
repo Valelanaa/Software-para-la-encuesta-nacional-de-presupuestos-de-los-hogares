@@ -6,6 +6,7 @@ package enph.vista;
 import java.util.List;
 import java.util.ArrayList;
 import enph.controlador.UsuarioController;
+import enph.modelo.Encuestador;
 import enph.modelo.Usuario;
 
 public class AsignarFamilias extends javax.swing.JFrame {
@@ -48,7 +49,7 @@ public class AsignarFamilias extends javax.swing.JFrame {
 
             if (usuario.getRol() != null
                     && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
-                    && usuario.getIdEncuestador() != null) {
+                    && usuario instanceof Encuestador) {
 
                 encuestadoresEnTabla.add(usuario);
             }
@@ -322,9 +323,8 @@ private void ajustarColumnas(javax.swing.JTable tabla) {
     // Obtener el índice correcto de la fila seleccionada.
     int indice = Tbl_Frecuencias.convertRowIndexToModel(fila);
 
-    enph.modelo.Usuario encuestador = encuestadoresEnTabla.get(indice);
+    Encuestador encuestador = (Encuestador) encuestadoresEnTabla.get(indice);
 
-    // Abrir la pantalla enviando el ID y el nombre del encuestador.
     FamiliasEncuestador pantalla = new FamiliasEncuestador(
         encuestador.getIdEncuestador(),
         encuestador.getNombreCompleto()

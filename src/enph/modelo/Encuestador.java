@@ -14,9 +14,14 @@ package enph.modelo;
  * ya está en Usuario (getIdEncuestador / setIdEncuestador).
  */
 public class Encuestador extends Usuario {
- 
+
+    private String idEncuestador; // ID_ENCUESTADOR de la tabla ENCUESTADOR
+
     public Encuestador() {
         super();
         setRol("ENCUESTADOR");
     }
+
+    public String getIdEncuestador() { return idEncuestador; }
+    public void setIdEncuestador(String idEncuestador) { this.idEncuestador = idEncuestador; }
 }

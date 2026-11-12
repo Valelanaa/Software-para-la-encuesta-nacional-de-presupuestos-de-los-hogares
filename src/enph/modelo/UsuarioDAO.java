@@ -36,6 +36,15 @@ public class UsuarioDAO {
         return rol != null && "ENCUESTADOR".equalsIgnoreCase(rol.trim());
     }
 
+    private Usuario crearSegunRol(String idEncuestador) {
+        if (idEncuestador != null) {
+            Encuestador e = new Encuestador();
+            e.setIdEncuestador(idEncuestador);
+            return e;
+        }
+        return new Administrador();
+    }
+    
     /**
      * Valida el acceso recibiendo un objeto Usuario.
      */
@@ -80,7 +89,7 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.err.println("Error al validar usuario: " + e.getMessage());
-            e.printStackTrace();
+            
             return false;
         }
     }
@@ -117,7 +126,7 @@ public class UsuarioDAO {
                         return null;
                     }
 
-                    Usuario usuario = new Usuario();
+                    Usuario usuario = crearSegunRol(limpiarONull(rs.getString("ID_ENCUESTADOR")));
 
                     usuario.setIdUsuario(
                             limpiar(rs.getString("ID_USUARIO"))
@@ -135,13 +144,8 @@ public class UsuarioDAO {
                             limpiar(rs.getString("ROL"))
                     );
 
-                    usuario.setIdEncuestador(
-                            limpiarONull(rs.getString("ID_ENCUESTADOR"))
-                    );
-
-                    if (usuario.getIdEncuestador() != null) {
+                    if (usuario instanceof Encuestador){
                         Usuario detalle = buscarPorId(usuario.getIdUsuario());
-
                         if (detalle != null) {
                             usuario.setCiudad(detalle.getCiudad());
                         }
@@ -179,7 +183,7 @@ public class UsuarioDAO {
 
                     while (rs != null && rs.next()) {
 
-                        Usuario usuario = new Usuario();
+                        Usuario usuario = crearSegunRol(limpiarONull(rs.getString("ID_ENCUESTADOR")));
 
                         usuario.setIdUsuario(
                                 limpiar(rs.getString("ID_USUARIO"))
@@ -196,11 +200,6 @@ public class UsuarioDAO {
                         usuario.setRol(
                                 limpiar(rs.getString("ROL"))
                         );
-
-                        usuario.setIdEncuestador(
-                                limpiarONull(rs.getString("ID_ENCUESTADOR"))
-                        );
-
                         usuarios.add(usuario);
                     }
                 }
@@ -208,7 +207,7 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.err.println("Error al listar usuarios: " + e.getMessage());
-            e.printStackTrace();
+            
         }
 
         return usuarios;
@@ -239,36 +238,19 @@ public class UsuarioDAO {
 
                     if (rs != null && rs.next()) {
 
-                        Usuario usuario = new Usuario();
+                        Usuario usuario = crearSegunRol(limpiarONull(rs.getString("ID_ENCUESTADOR")));
 
-                        usuario.setIdUsuario(
-                                limpiar(rs.getString("ID_USUARIO"))
-                        );
+                        usuario.setIdUsuario(limpiar(rs.getString("ID_USUARIO")));
 
-                        usuario.setNombreCompleto(
-                                limpiar(rs.getString("NOMBRE_COMPLETO"))
-                        );
+                        usuario.setNombreCompleto(limpiar(rs.getString("NOMBRE_COMPLETO")));
 
-                        usuario.setDocumentoIdentidad(
-                                limpiar(rs.getString("DOCUMENTO_IDENTIDAD"))
-                        );
+                        usuario.setDocumentoIdentidad(limpiar(rs.getString("DOCUMENTO_IDENTIDAD")));
 
-                        usuario.setContrasenna(
-                                limpiar(rs.getString("CONTRASENNA"))
-                        );
+                        usuario.setContrasenna(limpiar(rs.getString("CONTRASENNA")));
 
-                        usuario.setRol(
-                                limpiar(rs.getString("ROL"))
-                        );
+                        usuario.setRol(limpiar(rs.getString("ROL")));
 
-                        usuario.setIdEncuestador(
-                                limpiarONull(rs.getString("ID_ENCUESTADOR"))
-                        );
-
-                        usuario.setCiudad(
-                                new CiudadDAO().buscarPorId(
-                                        limpiar(rs.getString("ID_CIUDAD")))
-                        );
+                        usuario.setCiudad(new CiudadDAO().buscarPorId(limpiar(rs.getString("ID_CIUDAD"))));
 
                         usuario.setTelefono(
                                 limpiar(rs.getString("TELEFONO"))
@@ -281,7 +263,6 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.err.println("Error al buscar usuario: " + e.getMessage());
-            e.printStackTrace();
         }
 
         return null;
@@ -318,7 +299,6 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.err.println("Error al verificar documento: " + e.getMessage());
-            e.printStackTrace();
             return true;
         }
     }
@@ -357,7 +337,6 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.err.println("Error al verificar documento: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -416,7 +395,6 @@ public class UsuarioDAO {
             }
 
             System.err.println("Error al actualizar usuario: " + e.getMessage());
-            e.printStackTrace();
 
             return false;
 
@@ -479,7 +457,6 @@ public class UsuarioDAO {
             }
 
             System.err.println("Error al eliminar usuario: " + e.getMessage());
-            e.printStackTrace();
 
             return false;
 
@@ -551,7 +528,7 @@ public class UsuarioDAO {
             }
 
             System.err.println("Error al insertar usuario: " + e.getMessage());
-            e.printStackTrace();
+            
 
             return false;
 
@@ -614,7 +591,7 @@ public class UsuarioDAO {
             }
 
             System.err.println("Error al actualizar mis datos: " + e.getMessage());
-            e.printStackTrace();
+            
             return false;
 
         } finally {

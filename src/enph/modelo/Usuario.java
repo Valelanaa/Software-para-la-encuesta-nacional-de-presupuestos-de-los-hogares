@@ -17,10 +17,6 @@ public class Usuario {
     private Ciudad ciudad;             // ciudad del usuario, con su departamento (puede ser null)
     private String idUsuario;
     private String telefono;
-    private String idEncuestador;      // ID_ENCUESTADOR de la tabla ENCUESTADOR (null si es administrador)
-
-    public String getIdEncuestador() { return idEncuestador; }
-    public void setIdEncuestador(String idEncuestador) { this.idEncuestador = idEncuestador; }
 
     public String getIdUsuario() { return idUsuario; }
     public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }

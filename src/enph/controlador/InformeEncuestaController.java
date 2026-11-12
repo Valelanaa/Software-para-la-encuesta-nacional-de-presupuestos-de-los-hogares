@@ -11,7 +11,7 @@ package enph.controlador;
 import enph.modelo.HogarDAO;
 import enph.modelo.Usuario;
 import enph.modelo.UsuarioDAO;
-
+import enph.modelo.Encuestador;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class InformeEncuestaController {
 
             if (usuario.getRol() != null
                     && usuario.getRol().trim().equalsIgnoreCase("ENCUESTADOR")
-                    && usuario.getIdEncuestador() != null) {
+                    && usuario instanceof Encuestador) {
 
                 encuestadores.add(usuario);
             }

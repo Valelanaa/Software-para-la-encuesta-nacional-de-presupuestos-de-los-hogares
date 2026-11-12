@@ -9,6 +9,7 @@ package enph.controlador;
  * @author Valeria
  */
 
+import enph.modelo.Encuestador;
 import enph.modelo.ReporteBarrio;
 import enph.modelo.ReporteEncuestadorDAO;
 import enph.modelo.SesionUsuario;
@@ -31,13 +32,14 @@ public class ReporteEncuestadorController {
 
         Usuario usuario = SesionUsuario.getActual();
 
-        if (usuario == null
-                || usuario.getIdEncuestador() == null
-                || usuario.getIdEncuestador().trim().isEmpty()) {
+        if (!(usuario instanceof Encuestador)) {
+            throw new AppException("No se encontró el encuestador de la sesión.");
+        }
 
-            throw new AppException(
-                    "No se encontró el encuestador de la sesión."
-            );
+        String idEncuestador = ((Encuestador) usuario).getIdEncuestador();
+
+        if (idEncuestador == null || idEncuestador.trim().isEmpty()) {
+            throw new AppException("No se encontró el encuestador de la sesión.");
         }
 
         if (desde == null || hasta == null) {
@@ -53,11 +55,7 @@ public class ReporteEncuestadorController {
         }
 
         try {
-            return reporteDAO.generarReporte(
-                    usuario.getIdEncuestador(),
-                    desde,
-                    hasta
-            );
+            return reporteDAO.generarReporte(idEncuestador, desde, hasta);
 
         } catch (SQLException e) {
             throw new AppException(
