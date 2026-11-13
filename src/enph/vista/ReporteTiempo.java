@@ -163,7 +163,7 @@ public class ReporteTiempo extends javax.swing.JFrame {
         Lbl__Usuario1.setText("Nombre del usuario");
 
         Lbl_TituloPantalla.setFont(new java.awt.Font("Bahnschrift", 1, 20)); // NOI18N
-        Lbl_TituloPantalla.setText("Grupos de alimentos esenciales");
+        Lbl_TituloPantalla.setText("Tiempo promedio por encuestador");
 
         javax.swing.GroupLayout Pnl_BannerLayout = new javax.swing.GroupLayout(Pnl_Banner);
         Pnl_Banner.setLayout(Pnl_BannerLayout);

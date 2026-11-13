@@ -146,7 +146,7 @@
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Bahnschrift" size="20" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Grupos de alimentos esenciales"/>
+                <Property name="text" type="java.lang.String" value="Tiempo promedio por encuestador"/>
               </Properties>
             </Component>
           </SubComponents>

@@ -19,37 +19,46 @@ public class EncuestaController {
         this.encuestaDAO = new EncuestaDAO();
     }
 
-    public void finalizar(int idEncuesta) throws AppException {
-        validarId(idEncuesta);
 
-        try {
-            encuestaDAO.finalizarEncuesta(idEncuesta);
-            encuestaDAO.quitarMarcaIncompleta(idEncuesta);
-        } catch (SQLException e) {
-            throw new AppException(
-                    "No fue posible finalizar la encuesta.", e
-            );
-        }
+public void finalizar(int idEncuesta) throws AppException {
+    validarId(idEncuesta);
+
+    try {
+        encuestaDAO.finalizarEncuesta(idEncuesta);
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+
+        throw new AppException(
+                "No fue posible finalizar la encuesta: " + e.getMessage(), e
+        );
     }
+}
 
-    public void cerrar(int idEncuesta) throws AppException {
-        validarId(idEncuesta);
+public void cerrar(int idEncuesta) throws AppException {
+    validarId(idEncuesta);
 
-        try {
-            boolean eliminada = encuestaDAO.eliminarEncuestaVacia(idEncuesta);
+    try {
+        // Si está vacía, se elimina.
+        boolean eliminada =
+                encuestaDAO.eliminarEncuestaVacia(idEncuesta);
 
-            // Si tenía respuestas, se conserva y se finaliza.
-            if (!eliminada) {
-                encuestaDAO.finalizarEncuesta(idEncuesta);
-                encuestaDAO.quitarMarcaIncompleta(idEncuesta);
-            }
-
-        } catch (SQLException e) {
-            throw new AppException(
-                    "No fue posible cerrar la encuesta.", e
-            );
+        if (eliminada) {
+            return;
         }
+
+        // Si tiene respuestas, se finaliza.
+        encuestaDAO.finalizarEncuesta(idEncuesta);
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+
+        throw new AppException(
+                "No fue posible cerrar la encuesta: " + e.getMessage(), e
+        );
     }
+}
+
 
     public boolean eliminarSiVacia(int idEncuesta) throws AppException {
         validarId(idEncuesta);

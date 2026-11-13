@@ -3,14 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package enph.vista;
-import enph.Validador;
+import enph.controlador.AppException;
 import enph.controlador.UsuarioController;
-import enph.modelo.Usuario;
-import enph.modelo.Ciudad;
 
 public class EditarUsuario extends javax.swing.JFrame {
     
-private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditarUsuario.class.getName());
     private final UsuarioController controlador = new UsuarioController();
     /// Ciudades del combo, en el mismo orden que sus opciones (para saber el id elegido)
     private final java.util.List<enph.modelo.Ciudad> ciudades = new java.util.ArrayList<>();
@@ -409,113 +407,26 @@ private void cargarUsuario(String idUsuario) {
 
     private void Btn_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_GuardarActionPerformed
         // TODO add your handling code here:
-        
-         if (usuarioEditado == null) {
-        javax.swing.JOptionPane.showMessageDialog(this, "No hay un usuario cargado para guardar.");
-        return;
-    }
+        int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
+        String idCiudad = indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "";
 
-    String nombre = Txt_Nombre.getText().trim();
-    String cedula = Txt_Cedula.getText().trim();
-    String telefono = Txt_Telefono.getText().trim();
+        try {
+            controlador.guardarEdicion(
+                    usuarioEditado,
+                    Txt_Nombre.getText(),
+                    Txt_Cedula.getText(),
+                    Txt_Telefono.getText(),
+                    Txt_Contrasenna.getText(),
+                    (String) Cmb_Rol.getSelectedItem(),
+                    idCiudad);
 
-    // Lo que el rol no puede ver conserva el valor que ya tiene en la base de datos
-    // Lo que no se muestra conserva el valor que ya tiene en la base de datos
-    String contrasenna = editaSusDatos ? Txt_Contrasenna.getText().trim()
-                                       : usuarioEditado.getContrasenna();
-    String rol = editaSusDatos ? usuarioEditado.getRol()
-                               : (String) Cmb_Rol.getSelectedItem();
-    int indiceCiudad = Cmb_Ciudad.getSelectedIndex();
-    String idCiudad = (editaSusDatos && !esAdministrador) ? usuarioEditado.getIdCiudad() : (indiceCiudad >= 0 ? ciudades.get(indiceCiudad).getId() : "");
+            javax.swing.JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
+            volver();
 
-    // Validaciones antes de tocar la base de datos
-    if (nombre.isEmpty() || cedula.isEmpty() || contrasenna.isEmpty() || telefono.isEmpty() || idCiudad == null || idCiudad.isEmpty()) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.",
-                "Campos incompletos", javax.swing.JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    // Validar nombre completo.
-    if (!Validador.nombreValido(nombre)) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "El nombre debe contener solamente letras, "
-                + "tildes y ñ, con un espacio entre palabras. "
-                + "Mínimo 3 caracteres.",
-                "Nombre no válido",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
-
-    // Validar documento de identidad.
-    if (!Validador.documentoValido(cedula)) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "La cédula debe contener entre 6 y 10 dígitos.",
-                "Documento no válido",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
-
-    // Validar teléfono.
-    if (!Validador.telefonoValido(telefono)) {
-        javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "El teléfono debe contener 7 dígitos (fijo) "
-                + "o 10 dígitos (celular).",
-                "Teléfono no válido",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-        );
-        return;
-    }
-    // Largos máximos de las columnas de la tabla USUARIO
-    if (nombre.length() > 150 || cedula.length() > 20 || telefono.length() > 20 || contrasenna.length() > 50) {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "Algún campo es demasiado largo (nombre máx. 150, cédula y teléfono 20, contraseña 50).",
-                "Dato demasiado largo", javax.swing.JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    if (controlador.existeDocumento(cedula, usuarioEditado.getIdUsuario())) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Ya existe otro usuario con esa cédula.",
-                "Cédula repetida", javax.swing.JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    // Se pasan los datos nuevos al usuario y se guardan en la base
-    usuarioEditado.setNombreCompleto(nombre);
-    usuarioEditado.setDocumentoIdentidad(cedula);
-    usuarioEditado.setTelefono(telefono);
-    usuarioEditado.setContrasenna(contrasenna);
-    usuarioEditado.setRol(rol);
-    enph.modelo.Ciudad ciudadSeleccionada = null;
-
-    for (enph.modelo.Ciudad ciudad : ciudades) {
-        if (ciudad.getId().equals(idCiudad)) {
-            ciudadSeleccionada = ciudad;
-            break;
+        } catch (AppException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "No se pudo guardar", javax.swing.JOptionPane.WARNING_MESSAGE);
         }
-    }
-
-    usuarioEditado.setCiudad(ciudadSeleccionada);
-
-    boolean guardado = controlador.actualizarUsuario(usuarioEditado, esAdministrador);
-    if (guardado) {
-        // Si se editó el usuario de la sesión, se refresca su sesión (banner)
-        enph.modelo.Usuario sesion = enph.modelo.SesionUsuario.getActual();
-        if (sesion != null && usuarioEditado.getIdUsuario().equals(sesion.getIdUsuario())) {
-            sesion.setNombreCompleto(nombre);
-            sesion.setDocumentoIdentidad(cedula);
-            sesion.setRol(rol);
-        }
-        javax.swing.JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
-        volver();
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this,
-                "No se pudo actualizar. Revise la consola para ver el detalle.",
-                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-    }
     }//GEN-LAST:event_Btn_GuardarActionPerformed
 
     /**
